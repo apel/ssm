@@ -1,0 +1,139 @@
+Installing and running the SSM
+==============================
+
+The Secure Stomp Messenger (SSM) is designed to give a reliable message 
+transfer mechanism using the STOMP protocol.  Messages are encrypted 
+during transit, and are sent sequentially, the next message being sent 
+only when the previous one has been acknowledged.
+
+The SSM is written in python.  It is designed and packaged for SL5. 
+
+For more about the SSM, see https://wiki.egi.eu/wiki/APEL/SSM
+
+Installing the RPM
+------------------
+
+  Prerequisites
+  -------------
+
+The EPEL repository must be enabled.  This can be done by installing 
+the RPM for your version of SL, which is available on this page:
+http://fedoraproject.org/wiki/EPEL
+
+The python stomp library
+ * yum install stomppy
+
+The python daemon library
+ * yum install python-daemon
+
+The python ldap library
+ * yum install python-ldap
+
+
+You need a certificate and key in PEM format accessible to the SSM.
+There are a number of ways to do this.  One is to make a copy of the
+hostcert and hostkey files, owned by the user running the SSM:
+ * /etc/grid-security/hostcert-ssm.pem
+ * /etc/grid-security/hostkey-ssm.pem
+These are the default settings in the configuration file ssm.cfg.  
+You can use a different configuration if you prefer. 
+ 
+You need certificates against which you're going to verify any certs 
+you use or receive in the directory /etc/grid-security/certificates (or other 
+configured location).  The easiest way to do this for EGI is:
+ * yum install lcg-CA
+
+If you want to check CRLs when verifying certificates, you need 
+fetch_crl installed:
+ * yum install fetch-crl
+ * service fetch-crl-cron start
+ * chkconfig fetch-crl-cron on
+fetch-crl must have run once for the certificates to be verified
+successfully.
+
+  Installation 
+  ------------
+
+ * rpm -i ssm-<version>.noarch.rpm
+
+  What the RPM does
+  -----------------
+
+The RPM carries out a number of steps to run the SSM in a specific way.
+
+1. It installs the core files in /opt/apel/ssm
+2. It creates the messages directory /var/opt/apel/messages
+3. It creates the log directory /var/log/apel
+4. It creates the pidfile directory /var/run/apel
+
+Configuring the SSM
+-------------------
+
+Ensure that the user running the SSM has access to the following:
+ * the host certificate and key, or a copy
+ * /var/opt/apel/messages and any subdirectories
+ * /var/log/apel
+
+If you plan to run the SSM as a daemon, also give the user access to:
+ * /var/run/apel
+ 
+The configuration files are in /opt/apel/ssm/conf/.  The default 
+configuration will send messages to the test apel server.
+
+Running the SSM
+---------------
+
+It is recommended to run the SSM only when you need to send messages.
+This is so that all SSM clients do not remain connected to the brokers
+at all times.
+
+Before trying to send any messages, run the SSM once.  This will create the 
+directory structure within the messages directory.  Check the log file
+(/var/log/apel.log) to see if the SSM has successfully connected to a broker.
+If so, the SSM should be ready to use.
+
+To run the SSM the first time:
+ * export SSM_HOME=/opt/apel/ssm
+ * $SSM_HOME/bin/run-ssm
+
+Then, to send your messages:
+ * Write all the messages to the /opt/apel/ssm/messages/outgoing directory
+ * export SSM_HOME=/opt/apel/ssm
+ * $SSM_HOME/bin/run-ssm
+
+
+Removing the RPM
+----------------
+
+ * rpm -e ssm
+
+Cleaning the system
+-------------------
+
+ * yum remove stomppy 
+ * yum remove python-daemon
+ * yum remove python-ldap
+
+ * rm -rf /opt/apel
+ * rm -rf /var/opt/apel
+ * rm -rf /var/log/apel
+ * rm -rf /var/run/apel 
+
+ * revert any changes to / copies of the host certificate and key
+
+Building the RPM
+----------------
+
+This is only useful if you want to modify the spec file to build a different RPM,
+and you have a zip of the SSM source.
+
+It's recommended to build RPMs as a user other than root.  This user must have 
+access to the directory /usr/src/redhat.  Then:
+
+ * the directory containing the SSM files must be named ssm-<version>
+ * zip -r ssm-<version>.zip ssm-<version>
+ * cp ssm-<version>.zip /usr/src/redhat/SOURCES
+ * cp ssm-<version>/ssm.spec /usr/src/redhat/SPECS 
+ * rpmbuild -ba /usr/src/redhat/SPECS/clientssm.spec
+
+There are of course many variations on this method.

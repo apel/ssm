@@ -1,0 +1,10 @@
+/var/log/apel/ssm.log {
+    notifempty
+    daily
+    rotate 7
+    missingok
+    postrotate
+        # only restart if the ssm is running already
+        /sbin/service ssmd status > /dev/null 2>&1 && /sbin/service ssmd restart >/dev/null 2>&1
+    endscript
+}

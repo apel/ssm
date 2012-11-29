@@ -1,0 +1,2 @@
+# If this is a receiving SSM, add below any DNs authorised to send messages
+# to this SSM. Use the openssl slash-separated format.
