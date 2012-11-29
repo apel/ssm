@@ -125,8 +125,8 @@ def main():
         ssm.set_dns(dns)
         
     except Exception, e:
-        msg = 'Failed to initialise SSM.'
-        raise Ssm2Exception(msg, e)
+        msg = 'Failed to initialise SSM: %s' % e
+        raise Ssm2Exception(e)
 
     try:
         # Note: because we need to be compatible with python 2.4, we can't use
