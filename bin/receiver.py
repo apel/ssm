@@ -27,7 +27,8 @@ from ssm.brokers import StompBrokerGetter, STOMP_SERVICE
 from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm import __version__, LOGGER_ID
 
-REFRESH_DNS = 10
+# How often to read the list of valid DNs.
+REFRESH_DNS = 600
 log = None
 
 def get_dns(dn_file):

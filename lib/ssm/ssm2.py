@@ -165,8 +165,12 @@ class Ssm2(object):
         log.debug("Raw message contents: " + text)
         
         # encrypted
-        if "application/pkcs7-mime" in text:
-            text = crypto.decrypt(text, self._key, self._cert)
+        if "application/pkcs7-mime"  or "application/x-pkcs7-mime" in text:
+            try:
+                text = crypto.decrypt(text, self._cert, self._key)
+            except crypto.CryptoException, e:
+                log.error("Failed to decrypt message: %s" % e)
+                return None, None
         
         # always signed
         try:

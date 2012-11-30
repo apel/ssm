@@ -168,6 +168,13 @@ def decrypt(encrypted_text, certpath, keypath):
     This decryption function can be used whether or not OpenSSL is used to
     encrypt the data
     '''
+    # This ensures that openssl knows that the string is finished.
+    # It makes no difference if the signed message is correct, but 
+    # prevents it from hanging in the case of an empty string.
+    encrypted_text += "\n\n"
+    
+    log.info("Decrypting message.")
+    
     p1 = Popen(["openssl", "smime", "-decrypt",  
                 "-recip", certpath, "-inkey", keypath], 
                stdin=PIPE, stdout=PIPE, stderr=PIPE)
