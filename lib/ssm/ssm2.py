@@ -181,7 +181,7 @@ class Ssm2(object):
             raise Ssm2Exception("Not a valid message.")
         
         # encrypted - this could be nicer
-        if "application/pkcs7-mime"  or "application/x-pkcs7-mime" in text:
+        if "application/pkcs7-mime" in text or "application/x-pkcs7-mime" in text:
             try:
                 text = crypto.decrypt(text, self._cert, self._key)
             except crypto.CryptoException, e:

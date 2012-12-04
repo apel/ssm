@@ -41,6 +41,6 @@ def set_up_logging(logfile, level, console):
         log.addHandler(fh)
     
     if console:
-        ch = logging.StreamHandler(stream=sys.stdout)
+        ch = logging.StreamHandler(sys.stdout)
         ch.setFormatter(formatter)
         log.addHandler(ch)

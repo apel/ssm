@@ -21,7 +21,7 @@ import logging.config
 import sys
 import os
 from optparse import OptionParser
-from ConfigParser import ConfigParser, NoOptionError
+import ConfigParser
 
 from ssm import __version__, set_up_logging
 from ssm.ssm2 import Ssm2, Ssm2Exception
@@ -40,15 +40,21 @@ def main():
     (options,_) = op.parse_args()
     
     
-    cp = ConfigParser()
+    cp = ConfigParser.ConfigParser()
     cp.read(options.config)
     
-    if os.path.exists(options.log_config):
-        logging.config.fileConfig(options.log_config)
-    else:
-        set_up_logging(cp.get('logging', 'logfile'), 
-                       cp.get('logging', 'level'),
-                       cp.getboolean('logging', 'console'))
+    # set up logging
+    try:
+        if os.path.exists(options.log_config):
+            logging.config.fileConfig(options.log_config)
+        else:
+            set_up_logging(cp.get('logging', 'logfile'), 
+                           cp.get('logging', 'level'),
+                           cp.getboolean('logging', 'console'))
+    except (ConfigParser.Error, ValueError, IOError), err:
+        print 'Error configuring logging: %s' % str(err)
+        print 'The system will exit.'
+        sys.exit(1)
     
     log = logging.getLogger("ssmsend")
     
@@ -58,12 +64,12 @@ def main():
     try:
         bg = StompBrokerGetter(cp.get('broker','bdii'))
         brokers = bg.get_broker_hosts_and_ports(STOMP_SERVICE, cp.get('broker','network'))
-    except NoOptionError, e:
+    except ConfigParser.NoOptionError, e:
         try:
             host = cp.get('broker', 'host')
             port = cp.get('broker', 'port')
             brokers = [(host, int(port))]
-        except NoOptionError:
+        except ConfigParser.NoOptionError:
             log.error('Options incorrectly supplied for either single broker or broker network.  Please check configuration')
             log.error('System will exit.')
             log.info('========================================')
@@ -78,7 +84,7 @@ def main():
         
     try:
         server_cert = cp.get('certificates','server')
-    except NoOptionError:
+    except ConfigParser.NoOptionError:
         log.info('No server certificate supplied.  Will not encrypt messages.')
         server_cert = None
     

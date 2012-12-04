@@ -24,7 +24,7 @@ import os
 import sys
 from optparse import OptionParser, OptionError
 from daemon import DaemonContext
-from ConfigParser import ConfigParser, NoOptionError
+import ConfigParser
 from ssm.brokers import StompBrokerGetter, STOMP_SERVICE
 from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm import __version__, set_up_logging
@@ -66,14 +66,14 @@ def main():
     '''
     op = OptionParser(description=__doc__, version=__version__)
     op.add_option('-c', '--config', help='location of the config file', 
-                          default='/etc/ssm/receiver.cfg')
+                          default='/etc/apel/receiver.cfg')
     op.add_option('-l', '--log_config', help='location of the log config file', 
-                          default='/etc/ssm/logging.cfg')
+                          default='/etc/apel/logging.cfg')
     op.add_option('-d', '--dn_file', help='location of the log config file', 
-                          default='/etc/ssm/dns')
+                          default='/etc/apel/dns')
     (options,_) = op.parse_args()
         
-    cp = ConfigParser()
+    cp = ConfigParser.ConfigParser()
     cp.read(options.config)
     
     # Check for pidfile
@@ -82,13 +82,19 @@ def main():
         print "Cannot start SSM.  Pidfile %s already exists." % pidfile
         sys.exit(1)
     
-    if os.path.exists(options.log_config):
-        logging.config.fileConfig(options.log_config)
-    else:
-        set_up_logging(cp.get('logging', 'logfile'), 
-                       cp.get('logging', 'level'),
-                       cp.getboolean('logging', 'console'))
-    
+    # set up logging
+    try:
+        if os.path.exists(options.log_config):
+            logging.config.fileConfig(options.log_config)
+        else:
+            set_up_logging(cp.get('logging', 'logfile'), 
+                           cp.get('logging', 'level'),
+                           cp.getboolean('logging', 'console'))
+    except (ConfigParser.Error, ValueError, IOError), err:
+        print 'Error configuring logging: %s' % str(err)
+        print 'SSM will exit.'
+        sys.exit(1)
+        
     global log
     log = logging.getLogger("ssmreceive")
     
@@ -99,12 +105,12 @@ def main():
     try:
         bg = StompBrokerGetter(cp.get('broker','bdii'))
         brokers = bg.get_broker_hosts_and_ports(STOMP_SERVICE, cp.get('broker','network'))
-    except NoOptionError, e:
+    except ConfigParser.NoOptionError, e:
         try:
             host = cp.get('broker', 'host')
             port = cp.get('broker', 'port')
             brokers = [(host, int(port))]
-        except NoOptionError:
+        except ConfigParser.NoOptionError:
             log.error('Options incorrectly supplied for either single broker or broker network.  Please check configuration')
             log.error('System will exit.')
             log.info('========================================')

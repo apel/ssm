@@ -26,7 +26,7 @@ using the STOMP protocol.  Messages are signed using the sender's
 host certificate, and can optionally be encrypted.  This package
 can act as either a sender or receiver.
 
-The SSM is written in python.  This RPM is designed for SL5.
+The SSM is written in python.
 
 %prep
 %setup -q -n %{name}-%{version}
