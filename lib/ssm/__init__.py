@@ -21,17 +21,26 @@ import sys
 
 __version__ = (0, 0, 1)
 
-def set_up_logging(logfile, lvl, console):
+def set_up_logging(logfile, level, console):
     
+    levels = {"DEBUG": logging.DEBUG,
+              "INFO": logging.INFO,
+              "WARN": logging.WARN,
+              "ERROR": logging.ERROR,
+              "CRITICAL": logging.CRITICAL}
+        
     fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    logging.basicConfig(filename=logfile, format=fmt, level=lvl)
+    formatter = logging.Formatter(fmt)
+    
+    log = logging.getLogger()
+    log.setLevel(levels[level])
+    
+    if logfile is not None:
+        fh = logging.FileHandler(logfile)
+        fh.setFormatter(formatter)
+        log.addHandler(fh)
     
     if console:
-        log = logging.getLogger()
         ch = logging.StreamHandler(stream=sys.stdout)
-        ch.setLevel(lvl)
-        formatter = logging.Formatter(fmt)
         ch.setFormatter(formatter)
         log.addHandler(ch)
-    
-    
