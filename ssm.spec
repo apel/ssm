@@ -40,7 +40,7 @@ mkdir -p %{buildroot}%_bindir
 mkdir -p %{buildroot}/etc/logrotate.d
 mkdir -p %{buildroot}%_defaultdocdir
 # Directories for messages, logs, PID files
-mkdir -p %{buildroot}%{_localstatedir}/spool/ssm/messages
+mkdir -p %{buildroot}%{_localstatedir}/spool/apel
 mkdir -p %{buildroot}%{_localstatedir}/log/apel
 mkdir -p %{buildroot}%{_localstatedir}/run/apel
 # Scripts
@@ -70,7 +70,7 @@ rm -rf $RPM_BUILD_ROOT
 # logrotate
 
 # Directories for messages, logs, PID files
-%dir %{_localstatedir}/spool/ssm
+%dir %{_localstatedir}/spool/apel
 %dir %{_localstatedir}/log/apel
 %dir %{_localstatedir}/run/apel
 
