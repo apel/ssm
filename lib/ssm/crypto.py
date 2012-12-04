@@ -21,12 +21,11 @@
    decided on.
 '''
 
-from ssm import LOGGER_ID
 from subprocess import Popen, PIPE
 import logging
 
 # logging configuration
-log = logging.getLogger(LOGGER_ID)
+log = logging.getLogger(__name__)
 # Valid ciphers
 CIPHERS = ['aes128', 'aes192', 'aes256']
 

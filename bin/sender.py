@@ -19,10 +19,11 @@
 
 import logging.config
 import sys
+import os
 from optparse import OptionParser
 from ConfigParser import ConfigParser, NoOptionError
 
-from ssm import __version__, LOGGER_ID
+from ssm import __version__, set_up_logging
 from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm.crypto import CryptoException
 from ssm.brokers import StompBrokerGetter, STOMP_SERVICE
@@ -33,21 +34,26 @@ def main():
     '''
     op = OptionParser(description=__doc__, version=__version__)
     op.add_option('-c', '--config', help='the location of config file', 
-                          default='/etc/ssm/sender.cfg')
+                          default='/etc/apel/sender.cfg')
     op.add_option('-l', '--log_config', help='location of the log config file', 
-                          default='/etc/ssm/logging.cfg')
+                          default='/etc/apel/logging.cfg')
     (options,_) = op.parse_args()
     
-    # Set up logging
-    logging.config.fileConfig(options.log_config)
-    log = logging.getLogger(LOGGER_ID)
-    
-    log.info('========================================')
-    log.info('Starting sending SSM version %s.%s.%s.' % __version__)
     
     cp = ConfigParser()
     cp.read(options.config)
     
+    if os.path.exists(options.log_config):
+        logging.config.fileConfig(options.log_config)
+    else:
+        set_up_logging(cp.get('logging', 'logfile'), 
+                       cp.get('logging', 'level'),
+                       cp.getboolean('logging', 'console'))
+    
+    log = logging.getLogger("ssmsend")
+    
+    log.info('========================================')
+    log.info('Starting sending SSM version %s.%s.%s.' % __version__)
     # If we can't get a broker to connect to, we have to give up.
     try:
         bg = StompBrokerGetter(cp.get('broker','bdii'))

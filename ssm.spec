@@ -18,7 +18,7 @@ BuildArch:      noarch
 Requires:       stomppy, python-daemon, python-dirq, python-ldap
 Requires(pre):  shadow-utils
 
-%define ssmconf %_sysconfdir/ssm
+%define ssmconf %_sysconfdir/apel
 
 %description
 The SSM is designed to give a reliable message transfer mechanism
@@ -49,7 +49,6 @@ cp -rp bin/receiver.py %{buildroot}%_bindir/ssmreceive
 # Copy SSM files
 cp -rp conf/sender.cfg %{buildroot}%{ssmconf}
 cp -rp conf/receiver.cfg %{buildroot}%{ssmconf}
-cp -rp conf/logging.cfg %{buildroot}%{ssmconf}
 cp -rp conf/dns %{buildroot}%{ssmconf}
 cp -rp lib/ssm %{buildroot}%{python_sitelib}
 cp -rp conf/ssm.logrotate %{buildroot}%_sysconfdir/logrotate.d/%{name}
@@ -77,7 +76,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %config(noreplace) %{ssmconf}/sender.cfg
 %config(noreplace) %{ssmconf}/receiver.cfg
-%config(noreplace) %{ssmconf}/logging.cfg
 %config(noreplace) %{ssmconf}/dns
 %config(noreplace) /etc/logrotate.d/%{name}
 

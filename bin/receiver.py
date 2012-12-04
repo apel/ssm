@@ -20,12 +20,14 @@
 import time
 import logging.config
 import ldap
-from optparse import OptionParser
+import os
+import sys
+from optparse import OptionParser, OptionError
 from daemon import DaemonContext
 from ConfigParser import ConfigParser, NoOptionError
 from ssm.brokers import StompBrokerGetter, STOMP_SERVICE
 from ssm.ssm2 import Ssm2, Ssm2Exception
-from ssm import __version__, LOGGER_ID
+from ssm import __version__, set_up_logging
 
 # How often to read the list of valid DNs.
 REFRESH_DNS = 600
@@ -71,20 +73,27 @@ def main():
                           default='/etc/ssm/dns')
     (options,_) = op.parse_args()
         
-    try:
-        # Set up logging.
-        global log
-        logging.config.fileConfig(options.log_config)
-        log = logging.getLogger(LOGGER_ID)
-    except Exception, e:
-        msg = 'Failed to open log file: %s.' % e
-        raise Ssm2Exception(msg)
-            
-    log.info('================================')
-    log.info('Starting receiving SSM version %s.%s.%s.' % __version__)
-    
     cp = ConfigParser()
     cp.read(options.config)
+    
+    # Check for pidfile
+    pidfile = cp.get('daemon', 'pidfile')
+    if os.path.exists(pidfile):
+        print "Cannot start SSM.  Pidfile %s already exists." % pidfile
+        sys.exit(1)
+    
+    if os.path.exists(options.log_config):
+        logging.config.fileConfig(options.log_config)
+    else:
+        set_up_logging(cp.get('logging', 'logfile'), 
+                       cp.get('logging', 'level'),
+                       cp.getboolean('logging', 'console'))
+    
+    global log
+    log = logging.getLogger("ssmreceive")
+    
+    log.info('================================')
+    log.info('Starting receiving SSM version %s.%s.%s.' % __version__)
         
     # If we can't get a broker to connect to, we have to give up.
     try:
@@ -107,19 +116,21 @@ def main():
         sys.exit(1)    
     
         
+    log.info('The SSM will run as a daemon.')
+    
+    # We need to preserve the file descriptor for any log files.
+    rootlog = logging.getLogger()
+    log_files = [x.stream for x in rootlog.handlers]
+    dc = DaemonContext(files_preserve=log_files)
+        
     try:
-        log.info('The SSM will run as a daemon.')
-        
-        # We need to preserve the file descriptor for any log files.
-        log_files = [x.stream for x in log.handlers]
-        dc = DaemonContext(files_preserve=log_files)
-        
         ssm = Ssm2(brokers, 
                    cp.get('messaging','path'),
                    listen=cp.get('messaging','destination'),
                    cert=cp.get('certificates','certificate'),
                    key=cp.get('certificates','key'),
-                   capath=cp.get('certificates', 'capath'))
+                   capath=cp.get('certificates', 'capath'),
+                   pidfile=pidfile)
         
         log.info('Fetching valid DNs.')
         dns = get_dns(options.dn_file)
@@ -135,28 +146,31 @@ def main():
         # here - we need to call the open() and close() methods 
         # manually.
         dc.open()
-        ssm.handle_connect()
+        ssm.startup()
         i = 0
         # The message listening loop.
         while True:
             
             time.sleep(1)
             
-            if i % REFRESH_DNS == 0:
+            if i % 60 == 0:
                 log.info('Refreshing the valid DNs.')
                 dns = get_dns(options.dn_file)
                 ssm.set_dns(dns)
+                
+                if not ssm._conn.is_connected():
+                    raise Ssm2Exception('Unexpected STOMP disconnection.')
             i += 1
             
     except SystemExit, e:
         log.info('Received the shutdown signal: ' + str(e))
-        ssm.close_connection()
+        ssm.shutdown()
         dc.close()
     except Exception, e:
         log.error('Unexpected exception: ' + str(e))
         log.error('Exception type: %s' % type(e))
         log.error('The SSM will exit.')  
-        ssm.close_connection()
+        ssm.shutdown()
         dc.close()
         
     log.info('Receiving SSM has shut down.')

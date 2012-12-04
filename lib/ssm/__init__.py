@@ -15,6 +15,23 @@
    
    @author: Will Rogers
 '''
+
+import logging
+import sys
+
 __version__ = (0, 0, 1)
 
-LOGGER_ID = 'SSM'
+def set_up_logging(logfile, lvl, console):
+    
+    fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    logging.basicConfig(filename=logfile, format=fmt, level=lvl)
+    
+    if console:
+        log = logging.getLogger()
+        ch = logging.StreamHandler(stream=sys.stdout)
+        ch.setLevel(lvl)
+        formatter = logging.Formatter(fmt)
+        ch.setFormatter(formatter)
+        log.addHandler(ch)
+    
+    

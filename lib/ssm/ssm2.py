@@ -16,7 +16,7 @@
    @author: Will Rogers
 '''
 
-from ssm import crypto, LOGGER_ID
+from ssm import crypto
 from dirq.QueueSimple import QueueSimple
 from dirq.queue import Queue
 
@@ -28,12 +28,13 @@ except ImportError:
     from stomp.exception import ReconnectFailedException \
             as ConnectFailedException
 
+import os
 import socket
 import time
 import logging
 
 # Set up logging 
-log = logging.getLogger(LOGGER_ID)
+log = logging.getLogger(__name__)
 
 class Ssm2Exception(Exception):
     '''
@@ -47,10 +48,12 @@ class Ssm2(object):
     '''
     # Schema for the dirq message queue.
     QSCHEMA = {"body": "string", "signer":"string", "empaid":"string?"}
+    REJECT_SCHEMA = {"body": "string", "signer":"string?", "empaid":"string?", "error":"string"}
     CONNECTION_TIMEOUT = 10
     
     def __init__(self, hosts_and_ports, qpath, dest=None, listen=None, cert=None, key=None,
-                 capath=None, use_ssl=False, username=None, password=None, enc_cert=None):
+                 capath=None, use_ssl=False, username=None, password=None, enc_cert=None,
+                 pidfile=None):
         '''
         Creates an SSM2 object.  If a listen value is supplied,
         this SSM2 will be a consumer.
@@ -78,12 +81,18 @@ class Ssm2(object):
         if dest is not None and listen is None:
             self._outq = QueueSimple(qpath)
         elif listen is not None:
-            self._inq = Queue(qpath, schema=Ssm2.QSCHEMA)
+            inqpath = os.path.join(qpath, 'incoming')
+            rejectqpath = os.path.join(qpath, 'reject')
+            self._inq = Queue(inqpath, schema=Ssm2.QSCHEMA)
+            self._rejectq = Queue(rejectqpath, schema=Ssm2.REJECT_SCHEMA)
         else:
             raise Ssm2Exception("Must be either producer or consumer.")
         
         if not crypto.check_cert_key(self._cert, self._key):
             raise Ssm2Exception("Cert and key don't match.")
+        
+        self._pidfile = pidfile
+        
         
     
     def set_dns(self, dn_list):
@@ -108,12 +117,21 @@ class Ssm2(object):
         
         Handle the message according to its content and headers.
         '''
-        log.info("Received message: " + headers['empa-id'])
+        try:
+            empaid = headers['empa-id']
+        except KeyError:
+            empaid = "noid"
+        log.info("Received message: " + empaid)
         raw_msg, signer = self._handle_msg(body)
         if raw_msg is None:
-            log.info("Could not extract message; ignoring.")
+            log.warn("Could not extract message; rejecting.")
+            if signer is None:
+                signer = "Not available."
+            self._rejectq.add({"body": body,
+                               "signer": signer,
+                               "empaid": empaid,
+                               "error": "Could not extract message."})
         else:
-            log.debug("Message content: %s" % raw_msg)
             self._inq.add({"body": raw_msg, 
                            "signer":signer, 
                            "empaid": headers['empa-id']})
@@ -162,9 +180,7 @@ class Ssm2(object):
         if not text.startswith("MIME-Version: 1.0"):
             raise Ssm2Exception("Not a valid message.")
         
-        log.debug("Raw message contents: " + text)
-        
-        # encrypted
+        # encrypted - this could be nicer
         if "application/pkcs7-mime"  or "application/x-pkcs7-mime" in text:
             try:
                 text = crypto.decrypt(text, self._cert, self._key)
@@ -181,6 +197,7 @@ class Ssm2(object):
         
         if signer not in self._valid_dns:
             log.error("Received message from invalid signer: %s" % signer)
+            return None, signer
         else:
             log.info("Valid signer: %s" % signer)
             
@@ -218,7 +235,8 @@ class Ssm2(object):
         log.info("Found %s messages." % self._outq.count())
         for msgid in self._outq:
             if not self._outq.lock(msgid):
-                raise Ssm2Exception("Message queue was locked.")
+                log.warn("Message queue was locked. %s will not be sent." % msgid)
+                continue
             
             text = self._outq.get(msgid)
             self._send_msg(text, msgid)
@@ -346,3 +364,31 @@ class Ssm2(object):
             pass
         
         log.info("SSM connection ended.")
+        
+                
+    def startup(self):
+        if self._pidfile is not None:
+            try:
+                f = open(self._pidfile, "w")
+                f.write(str(os.getpid()))
+                f.write("\n")
+                f.close()
+            except IOError, e:
+                log.warn("Failed to create pidfile %s: %s" % (self._pidfile, e))
+                
+        self.handle_connect()
+        
+    def shutdown(self):
+        
+        self.close_connection()
+        if self._pidfile is not None:
+            try:
+                if os.path.exists(self._pidfile):
+                    os.remove(self._pidfile)
+                else:
+                    log.warn("pidfile %s not found." % self._pidfile)
+            except IOError, e:
+                log.warn("Failed to remove pidfile %s: %e" % (self._pidfile, e))
+                log.warn("SSM may not start again until it is removed.")
+        
+        
