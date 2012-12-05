@@ -4,8 +4,8 @@
 %endif
 
 Name:           apelssm
-Version:        0.0.0
-Release:        1%{?dist}
+Version:        0.0.1
+Release:        0%{?dist}
 Summary:        Secure stomp messenger
 
 Group:          Development/Languages
@@ -50,7 +50,7 @@ cp -rp bin/receiver.py %{buildroot}%_bindir/ssmreceive
 cp -rp conf/sender.cfg %{buildroot}%{ssmconf}
 cp -rp conf/receiver.cfg %{buildroot}%{ssmconf}
 cp -rp conf/dns %{buildroot}%{ssmconf}
-cp -rp lib/ssm %{buildroot}%{python_sitelib}
+cp -rp ssm %{buildroot}%{python_sitelib}
 cp -rp conf/ssm.logrotate %{buildroot}%_sysconfdir/logrotate.d/%{name}
 # Readme
 cp -rp README %{buildroot}%_defaultdocdir/%{name}
@@ -82,6 +82,6 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
- * Fri Oct 02 2012 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.0-1
+ * Fri Oct 02 2012 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.1-0
  - First release
 
