@@ -29,6 +29,8 @@ The python daemon library
 The python ldap library
  * yum install python-ldap
 
+The python dirq library
+ * yum install python-dirq
 
 You need a certificate and key in PEM format accessible to the SSM.
 There are a number of ways to do this.  One is to make a copy of the
@@ -96,9 +98,9 @@ There are two ways to add files to be sent:
 All file and directory names must use hex characters: [0-9a-f].
 
  * Create a directory within /var/spool/apel/outgoing with a name
-   of EIGHT hex characters eg. 12345678
+   of EIGHT hex characters e.g. 12345678
  * Put files in this directory with names of FOURTEEN hex 
-   eg. 1234567890abcd
+   e.g. 1234567890abcd
 
   Programmatic
   ------------
@@ -107,7 +109,7 @@ Use the python or perl dirq libraries:
  * python: http://pypi.python.org/pypi/dirq
  * perl: http://search.cpan.org/~lcons/Directory-Queue/
 
-Create a QueueSimple object with path /var/spool/outgoing and 
+Create a QueueSimple object with path /var/spool/apel/outgoing and 
 add your messages.
 
 Running the SSM
@@ -117,8 +119,8 @@ Running the SSM
   ------
 
  * Run 'ssmsend'
- * SSM will pick up any messages and send it to the configured
-   queue on the configured broker
+ * SSM will pick up any messages and send them to the configured
+   queue on the configured broker.
 
   Receiver
   --------
@@ -126,6 +128,7 @@ Running the SSM
  * Run 'ssmreceive'
  * SSM will receive any messages on the specified queue and
    write them to the filesystem.
+ * To stop, run 'kill `cat /var/run/apel/ssm.pid`'
 
 Removing the RPM
 ----------------

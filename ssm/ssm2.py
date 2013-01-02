@@ -47,8 +47,8 @@ class Ssm2(object):
     Minimal SSM implementation.
     '''
     # Schema for the dirq message queue.
-    QSCHEMA = {"body": "string", "signer":"string", "empaid":"string?"}
-    REJECT_SCHEMA = {"body": "string", "signer":"string?", "empaid":"string?", "error":"string"}
+    QSCHEMA = {'body': 'string', 'signer':'string', 'empaid':'string?'}
+    REJECT_SCHEMA = {'body': 'string', 'signer':'string?', 'empaid':'string?', 'error':'string'}
     CONNECTION_TIMEOUT = 10
     
     def __init__(self, hosts_and_ports, qpath, dest=None, listen=None, cert=None, key=None,
@@ -86,10 +86,10 @@ class Ssm2(object):
             self._inq = Queue(inqpath, schema=Ssm2.QSCHEMA)
             self._rejectq = Queue(rejectqpath, schema=Ssm2.REJECT_SCHEMA)
         else:
-            raise Ssm2Exception("Must be either producer or consumer.")
+            raise Ssm2Exception('Must be either producer or consumer.')
         
         if not crypto.check_cert_key(self._cert, self._key):
-            raise Ssm2Exception("Cert and key don't match.")
+            raise Ssm2Exception('Cert and key don\'t match.')
         
         self._pidfile = pidfile
         
@@ -109,7 +109,7 @@ class Ssm2(object):
         '''
         Called by stomppy when a message is sent.
         '''
-        log.info("Sent message: " + headers['empa-id'])
+        log.info('Sent message: ' + headers['empa-id'])
         
     def on_message(self, headers, body):
         '''
@@ -119,28 +119,32 @@ class Ssm2(object):
         '''
         try:
             empaid = headers['empa-id']
+            if empaid == 'ping': # ignore ping message
+                log.info('Received ping message.')
+                return
         except KeyError:
-            empaid = "noid"
-        log.info("Received message: " + empaid)
+            empaid = 'noid'
+            
+        log.info('Received message: ' + empaid)
         raw_msg, signer = self._handle_msg(body)
         if raw_msg is None:
-            log.warn("Could not extract message; rejecting.")
+            log.warn('Could not extract message; rejecting.')
             if signer is None:
-                signer = "Not available."
-            self._rejectq.add({"body": body,
-                               "signer": signer,
-                               "empaid": empaid,
-                               "error": "Could not extract message."})
+                signer = 'Not available.'
+            self._rejectq.add({'body': body,
+                               'signer': signer,
+                               'empaid': empaid,
+                               'error': 'Could not extract message.'})
         else:
-            self._inq.add({"body": raw_msg, 
-                           "signer":signer, 
-                           "empaid": headers['empa-id']})
+            self._inq.add({'body': raw_msg, 
+                           'signer':signer, 
+                           'empaid': headers['empa-id']})
         
     def on_error(self, unused_headers, body):
         '''
         Called by stomppy when an error frame is received.
         '''
-        log.warn("Error message received: %s" % body)
+        log.warn('Error message received: %s' % body)
         raise Ssm2Exception()
     
     def on_connected(self, unused_headers, unused_body):
@@ -150,20 +154,20 @@ class Ssm2(object):
         Track the connection.
         '''
         self.connected = True
-        log.info("Connected.")
+        log.info('Connected.')
         
     def on_disconnected(self):
         '''
         Called by stomppy when disconnected from the broker.
         '''
-        log.info("Disconnected from broker.")
+        log.info('Disconnected from broker.')
         self.connected = False
         
     def on_receipt(self, headers, unused_body):
         '''
         Called by stomppy when the broker acknowledges receipt of a message.
         '''
-        log.info("Broker received message: " + headers['receipt-id'])
+        log.info('Broker received message: ' + headers['receipt-id'])
         self._last_msg = headers['receipt-id']
         
     ##########################################################################
@@ -177,29 +181,29 @@ class Ssm2(object):
         - verify signature
         Return plain-text message and signer's DN.
         '''
-        if not text.startswith("MIME-Version: 1.0"):
-            raise Ssm2Exception("Not a valid message.")
+#        if not text.startswith('MIME-Version: 1.0'):
+#            raise Ssm2Exception('Not a valid message.')
         
         # encrypted - this could be nicer
-        if "application/pkcs7-mime" in text or "application/x-pkcs7-mime" in text:
+        if 'application/pkcs7-mime' in text or 'application/x-pkcs7-mime' in text:
             try:
                 text = crypto.decrypt(text, self._cert, self._key)
             except crypto.CryptoException, e:
-                log.error("Failed to decrypt message: %s" % e)
+                log.error('Failed to decrypt message: %s' % e)
                 return None, None
         
         # always signed
         try:
             message, signer = crypto.verify(text, self._capath, False)
         except crypto.CryptoException, e:
-            log.error("Failed to verify message: %s" % e)
+            log.error('Failed to verify message: %s' % e)
             return None, None
         
         if signer not in self._valid_dns:
-            log.error("Received message from invalid signer: %s" % signer)
+            log.error('Received message from invalid signer: %s' % signer)
             return None, signer
         else:
-            log.info("Valid signer: %s" % signer)
+            log.info('Valid signer: %s' % signer)
             
         return message, signer
         
@@ -209,7 +213,7 @@ class Ssm2(object):
         the host cert and key.  If an encryption certificate
         has been supplied, the message will also be encrypted.
         '''
-        log.info("Sending message: " + msgid)
+        log.info('Sending message: ' + msgid)
         headers = {'destination': self._dest, 'receipt': msgid,
                    'empa-id': msgid}
         
@@ -218,9 +222,17 @@ class Ssm2(object):
         if self._enc_cert is not None:
             to_send = crypto.encrypt(to_send, self._enc_cert)
         
-        log.info("Ready to send: " + msgid)
         self._conn.send(to_send, headers=headers)
-        log.info("Sent: " + msgid)
+        
+    def send_ping(self):
+        '''
+        If a STOMP connection is left open with no activity for an hour or 
+        so, it stops responding. Stomppy 3.1.3 has two ways of handling
+        this, but stomppy 3.0.3 (EPEL 5 and 6) has neither.
+        To get around this, we send periodic 'ping' messages to keep the 
+        connection active.
+        '''
+        self._send_msg(None, 'ping')
         
     def has_msgs(self):
         '''
@@ -232,17 +244,17 @@ class Ssm2(object):
         '''
         Send all the messages in the outgoing queue.
         '''
-        log.info("Found %s messages." % self._outq.count())
+        log.info('Found %s messages.' % self._outq.count())
         for msgid in self._outq:
             if not self._outq.lock(msgid):
-                log.warn("Message queue was locked. %s will not be sent." % msgid)
+                log.warn('Message queue was locked. %s will not be sent.' % msgid)
                 continue
             
             text = self._outq.get(msgid)
             self._send_msg(text, msgid)
             
             while self._last_msg is None:
-                log.info("Waiting for broker to accept message.")
+                log.info('Waiting for broker to accept message.')
                 time.sleep(0.5)
             
             self._last_msg = None
@@ -254,10 +266,10 @@ class Ssm2(object):
     ###############################################################################  
     
     def _initialise_connection(self, host, port):
-        """
+        '''
         Create the self._connection object with the appropriate properties,
         but don't try to start the connection.
-        """
+        '''
         self._conn = stomp.Connection([(host, port)], 
                                       use_ssl=self._use_ssl,
                                       user = self._user,
@@ -270,16 +282,16 @@ class Ssm2(object):
         self._conn.__reconnect_attempts_max = 1
         self._conn.__timeout = Ssm2.CONNECTION_TIMEOUT
         
-        self._conn.set_listener("SSM", self)
+        self._conn.set_listener('SSM', self)
         
     def handle_connect(self):
-        """
+        '''
         Assuming that the SSM has retrieved the details of the broker or 
         brokers it wants to connect to, connect to one.
         
         If more than one is in the list self._network_brokers, try to 
         connect to each in turn until successful.
-        """
+        '''
         for host, port in self._brokers:
             self._initialise_connection(host, port)
             try:
@@ -287,18 +299,18 @@ class Ssm2(object):
                 break
             except ConnectFailedException, e:
                 # ConnectFailedException doesn't provide a message.
-                log.warn("Failed to connect to %s:%s." % (host, port))
+                log.warn('Failed to connect to %s:%s.' % (host, port))
             except Ssm2Exception, e:
-                log.warn("Failed to connect to %s:%s: %s" % (host, port, str(e)))
+                log.warn('Failed to connect to %s:%s: %s' % (host, port, str(e)))
                 
         if not self.connected:
-            raise Ssm2Exception("Attempts to start the SSM failed.  The system will exit.")
+            raise Ssm2Exception('Attempts to start the SSM failed.  The system will exit.')
 
     def handle_disconnect(self):
-        """
+        '''
         When disconnected, attempt to reconnect using the same method as used
         when starting up.
-        """
+        '''
         self.connected = False
         # Shut down properly
         self.close_connection()
@@ -315,20 +327,20 @@ class Ssm2(object):
             
         # If reconnection fails, admit defeat.
         if not self.connected:
-            error_message = "Reconnection attempts failed and have been abandoned."
+            error_message = 'Reconnection attempts failed and have been abandoned.'
             raise Ssm2Exception(error_message)
         
     def start_connection(self):
-        """
+        '''
         Once self._connection exists, attempt to start it and subscribe
         to the relevant topics.
         
         If the timeout is reached without receiving confirmation of 
         connection, raise an exception.
-        """
+        '''
         if self._conn is None:
-            raise Ssm2Exception("Called start_connection() before a \
-                    connection object was initialised.")
+            raise Ssm2Exception('Called start_connection() before a \
+                    connection object was initialised.')
             
         self._conn.start()
         self._conn.connect(wait = True)
@@ -338,23 +350,23 @@ class Ssm2(object):
              
         if self._listen is not None:
             self._conn.subscribe(destination=self._listen, ack='auto')
-            log.info("Subscribing to: %s" % self._listen)
+            log.info('Subscribing to: %s' % self._listen)
             
         i = 0
         while not self.connected:
             time.sleep(0.1)
             if i > Ssm2.CONNECTION_TIMEOUT * 10:
-                err = "Timed out while waiting for connection. "
-                err += "Check the connection details."
+                err = 'Timed out while waiting for connection. '
+                err += 'Check the connection details.'
                 raise Ssm2Exception(err)
             i += 1
             
     def close_connection(self):
-        """
+        '''
         Close the connection.  This is important because it runs 
         in a separate thread, so it can outlive the main process 
         if it is not ended.
-        """
+        '''
         try:
             self._conn.disconnect()
         except (stomp.exception.NotConnectedException, socket.error):
@@ -363,18 +375,18 @@ class Ssm2(object):
             # AttributeError if self._connection is None already
             pass
         
-        log.info("SSM connection ended.")
+        log.info('SSM connection ended.')
         
                 
     def startup(self):
         if self._pidfile is not None:
             try:
-                f = open(self._pidfile, "w")
+                f = open(self._pidfile, 'w')
                 f.write(str(os.getpid()))
-                f.write("\n")
+                f.write('\n')
                 f.close()
             except IOError, e:
-                log.warn("Failed to create pidfile %s: %s" % (self._pidfile, e))
+                log.warn('Failed to create pidfile %s: %s' % (self._pidfile, e))
                 
         self.handle_connect()
         
@@ -386,9 +398,9 @@ class Ssm2(object):
                 if os.path.exists(self._pidfile):
                     os.remove(self._pidfile)
                 else:
-                    log.warn("pidfile %s not found." % self._pidfile)
+                    log.warn('pidfile %s not found.' % self._pidfile)
             except IOError, e:
-                log.warn("Failed to remove pidfile %s: %e" % (self._pidfile, e))
-                log.warn("SSM may not start again until it is removed.")
+                log.warn('Failed to remove pidfile %s: %e' % (self._pidfile, e))
+                log.warn('SSM may not start again until it is removed.')
         
         

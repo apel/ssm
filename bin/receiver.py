@@ -22,14 +22,14 @@ import logging.config
 import ldap
 import os
 import sys
-from optparse import OptionParser, OptionError
+from optparse import OptionParser 
 from daemon import DaemonContext
 import ConfigParser
 from ssm.brokers import StompBrokerGetter, STOMP_SERVICE
 from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm import __version__, set_up_logging
 
-# How often to read the list of valid DNs.
+# How often (in seconds) to read the list of valid DNs.
 REFRESH_DNS = 600
 log = None
 
@@ -71,7 +71,7 @@ def main():
                           default='/etc/apel/logging.cfg')
     op.add_option('-d', '--dn_file', help='location of the log config file', 
                           default='/etc/apel/dns')
-    (options,_) = op.parse_args()
+    (options, _) = op.parse_args()
         
     cp = ConfigParser.ConfigParser()
     cp.read(options.config)
@@ -144,7 +144,7 @@ def main():
         
     except Exception, e:
         msg = 'Failed to initialise SSM: %s' % e
-        raise Ssm2Exception(e)
+        raise Ssm2Exception(msg)
 
     try:
         # Note: because we need to be compatible with python 2.4, we can't use
@@ -159,13 +159,14 @@ def main():
             
             time.sleep(1)
             
-            if i % 60 == 0:
+            if i % REFRESH_DNS == 0:
                 log.info('Refreshing the valid DNs.')
                 dns = get_dns(options.dn_file)
                 ssm.set_dns(dns)
                 
-                if not ssm._conn.is_connected():
-                    raise Ssm2Exception('Unexpected STOMP disconnection.')
+                log.debug('Sending ping message.')
+                ssm.send_ping()
+                
             i += 1
             
     except SystemExit, e:
