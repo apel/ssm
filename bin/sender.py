@@ -18,6 +18,7 @@
 '''
 
 import logging.config
+import ldap
 import sys
 import os
 from optparse import OptionParser
@@ -37,7 +38,7 @@ def main():
                           default='/etc/apel/sender.cfg')
     op.add_option('-l', '--log_config', help='location of the log config file', 
                           default='/etc/apel/logging.cfg')
-    (options,_) = op.parse_args()
+    (options, _) = op.parse_args()
     
     
     cp = ConfigParser.ConfigParser()
@@ -56,7 +57,7 @@ def main():
         print 'The system will exit.'
         sys.exit(1)
     
-    log = logging.getLogger("ssmsend")
+    log = logging.getLogger('ssmsend')
     
     log.info('========================================')
     log.info('Starting sending SSM version %s.%s.%s.' % __version__)
@@ -70,7 +71,8 @@ def main():
             port = cp.get('broker', 'port')
             brokers = [(host, int(port))]
         except ConfigParser.NoOptionError:
-            log.error('Options incorrectly supplied for either single broker or broker network.  Please check configuration')
+            log.error('Options incorrectly supplied for either single broker or \
+                    broker network.  Please check configuration')
             log.error('System will exit.')
             log.info('========================================')
             print 'SSM failed to start.  See log file for details.'

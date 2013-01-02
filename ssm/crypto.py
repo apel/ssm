@@ -61,7 +61,7 @@ def check_cert_key(certpath, keypath):
     if cert == key:
         return False
 
-    p1 = Popen(["openssl", "x509", "-noout", "-modulus"],
+    p1 = Popen(['openssl', 'x509', '-noout', '-modulus'],
                stdin=PIPE, stdout=PIPE, stderr=PIPE)
     modulus1, error = p1.communicate(cert)
 
@@ -69,7 +69,7 @@ def check_cert_key(certpath, keypath):
         log.error(error)
         return False
 
-    p2 = Popen(["openssl", "rsa", "-noout", "-modulus"],
+    p2 = Popen(['openssl', 'rsa', '-noout', '-modulus'],
                stdin=PIPE, stdout=PIPE, stderr=PIPE)
     modulus2, error = p2.communicate(key)
 
@@ -87,7 +87,7 @@ def sign(text, certpath, keypath):
     Returns the signed message as an SMIME string, suitable for transmission.
     '''
     try:
-        p1 = Popen(["openssl", "smime", "-sign", "-inkey", keypath, "-signer", certpath, "-text"],
+        p1 = Popen(['openssl', 'smime', '-sign', '-inkey', keypath, '-signer', certpath, '-text'],
                    stdin=PIPE, stdout=PIPE, stderr=PIPE)
         
         signed_msg, error = p1.communicate(text)
@@ -97,8 +97,8 @@ def sign(text, certpath, keypath):
 
         return signed_msg
     except OSError, e:
-        log.error("Failed to sign message: %s" % e)
-        raise CryptoException("Message signing failed.  Check cert and key permissions.")
+        log.error('Failed to sign message: %s' % e)
+        raise CryptoException('Message signing failed.  Check cert and key permissions.')
 
 
 def encrypt(text, certpath, cipher='aes128'):
@@ -112,7 +112,7 @@ def encrypt(text, certpath, cipher='aes128'):
     
     cipher = '-' + cipher
     # encrypt
-    p1 = Popen(["openssl", "smime", "-encrypt", cipher, certpath], 
+    p1 = Popen(['openssl', 'smime', '-encrypt', cipher, certpath], 
                stdin=PIPE, stdout=PIPE, stderr=PIPE)
     
     enc_txt, error = p1.communicate(text)
@@ -134,17 +134,17 @@ def verify(signed_text, capath, check_crl):
     # This ensures that openssl knows that the string is finished.
     # It makes no difference if the signed message is correct, but 
     # prevents it from hanging in the case of an empty string.
-    signed_text += "\n\n"
+    signed_text += '\n\n'
     
     signer = get_signer_cert(signed_text)
     
     if not verify_cert(signer, capath, check_crl):
-        raise CryptoException("Unverified signer")
+        raise CryptoException('Unverified signer')
     
     # The -noverify flag removes the certificate verification.  The certificate 
     # is verified above; this check would also check that the certificate
     # is allowed to sign with SMIME, which host certificates sometimes aren't.
-    p1 = Popen(["openssl", "smime", "-verify", "-CApath", capath, "-noverify", "-text"], 
+    p1 = Popen(['openssl', 'smime', '-verify', '-CApath', capath, '-noverify', '-text'], 
                stdin=PIPE, stdout=PIPE, stderr=PIPE)
     
     message, error = p1.communicate(signed_text)
@@ -170,12 +170,12 @@ def decrypt(encrypted_text, certpath, keypath):
     # This ensures that openssl knows that the string is finished.
     # It makes no difference if the signed message is correct, but 
     # prevents it from hanging in the case of an empty string.
-    encrypted_text += "\n\n"
+    encrypted_text += '\n\n'
     
-    log.info("Decrypting message.")
+    log.info('Decrypting message.')
     
-    p1 = Popen(["openssl", "smime", "-decrypt",  
-                "-recip", certpath, "-inkey", keypath], 
+    p1 = Popen(['openssl', 'smime', '-decrypt',  
+                '-recip', certpath, '-inkey', keypath], 
                stdin=PIPE, stdout=PIPE, stderr=PIPE)
     
     enc_txt, error = p1.communicate(encrypted_text)
@@ -198,10 +198,10 @@ def verify_cert(certstring, capath, check_crls=True):
     '''
     
     if check_crls:
-        p1 = Popen(["openssl", "verify", "-CApath", capath, "-crl_check_all"], 
+        p1 = Popen(['openssl', 'verify', '-CApath', capath, '-crl_check_all'], 
                    stdin=PIPE, stdout=PIPE, stderr=PIPE)
     else: 
-        p1 = Popen(["openssl", "verify", "-CApath", capath], 
+        p1 = Popen(['openssl', 'verify', '-CApath', capath], 
                    stdin=PIPE, stdout=PIPE, stderr=PIPE)
          
     message, error = p1.communicate(certstring)
@@ -217,16 +217,16 @@ def verify_cert(certstring, capath, check_crls=True):
     # If it is successful, openssl prints 'OK'
     # If it fails, openssl prints 'error'
     # So:
-    log.info("Certificate verification: " + str(message).strip())
+    log.info('Certificate verification: ' + str(message).strip())
       
-    return ("OK" in message and not "error" in message)
+    return ('OK' in message and not 'error' in message)
 
 
 def get_certificate_subject(certstring):
     '''
     Returns the certificate subject's DN, in legacy openssl format.
     '''
-    p1 = Popen(["openssl", "x509", "-noout", "-subject"],
+    p1 = Popen(['openssl', 'x509', '-noout', '-subject'],
                stdin=PIPE, stdout=PIPE, stderr=PIPE)
     subject, error = p1.communicate(certstring)
 
@@ -245,9 +245,9 @@ def get_signer_cert(signed_text):
 
     Returns an X509 object for the signer's certificate
     '''
-    p1 = Popen(["openssl", "smime", "-pk7out"], 
+    p1 = Popen(['openssl', 'smime', '-pk7out'], 
                stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    p2 = Popen(["openssl", "pkcs7", "-print_certs"], 
+    p2 = Popen(['openssl', 'pkcs7', '-print_certs'], 
                stdin=p1.stdout, stdout=PIPE, stderr=PIPE)
     
     p1.stdin.write(signed_text)
@@ -258,12 +258,12 @@ def get_signer_cert(signed_text):
         
     return certstring
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     
     CERTPATH = '/etc/grid-security/hostcert.pem'
     KEYPATH = '/etc/grid-security/hostkey.pem'
     
-    MESSAGE = ("test")
+    MESSAGE = ('test')
     
     CERTSTRING = _from_file(CERTPATH)
     print get_certificate_subject(CERTSTRING)

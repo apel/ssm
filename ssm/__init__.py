@@ -22,14 +22,16 @@ import sys
 __version__ = (0, 0, 1)
 
 def set_up_logging(logfile, level, console):
-    
-    levels = {"DEBUG": logging.DEBUG,
-              "INFO": logging.INFO,
-              "WARN": logging.WARN,
-              "ERROR": logging.ERROR,
-              "CRITICAL": logging.CRITICAL}
+    '''
+    Programmatically initialise logging system.
+    '''
+    levels = {'DEBUG': logging.DEBUG,
+              'INFO': logging.INFO,
+              'WARN': logging.WARN,
+              'ERROR': logging.ERROR,
+              'CRITICAL': logging.CRITICAL}
         
-    fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     formatter = logging.Formatter(fmt)
     
     log = logging.getLogger()

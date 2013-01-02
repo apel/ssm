@@ -1,4 +1,4 @@
-"""
+'''
    Copyright (C) 2012 STFC.
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,15 +17,15 @@
 
 Class to interact with a BDII LDAP server to retrieve information about 
 the stomp brokers specified in a network.
-"""
+'''
 
 import ldap
 
-STOMP_SERVICE = "msg.broker.stomp"
-STOMP_SSL_SERVICE = "msg.broker.stomp-ssl"
+STOMP_SERVICE = 'msg.broker.stomp'
+STOMP_SSL_SERVICE = 'msg.broker.stomp-ssl'
 
-STOMP_PREFIX = "stomp"
-STOMP_SSL_PREFIX = "stomp+ssl"
+STOMP_PREFIX = 'stomp'
+STOMP_SSL_PREFIX = 'stomp+ssl'
 
 class StompBrokerGetter(object):
     '''
@@ -123,7 +123,7 @@ def parse_stomp_url(stomp_url):
     host = parts[1].strip('/')
     port = parts[2].strip('/')
     if not port.isdigit():
-        raise ValueError("URL %s does not have an integer as its third part.")
+        raise ValueError('URL %s does not have an integer as its third part.')
     
     return host, int(port)
     

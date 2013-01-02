@@ -79,7 +79,7 @@ def main():
     # Check for pidfile
     pidfile = cp.get('daemon', 'pidfile')
     if os.path.exists(pidfile):
-        print "Cannot start SSM.  Pidfile %s already exists." % pidfile
+        print 'Cannot start SSM.  Pidfile %s already exists.' % pidfile
         sys.exit(1)
     
     # set up logging
@@ -96,7 +96,7 @@ def main():
         sys.exit(1)
         
     global log
-    log = logging.getLogger("ssmreceive")
+    log = logging.getLogger('ssmreceive')
     
     log.info('================================')
     log.info('Starting receiving SSM version %s.%s.%s.' % __version__)
