@@ -33,7 +33,7 @@ class Test(unittest.TestCase):
 
     def test_parse_stomp_url(self):
         
-        wrong_url = "this is not a correct url"
+        wrong_url = 'this is not a correct url'
         try:
             brokers.parse_stomp_url(wrong_url)
             self.fail("Appeared to parse a fake URL.")
