@@ -104,20 +104,16 @@ class TestEncryptUtils(unittest.TestCase):
         '''
         signed = sign(MSG, self.certpath, self.keypath)
         
-        
         if not 'MIME-Version' in signed:
             self.fail("Didn't get MIME message when signing.")
             
         if not MSG in signed:
             self.fail('The plaintext should be included in the signed message.')
-            
         
         # Indirect testing, using the verify_message() method
         retrieved_msg, retrieved_dn = verify(signed, self.ca_dir, False)
         
         if not retrieved_dn == TEST_CERT_DN:
-            print retrieved_dn
-            print TEST_CERT_DN
             self.fail("The DN of the verified message didn't match the cert.")
 
         if not retrieved_msg == MSG:
@@ -125,7 +121,7 @@ class TestEncryptUtils(unittest.TestCase):
             
     def test_verify(self):
         
-        retrieved_msg, retrieved_dn = verify(SAMPLE_SIGNED_MSG, self.ca_dir, False)
+        retrieved_msg, retrieved_dn = verify(SIGNED_MSG, self.ca_dir, False)
         
         if not retrieved_dn == TEST_CERT_DN:
             self.fail("The DN of the verified message didn't match the cert.")
@@ -137,16 +133,22 @@ class TestEncryptUtils(unittest.TestCase):
         # Try empty string    
         try:
             verify('', self.ca_dir, False)
-        except Exception, e:
-            print e
+        except CryptoException:
             pass
         # Try rubbish
         try:
             verify('Bibbly bobbly', self.ca_dir, False)
-        except Exception, e:
-            print e
+        except CryptoException:
             pass
-        
+        # Try None arguments 
+        try:
+            verify('Bibbly bobbly', None, False)
+        except CryptoException:
+            pass
+        try:
+            verify(None, 'not a path', False)
+        except CryptoException:
+            pass
         
     def test_get_certificate_subject(self):
         '''
@@ -160,19 +162,31 @@ class TestEncryptUtils(unittest.TestCase):
             self.fail("Didn't retrieve correct DN from cert.")
             
         try:
-            get_certificate_subject('Rubbish')
-        except Exception, e:
-            print e
+            subj = get_certificate_subject('Rubbish')
+            self.fail('Returned %s as subject from empty string.' % subj)
+        except CryptoException:
             pass
         
         try:
-            get_certificate_subject('')
-        except Exception, e:
-            print e
+            subj = get_certificate_subject('')
+            self.fail('Returned %s as subject from empty string.' % subj)
+        except CryptoException:
             pass
         
+    def test_get_signer_cert(self):
+        '''
+        Check that the certificate retrieved from the signed message
+        matches the certificate used to sign it.
+        '''
+        cert = get_signer_cert(SIGNED_MSG)
+        # Remove any information preceding the encoded certificate.
+        cert = cert[cert.find('-----BEGIN'):]
         
-    def test_encrypt_message(self):
+        if cert.strip() != TEST_CERT:
+            self.fail('Certificate retrieved from signature does not match \
+                    certificate used to sign.')
+        
+    def test_encrypt(self):
         '''
         Not a correct test yet.
         '''
@@ -180,13 +194,23 @@ class TestEncryptUtils(unittest.TestCase):
         
         if not 'MIME-Version' in encrypted:
             self.fail('Encrypted message is not MIME')
-            print encrypted
         
         # Indirect testing, using the decrypt_message function.
         decrypted = decrypt(encrypted, self.certpath, self.keypath)
         
-        if not decrypted == MSG:
+        if decrypted != MSG:
             self.fail("Encrypted message wasn't decrypted successfully.")
+            
+    def test_decrypt(self):
+        '''
+        Check that the encrypted message can be decrypted and returns the
+        original message.
+        '''
+        decrypted = decrypt(ENCRYPTED_MSG, self.certpath, self.keypath)
+        
+        if decrypted.strip() != MSG:
+            self.fail('Failed to decrypt message.') 
+        
         
     def test_verify_cert(self):
         '''
@@ -197,19 +221,14 @@ class TestEncryptUtils(unittest.TestCase):
         I can't check the CRLs of a self-signed certificate easily.
         '''
         if not verify_cert(TEST_CERT, self.ca_dir, False):
-            print 'bloop'
             self.fail('The self signed certificate should validate against \
             itself in a CA directory.')
             
         if verify_cert(TEST_CERT, '/tmp', False):
             self.fail("The verify method isn't checking the CA dir correctly.")
             
-        try:
-            if verify_cert('bloblo', self.ca_dir, False):
-                self.fail('Nonsense successfully verified.')
-        except Exception, e:
-            print e
-            pass    
+        if verify_cert('bloblo', self.ca_dir, False):
+            self.fail('Nonsense successfully verified.')
  
             
 ################################################################
@@ -251,22 +270,22 @@ ba7gkcCbglQsQdB0tSrExAeR0dqym9SAzqkdRf/dJCfX
 
 MSG = 'This is some test data.'
 
-SAMPLE_ENCRYPTED_MSG = '''MIME-Version: 1.0
+ENCRYPTED_MSG = '''MIME-Version: 1.0
 Content-Disposition: attachment; filename="smime.p7m"
-Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
+Content-Type: application/x-pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
 Content-Transfer-Encoding: base64
 
-MIIBbAYJKoZIhvcNAQcDoIIBXTCCAVkCAQAxggENMIIBCQIBADByMGUxCzAJBgNV
-BAYTAnVrMRMwEQYDVQQIEwpTb21lLVN0YXRlMQ8wDQYDVQQHEwZkaWRjb3QxDTAL
-BgNVBAoTBHN0ZmMxEjAQBgNVBAsTCWUtc2NpZW5jZTENMAsGA1UEAxMEd2lsbAIJ
-APQRNeBKQQ7hMA0GCSqGSIb3DQEBAQUABIGAYEQTjh30nvpjMdVci1pkyuMJlZKh
-MwuNqlvCM5gpDaXuRV2ILbbe7hY44Wr4m7xIsxtRnaCNsb2HhLOv45hauD3hMqo7
-BZva5mZgZZJoWeTLTvrIDfzmttKfyaEd8VgzNU7LN9Pc7d475/BivSkrzz0PWsC2
-ia2YJ4Yf8d57vFcwQwYJKoZIhvcNAQcBMBQGCCqGSIb3DQMHBAiwW8i6h01b2oAg
-oD8zka5x53cKIh/tunq8684BsnKcqo6qTwKu5EuWoAM=
+MIIBXwYJKoZIhvcNAQcDoIIBUDCCAUwCAQAxgfswgfgCAQAwYTBUMQswCQYDVQQG
+EwJ1azETMBEGA1UECAwKU29tZS1TdGF0ZTENMAsGA1UECgwEc3RmYzELMAkGA1UE
+CwwCc2MxFDASBgNVBAMMC3dpbGwgcm9nZXJzAgkAuP9RxvKCz3cwDQYJKoZIhvcN
+AQEBBQAEgYAywxFQtRJJ8rpGnh+X6V2O59lYSQwL5IQXxLEfsP8HKr7i4RSTEloT
+BZMi2s56hPuBAYYI4KloK6FIzbtqCYIOb9co/hEoaurKT/82zQqLyKkpR8W0jJEm
+mIxCz5+n21FPTKh5TRUjmXWdCrXyPaV/f0jVWzluJgAUE5Hzfsq46TBJBgkqhkiG
+9w0BBwEwGgYIKoZIhvcNAwIwDgICAKAECKNL0EuCiLR9gCCoeY/bQ/h8WkPlFNYL
+rkMwpW1VA80ij9O8eTjxpHaycw==
 '''
 
-SAMPLE_SIGNED_MSG = '''MIME-Version: 1.0
+SIGNED_MSG = '''MIME-Version: 1.0
 Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha1"; boundary="----1C12AE3B24C506C96BF5DE14FAB740A7"
 
 This is an S/MIME signed message
