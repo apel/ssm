@@ -55,9 +55,6 @@ cp -rp conf/ssm.logrotate %{buildroot}%_sysconfdir/logrotate.d/%{name}
 # Readme
 cp -rp README %{buildroot}%_defaultdocdir/%{name}
 
-# Byte-compile python
-python -O -m  compileall %{buildroot}%{python_sitelib}/ssm
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -82,6 +79,8 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+ * Thu Jan 03 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.2-0
+ - Fixed connection freeze
+ 
  * Fri Oct 02 2012 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.1-0
  - First release
-
