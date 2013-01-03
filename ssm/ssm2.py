@@ -109,7 +109,7 @@ class Ssm2(object):
         '''
         Called by stomppy when a message is sent.
         '''
-        log.info('Sent message: ' + headers['empa-id'])
+        log.debug('Sent message: ' + headers['empa-id'])
         
     def on_message(self, headers, body):
         '''
@@ -221,7 +221,7 @@ class Ssm2(object):
         
         if self._enc_cert is not None:
             to_send = crypto.encrypt(to_send, self._enc_cert)
-        
+            
         self._conn.send(to_send, headers=headers)
         
     def send_ping(self):
@@ -377,8 +377,10 @@ class Ssm2(object):
         
         log.info('SSM connection ended.')
         
-                
     def startup(self):
+        '''
+        Create the pidfile then start the connection.
+        '''
         if self._pidfile is not None:
             try:
                 f = open(self._pidfile, 'w')
@@ -391,7 +393,9 @@ class Ssm2(object):
         self.handle_connect()
         
     def shutdown(self):
-        
+        '''
+        Close the connection then remove the pidfile.
+        '''        
         self.close_connection()
         if self._pidfile is not None:
             try:

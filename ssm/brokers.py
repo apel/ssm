@@ -18,9 +18,9 @@
 Class to interact with a BDII LDAP server to retrieve information about 
 the stomp brokers specified in a network.
 '''
-
 import ldap
 
+# Constants used for specific LDAP queries
 STOMP_SERVICE = 'msg.broker.stomp'
 STOMP_SSL_SERVICE = 'msg.broker.stomp-ssl'
 

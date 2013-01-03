@@ -191,12 +191,11 @@ def verify_cert(certstring, capath, check_crls=True):
     Verify that the certificate is signed by a CA whose certificate is stored in
     capath.      
 
-    Note also that I've had to compare strings in the output of openssl to check
+    Note that I've had to compare strings in the output of openssl to check
     for verification, which may make this brittle.
 
     Returns True if the certificate is verified
     '''
-    
     if check_crls:
         p1 = Popen(['openssl', 'verify', '-CApath', capath, '-crl_check_all'], 
                    stdin=PIPE, stdout=PIPE, stderr=PIPE)
@@ -209,10 +208,10 @@ def verify_cert(certstring, capath, check_crls=True):
     # I think this is unlikely ever to happen
     if (error != ''):
         log.error(error)
-    
-    # There was a sticky problem here.  
+        
+    # There was a tricky problem here.  
     # 'openssl verify' returns 0 whatever happens, so we can't 
-    # use the return code to determine whether the verificatation was 
+    # use the return code to determine whether the verification was 
     # successful.  
     # If it is successful, openssl prints 'OK'
     # If it fails, openssl prints 'error'
