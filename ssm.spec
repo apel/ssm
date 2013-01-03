@@ -4,7 +4,7 @@
 %endif
 
 Name:           apelssm
-Version:        0.0.1
+Version:        0.0.2
 Release:        0%{?dist}
 Summary:        Secure stomp messenger
 
