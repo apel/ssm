@@ -95,9 +95,9 @@ def main():
     try:
         sender = Ssm2(brokers, 
                    cp.get('messaging','path'),
-                   dest=cp.get('messaging','destination'),
                    cert=cp.get('certificates','certificate'),
                    key=cp.get('certificates','key'),
+                   dest=cp.get('messaging','destination'),
                    capath=cp.get('certificates', 'capath'),
                    enc_cert=server_cert)
         

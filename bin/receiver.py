@@ -136,9 +136,9 @@ def main():
     try:
         ssm = Ssm2(brokers, 
                    cp.get('messaging','path'),
-                   listen=cp.get('messaging','destination'),
                    cert=cp.get('certificates','certificate'),
                    key=cp.get('certificates','key'),
+                   listen=cp.get('messaging','destination'),
                    capath=cp.get('certificates', 'capath'),
                    pidfile=pidfile)
         

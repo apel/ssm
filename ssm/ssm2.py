@@ -51,7 +51,7 @@ class Ssm2(object):
     REJECT_SCHEMA = {'body': 'string', 'signer':'string?', 'empaid':'string?', 'error':'string'}
     CONNECTION_TIMEOUT = 10
     
-    def __init__(self, hosts_and_ports, qpath, dest=None, listen=None, cert=None, key=None,
+    def __init__(self, hosts_and_ports, qpath, cert, key, dest=None, listen=None, 
                  capath=None, use_ssl=False, username=None, password=None, enc_cert=None,
                  pidfile=None):
         '''
@@ -181,6 +181,8 @@ class Ssm2(object):
         - verify signature
         Return plain-text message and signer's DN.
         '''
+        if text is None or text == '':
+            return None, None
 #        if not text.startswith('MIME-Version: 1.0'):
 #            raise Ssm2Exception('Not a valid message.')
         

@@ -131,6 +131,8 @@ def verify(signed_text, capath, check_crl):
     Returns a tuple including the signer's certificate and the plain-text of the
     message if it has been verified
     ''' 
+    if signed_text is None or capath is None:
+        raise CryptoException('Invalid None argument to verify().')
     # This ensures that openssl knows that the string is finished.
     # It makes no difference if the signed message is correct, but 
     # prevents it from hanging in the case of an empty string.
@@ -196,6 +198,9 @@ def verify_cert(certstring, capath, check_crls=True):
 
     Returns True if the certificate is verified
     '''
+    if certstring is None or capath is None:
+        raise CryptoException('Invalid None argument to verify_cert().')
+    
     if check_crls:
         p1 = Popen(['openssl', 'verify', '-CApath', capath, '-crl_check_all'], 
                    stdin=PIPE, stdout=PIPE, stderr=PIPE)
@@ -231,7 +236,7 @@ def get_certificate_subject(certstring):
 
     if (error != ''):
         log.error(error)
-        return None
+        raise CryptoException('Failed to get subject: %s' % error)
     
     subject = subject[9:] # remove 'subject= ' from the front
     subject = subject.strip()
@@ -240,10 +245,15 @@ def get_certificate_subject(certstring):
 def get_signer_cert(signed_text):
     '''
     Read the signer's certificate from the specified message, and return the
-    certificate object.
+    certificate string.
 
     Returns an X509 object for the signer's certificate
     '''
+    # This ensures that openssl knows that the string is finished.
+    # It makes no difference if the signed message is correct, but 
+    # prevents it from hanging in the case of an empty string.
+    signed_text += '\n\n'
+    
     p1 = Popen(['openssl', 'smime', '-pk7out'], 
                stdin=PIPE, stdout=PIPE, stderr=PIPE)
     p2 = Popen(['openssl', 'pkcs7', '-print_certs'], 
