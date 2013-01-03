@@ -16,6 +16,9 @@
    
    @author: Will Rogers
 '''
+from ssm.brokers import StompBrokerGetter, STOMP_SERVICE
+from ssm.ssm2 import Ssm2, Ssm2Exception
+from ssm import __version__, set_up_logging
 
 import time
 import logging.config
@@ -25,9 +28,6 @@ import sys
 from optparse import OptionParser 
 from daemon import DaemonContext
 import ConfigParser
-from ssm.brokers import StompBrokerGetter, STOMP_SERVICE
-from ssm.ssm2 import Ssm2, Ssm2Exception
-from ssm import __version__, set_up_logging
 
 # How often (in seconds) to read the list of valid DNs.
 REFRESH_DNS = 600
@@ -47,7 +47,6 @@ def get_dns(dn_file):
                 continue
             elif line.strip().startswith('/'):
                 dns.append(line.strip())
-                log.info(line.strip())
             else:
                 log.warn('DN in incorrect format: %s' % line)
     finally:
@@ -60,18 +59,22 @@ def get_dns(dn_file):
     log.debug('%s DNs found.' % len(dns))
     return dns
 
+
 def main():
     '''
     Set up connection, and listen for messages.
     '''
     op = OptionParser(description=__doc__, version=__version__)
-    op.add_option('-c', '--config', help='location of the config file', 
-                          default='/etc/apel/receiver.cfg')
-    op.add_option('-l', '--log_config', help='location of the log config file', 
-                          default='/etc/apel/logging.cfg')
-    op.add_option('-d', '--dn_file', help='location of the log config file', 
-                          default='/etc/apel/dns')
-    (options, _) = op.parse_args()
+    op.add_option('-c', '--config', help='location of config file', 
+                  default='/etc/apel/receiver.cfg')
+    op.add_option('-l', '--log_config', 
+                  help='location of logging config file (optional)', 
+                  default='/etc/apel/logging.cfg')
+    op.add_option('-d', '--dn_file', 
+                  help='location of the file containing valid DNs', 
+                  default='/etc/apel/dns')
+    
+    (options, unused_args) = op.parse_args()
         
     cp = ConfigParser.ConfigParser()
     cp.read(options.config)
@@ -111,7 +114,8 @@ def main():
             port = cp.get('broker', 'port')
             brokers = [(host, int(port))]
         except ConfigParser.NoOptionError:
-            log.error('Options incorrectly supplied for either single broker or broker network.  Please check configuration')
+            log.error('Options incorrectly supplied for either single broker \
+                    or broker network.  Please check configuration')
             log.error('System will exit.')
             log.info('========================================')
             sys.exit(1)
@@ -143,9 +147,10 @@ def main():
         ssm.set_dns(dns)
         
     except Exception, e:
-        msg = 'Failed to initialise SSM: %s' % e
-        raise Ssm2Exception(msg)
-
+        log.fatal('Failed to initialise SSM: %s' % e)
+        log.info('================================')
+        sys.exit(1)
+        
     try:
         # Note: because we need to be compatible with python 2.4, we can't use
         # with dc:
@@ -185,8 +190,4 @@ def main():
     
     
 if __name__ == '__main__':
-    try:
-        main()
-    except Exception, e:
-        print 'Unexpected exception: %s' % e
-        print 'SSM has died.'
+    main()

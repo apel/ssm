@@ -16,6 +16,10 @@
    
    @author: Will Rogers
 '''
+from ssm import __version__, set_up_logging
+from ssm.ssm2 import Ssm2, Ssm2Exception
+from ssm.crypto import CryptoException
+from ssm.brokers import StompBrokerGetter, STOMP_SERVICE
 
 import logging.config
 import ldap
@@ -24,21 +28,19 @@ import os
 from optparse import OptionParser
 import ConfigParser
 
-from ssm import __version__, set_up_logging
-from ssm.ssm2 import Ssm2, Ssm2Exception
-from ssm.crypto import CryptoException
-from ssm.brokers import StompBrokerGetter, STOMP_SERVICE
 
 def main():
     '''
     Set up connection, send all messages and quit.
     '''
-    op = OptionParser(description=__doc__, version=__version__)
-    op.add_option('-c', '--config', help='the location of config file', 
+    ver = "SSM %s.%s.%s" % __version__
+    op = OptionParser(description=__doc__, version=ver)
+    op.add_option('-c', '--config', help='location of config file', 
                           default='/etc/apel/sender.cfg')
-    op.add_option('-l', '--log_config', help='location of the log config file', 
-                          default='/etc/apel/logging.cfg')
-    (options, _) = op.parse_args()
+    op.add_option('-l', '--log_config', 
+                        help='location of logging config file (optional)', 
+                        default='/etc/apel/logging.cfg')
+    (options, unused_args) = op.parse_args()
     
     
     cp = ConfigParser.ConfigParser()
