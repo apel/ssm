@@ -70,7 +70,7 @@ class Test(unittest.TestCase):
         Could fail if the BDII is down. This isn't very unit-test-like.
         '''
         bdii = 'ldap://lcg-bdii.cern.ch:2170'
-        network = 'PROD.'
+        network = 'PROD'
         
         sbg = brokers.StompBrokerGetter(bdii)
         
