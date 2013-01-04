@@ -65,8 +65,11 @@ def main():
     log.info('Starting sending SSM version %s.%s.%s.' % __version__)
     # If we can't get a broker to connect to, we have to give up.
     try:
-        bg = StompBrokerGetter(cp.get('broker','bdii'))
+        bdii_url = cp.get('broker','bdii')
+        log.info('Retrieving broker details from %s...' % bdii_url)
+        bg = StompBrokerGetter(bdii_url)
         brokers = bg.get_broker_hosts_and_ports(STOMP_SERVICE, cp.get('broker','network'))
+        log.info('Found %s brokers.' % len(brokers))
     except ConfigParser.NoOptionError, e:
         try:
             host = cp.get('broker', 'host')
