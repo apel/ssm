@@ -66,7 +66,7 @@ def main():
     # If we can't get a broker to connect to, we have to give up.
     try:
         bdii_url = cp.get('broker','bdii')
-        log.info('Retrieving broker details from %s...' % bdii_url)
+        log.info('Retrieving broker details from %s ...' % bdii_url)
         bg = StompBrokerGetter(bdii_url)
         brokers = bg.get_broker_hosts_and_ports(STOMP_SERVICE, cp.get('broker','network'))
         log.info('Found %s brokers.' % len(brokers))

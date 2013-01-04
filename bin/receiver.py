@@ -64,7 +64,8 @@ def main():
     '''
     Set up connection, and listen for messages.
     '''
-    op = OptionParser(description=__doc__, version=__version__)
+    ver = "SSM %s.%s.%s" % __version__
+    op = OptionParser(description=__doc__, version=ver)
     op.add_option('-c', '--config', help='location of config file', 
                   default='/etc/apel/receiver.cfg')
     op.add_option('-l', '--log_config', 
