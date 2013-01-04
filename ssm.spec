@@ -60,6 +60,13 @@ cp -rp README %{buildroot}%_defaultdocdir/%{name}
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%post
+/sbin/chkconfig apelssm on
+
+%preun
+/sbin/service apelssm stop
+/sbin/chkconfig apelssm off
+
 %files
 %defattr(-,root,root,-)
 # SSM software itself
