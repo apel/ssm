@@ -34,7 +34,7 @@ The python dirq library
 
 You need a certificate and key in PEM format accessible to the SSM.
 There are a number of ways to do this.  One is to make a copy of the
-hostcert and hostkey files, owned by the user running the SSM:
+hostcert and hostkey files, owned by the apel user (created later):
  * /etc/grid-security/hostcert-ssm.pem
  * /etc/grid-security/hostkey-ssm.pem
 These are the default settings in the configuration file ssm.cfg.
@@ -69,20 +69,22 @@ The RPM carries out a number of steps to run the SSM in a specific way.
 1. It installs the core files in the python libraries directory
 2. It installs scripts in /usr/bin
 3. It installs configuration files in /etc/apel
-2. It creates the messages directory /var/spool/apel/
-3. It creates the log directory /var/log/apel
-4. It creates the pidfile directory /var/run/apel
+4. It creates the messages directory /var/spool/apel/
+5. It creates the log directory /var/log/apel/
+6. It creates the pidfile directory /var/run/apel/
+7. It installs a service script in /etc/init.d/
 
 Configuring the SSM
 -------------------
 
-Ensure that the user running the SSM has access to the following:
- * the host certificate and key, or a copy
- * /var/spool/apel/ and any subdirectories
- * /var/log/apel/
+Create the apel user:
+ * useradd -r apel
 
-If you plan to run the SSM as a daemon, also give the user access to:
- * /var/run/apel/
+Ensure that the apel user running the SSM has access to the following:
+ * the host certificate and key, or a copy
+ * chown apel:apel /var/spool/apel/ 
+ * chown apel:apel /var/log/apel/
+ * chown apel:apel /var/run/apel
 
 The configuration files are in /etc/apel/.  The default
 configuration will send messages to the test apel server.
@@ -109,7 +111,7 @@ Use the python or perl dirq libraries:
  * python: http://pypi.python.org/pypi/dirq
  * perl: http://search.cpan.org/~lcons/Directory-Queue/
 
-Create a QueueSimple object with path /var/spool/apel/outgoing and 
+Create a QueueSimple object with path /var/spool/apel/outgoing/ and 
 add your messages.
 
 Running the SSM
@@ -120,20 +122,27 @@ Running the SSM
 
  * Run 'ssmsend'
  * SSM will pick up any messages and send them to the configured
-   queue on the configured broker.
+   queue on the configured broker
+   
+  Receiver (service)
+  ------------------
+  
+ * Run 'service apelssm start'
+ * If this fails, check /var/log/apel/ssmreceive.log for details
+ * To stop, run 'service apelssm stop'
 
-  Receiver
-  --------
+  Receiver (manual)
+  -----------------
 
  * Run 'ssmreceive'
  * SSM will receive any messages on the specified queue and
-   write them to the filesystem.
+   write them to the filesystem
  * To stop, run 'kill `cat /var/run/apel/ssm.pid`'
 
 Removing the RPM
 ----------------
 
- * rpm -e ssm
+ * rpm -e apelssm
 
 Cleaning the system
 -------------------
@@ -146,4 +155,4 @@ Cleaning the system
  * rm -rf /var/log/apel
  * rm -rf /var/run/apel
 
- * revert any changes to / copies of the host certificate and key
+ * revert any changes to or copies of the host certificate and key

@@ -1,0 +1,7 @@
+
+## 0.0.2 (5th Jan 2013)
+ * Fixed connection freeze when listening for long periods
+ * Standardised file locations
+
+## 0.0.1 (2nd Oct 2013)
+ * First release of SSM2
