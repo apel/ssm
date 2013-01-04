@@ -65,7 +65,7 @@ rm -rf $RPM_BUILD_ROOT
 # SSM software itself
 %attr(755,-,-) %_bindir/ssmsend
 %attr(755,-,-) %_bindir/ssmreceive
-%attr(755,-,-) %{_initrddir}/ssmd
+%attr(755,-,-) %{_initrddir}/apelssm
 %{python_sitelib}/ssm
 # logrotate
 
