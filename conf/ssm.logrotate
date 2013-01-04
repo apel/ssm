@@ -1,4 +1,4 @@
-/var/log/apel/ssm.log {
+/var/log/apel/receiver.log {
     notifempty
     daily
     rotate 7
