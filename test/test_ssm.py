@@ -48,7 +48,7 @@ class TestSsm(unittest.TestCase):
         
         dest = '/topic/test'
         
-        self._msgdir =  tempfile.mkdtemp(prefix='mdb')
+        self._msgdir =  tempfile.mkdtemp(prefix='msgq')
         
         self._ssm = ssm.ssm2.Ssm2(hosts_and_ports, self._msgdir, certificate, key,
                                   dest=dest, listen=listen)
@@ -75,9 +75,12 @@ class TestSsm(unittest.TestCase):
         self._ssm.on_message({'nothing': 'dummy'}, '')
         self._ssm.on_message({'nothing': 'dummy'}, 'Not signed or encrypted.')
 
-
-   
-            
+        # Try changing permissions on the directory we're writing to.
+        # The on_message function shouldn't throw an exception.
+        os.chmod(self._msgdir, 0400)
+        self._ssm.on_message({'nothing': 'dummy'}, 'Not signed or encrypted.')
+        os.chmod(self._msgdir, 0777)
+        
         
 TEST_CERT = '''-----BEGIN CERTIFICATE-----
 MIICHzCCAYgCCQDmzJkJ04gm+DANBgkqhkiG9w0BAQUFADBUMQswCQYDVQQGEwJ1
