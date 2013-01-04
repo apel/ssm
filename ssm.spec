@@ -47,7 +47,7 @@ mkdir -p %{buildroot}%{_localstatedir}/run/apel
 # Scripts
 cp -rp bin/sender.py %{buildroot}%_bindir/ssmsend
 cp -rp bin/receiver.py %{buildroot}%_bindir/ssmreceive
-cp -rp bin/ssmd %{buildroot}%{_initrddir}
+cp -rp bin/apelssm %{buildroot}%{_initrddir}
 # Copy SSM files
 cp -rp conf/sender.cfg %{buildroot}%{ssmconf}
 cp -rp conf/receiver.cfg %{buildroot}%{ssmconf}
