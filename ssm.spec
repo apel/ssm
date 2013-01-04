@@ -38,6 +38,7 @@ mkdir -p %{buildroot}%{ssmconf}
 mkdir -p %{buildroot}%{python_sitelib}
 mkdir -p %{buildroot}%_bindir
 mkdir -p %{buildroot}/etc/logrotate.d
+mkdir -p %{buildroot}%{_initrddir}
 mkdir -p %{buildroot}%_defaultdocdir
 # Directories for messages, logs, PID files
 mkdir -p %{buildroot}%{_localstatedir}/spool/apel
@@ -46,6 +47,7 @@ mkdir -p %{buildroot}%{_localstatedir}/run/apel
 # Scripts
 cp -rp bin/sender.py %{buildroot}%_bindir/ssmsend
 cp -rp bin/receiver.py %{buildroot}%_bindir/ssmreceive
+cp -rp bin/ssmd %{buildroot}%{_initrddir}
 # Copy SSM files
 cp -rp conf/sender.cfg %{buildroot}%{ssmconf}
 cp -rp conf/receiver.cfg %{buildroot}%{ssmconf}
@@ -63,6 +65,7 @@ rm -rf $RPM_BUILD_ROOT
 # SSM software itself
 %attr(755,-,-) %_bindir/ssmsend
 %attr(755,-,-) %_bindir/ssmreceive
+%attr(755,-,-) %{_initrddir}/ssmd
 %{python_sitelib}/ssm
 # logrotate
 

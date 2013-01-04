@@ -10,13 +10,13 @@
 
 export PYTHONPATH=/opt/ssm/lib
 
-user="ssm"
-prog="ssm"
+user="apel"
+prog="ssmreceive"
 PIDFILE=/var/run/apel/${prog}.pid
 
 start() {
     echo -n $"Starting $prog: "
-    su $user -c "python /opt/ssm/bin/receiver.py"
+    su $user -c $prog
     RETVAL=$?
     if [ $RETVAL -ne 0 ]; then
         failure;
@@ -56,7 +56,7 @@ case "$1" in
             ;;
 
         status)
-            status -p $PIDFILE run-ssm
+            status -p $PIDFILE $prog
             ;;
 
         restart)
