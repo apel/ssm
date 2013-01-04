@@ -1,7 +1,7 @@
 #!/bin/sh
 # Startup script for SSM
 #
-# chkconfig: 2345 95 05
+# chkconfig: - 95 05
 # description: Run the SSM as a daemon
 # pidfile: /var/run/apel/ssm.pid
 #
@@ -60,6 +60,11 @@ case "$1" in
             ;;
 
         restart)
+            stop
+            start
+            ;;
+            
+        reload)
             stop
             start
             ;;
