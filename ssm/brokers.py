@@ -19,6 +19,9 @@ Class to interact with a BDII LDAP server to retrieve information about
 the stomp brokers specified in a network.
 '''
 import ldap
+import logging
+
+log = logging.getLogger(__name__)
 
 # Constants used for specific LDAP queries
 STOMP_SERVICE = 'msg.broker.stomp'
@@ -38,6 +41,7 @@ class StompBrokerGetter(object):
         Set up the LDAP connection and strings which are re-used.
         '''
         # Set up the LDAP connection
+        log.debug('Connecting to %s...' % bdii_url)
         self._ldap_conn = ldap.initialize(bdii_url)
 
         self._base_dn = 'o=grid'

@@ -127,18 +127,22 @@ class Ssm2(object):
             
         log.info('Received message: ' + empaid)
         raw_msg, signer = self._handle_msg(body)
-        if raw_msg is None:
-            log.warn('Could not extract message; rejecting.')
-            if signer is None:
-                signer = 'Not available.'
-            self._rejectq.add({'body': body,
-                               'signer': signer,
-                               'empaid': empaid,
-                               'error': 'Could not extract message.'})
-        else:
-            self._inq.add({'body': raw_msg, 
-                           'signer':signer, 
-                           'empaid': headers['empa-id']})
+        
+        try:
+            if raw_msg is None:
+                log.warn('Could not extract message; rejecting.')
+                if signer is None:
+                    signer = 'Not available.'
+                self._rejectq.add({'body': body,
+                                   'signer': signer,
+                                   'empaid': empaid,
+                                   'error': 'Could not extract message.'})
+            else:
+                self._inq.add({'body': raw_msg, 
+                               'signer':signer, 
+                               'empaid': headers['empa-id']})
+        except OSError, e:
+            log.error('Failed to read or write file: %s' % e)
         
     def on_error(self, unused_headers, body):
         '''
