@@ -8,8 +8,6 @@
 # Source function library.
 . /etc/rc.d/init.d/functions
 
-export PYTHONPATH=/opt/ssm/lib
-
 user="apel"
 prog="ssmreceive"
 PIDFILE=/var/run/apel/${prog}.pid
@@ -70,7 +68,7 @@ case "$1" in
             ;;
 
         *)
-            echo $"Usage: $0 {start|stop|restart|status}"
+            echo "Usage: $0 {start|stop|restart|status}"
             exit 1
 
 esac
