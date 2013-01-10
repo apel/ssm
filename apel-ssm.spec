@@ -3,8 +3,8 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")}
 %endif
 
-Name:           apelssm
-Version:        0.0.2
+Name:           apel-ssm
+Version:        0.0.3
 Release:        0%{?dist}
 Summary:        Secure stomp messenger
 
@@ -47,7 +47,7 @@ mkdir -p %{buildroot}%{_localstatedir}/run/apel
 # Scripts
 cp -rp bin/sender.py %{buildroot}%_bindir/ssmsend
 cp -rp bin/receiver.py %{buildroot}%_bindir/ssmreceive
-cp -rp bin/apelssm %{buildroot}%{_initrddir}
+cp -rp bin/apel-ssm %{buildroot}%{_initrddir}
 # Copy SSM files
 cp -rp conf/sender.cfg %{buildroot}%{ssmconf}
 cp -rp conf/receiver.cfg %{buildroot}%{ssmconf}
@@ -61,18 +61,18 @@ cp -rp README %{buildroot}%_defaultdocdir/%{name}
 rm -rf $RPM_BUILD_ROOT
 
 %post
-/sbin/chkconfig apelssm on
+/sbin/chkconfig apel-ssm on
 
 %preun
-/sbin/service apelssm stop
-/sbin/chkconfig apelssm off
+/sbin/service apel-ssm stop
+/sbin/chkconfig apel-ssm off
 
 %files
 %defattr(-,root,root,-)
 # SSM software itself
 %attr(755,-,-) %_bindir/ssmsend
 %attr(755,-,-) %_bindir/ssmreceive
-%attr(755,-,-) %{_initrddir}/apelssm
+%attr(755,-,-) %{_initrddir}/apel-ssm
 %{python_sitelib}/ssm
 # logrotate
 
