@@ -1,4 +1,7 @@
 
+## 0.0.3 (11th Jan 2013)
+ * Moved rpm name to apel-ssm
+
 ## 0.0.2 (5th Jan 2013)
  * Fixed connection freeze when listening for long periods
  * Added service script
