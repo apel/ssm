@@ -1,11 +1,11 @@
+Changelog for ssm
+=================
 
-## 0.0.3 (11th Jan 2013)
- * Moved rpm name to apel-ssm
+ * Fri Jan 25 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.4-0
+ - Sensible defaults for release
 
-## 0.0.2 (5th Jan 2013)
- * Fixed connection freeze when listening for long periods
- * Added service script
- * Standardised file locations
+ * Fri Jan 11 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.3-0
+ - Changed rpm name to apel-ssm
 
-## 0.0.1 (2nd Oct 2013)
- * First release of SSM2
+ * Thu Jan 03 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.2-0
+ - Fixed connection freeze

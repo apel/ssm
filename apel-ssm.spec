@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        0.0.3
+Version:        0.0.4
 Release:        0%{?dist}
 Summary:        Secure stomp messenger
 
@@ -70,9 +70,9 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 # SSM software itself
-%attr(755,-,-) %_bindir/ssmsend
-%attr(755,-,-) %_bindir/ssmreceive
-%attr(755,-,-) %{_initrddir}/apel-ssm
+%attr(755,root,root) %_bindir/ssmsend
+%attr(755,root,root) %_bindir/ssmreceive
+%attr(755,root,root) %{_initrddir}/apel-ssm
 %{python_sitelib}/ssm
 # logrotate
 
@@ -89,6 +89,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+ * Fri Jan 25 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.4-0
+ - Sensible defaults for release
+
  * Fri Jan 11 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.3-0
  - Changed rpm name to apel-ssm
 
