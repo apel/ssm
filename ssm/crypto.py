@@ -55,7 +55,8 @@ def check_cert_key(certpath, keypath):
         cert = _from_file(certpath)
         key = _from_file(keypath)
     except IOError, e:
-        raise CryptoException('Could not find cert or key file: %s' % e)
+        log.error('Could not find cert or key file: %s' % e)
+        return False
     
     # Two things the same have the same modulus.
     if cert == key:

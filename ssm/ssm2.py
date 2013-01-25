@@ -86,7 +86,7 @@ class Ssm2(object):
             self._inq = Queue(inqpath, schema=Ssm2.QSCHEMA)
             self._rejectq = Queue(rejectqpath, schema=Ssm2.REJECT_SCHEMA)
         else:
-            raise Ssm2Exception('Must be either producer or consumer.')
+            raise Ssm2Exception('SSM must be either producer or consumer.')
         
         if not crypto.check_cert_key(self._cert, self._key):
             raise Ssm2Exception('Cert and key don\'t match.')
@@ -223,10 +223,12 @@ class Ssm2(object):
         headers = {'destination': self._dest, 'receipt': msgid,
                    'empa-id': msgid}
         
-        to_send = crypto.sign(message, self._cert, self._key)
-        
-        if self._enc_cert is not None:
-            to_send = crypto.encrypt(to_send, self._enc_cert)
+        if message is not None:
+            to_send = crypto.sign(message, self._cert, self._key)
+            if self._enc_cert is not None:
+                to_send = crypto.encrypt(to_send, self._enc_cert)
+        else:
+            to_send = None
             
         self._conn.send(to_send, headers=headers)
         
