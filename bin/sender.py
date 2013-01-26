@@ -109,13 +109,13 @@ def main():
         server_cert = None
         
     try:
-        destination = cp.get('messaging', 'destination')
-        if destination == '':
-            raise Ssm2Exception('No destination queue is configured.')
-    except ConfigParser.NoOptionError, e:
-        raise Ssm2Exception(e)
+        try:
+            destination = cp.get('messaging', 'destination')
+            if destination == '':
+                raise Ssm2Exception('No destination queue is configured.')
+        except ConfigParser.NoOptionError, e:
+            raise Ssm2Exception(e)
     
-    try:
         sender = Ssm2(brokers, 
                    cp.get('messaging','path'),
                    cert=cp.get('certificates','certificate'),
