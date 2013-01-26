@@ -91,6 +91,10 @@ class Ssm2(object):
         if not crypto.check_cert_key(self._cert, self._key):
             raise Ssm2Exception('Cert and key don\'t match.')
         
+        if enc_cert is not None:
+            if not os.path.isfile(enc_cert):
+                raise Ssm2Exception('Specified certificate file does not exist.')
+        
         self._pidfile = pidfile
         
         

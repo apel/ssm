@@ -22,7 +22,7 @@ Script to run a sending SSM.
 from ssm import __version__, set_up_logging
 from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm.crypto import CryptoException
-from ssm.brokers import StompBrokerGetter, STOMP_SERVICE
+from ssm.brokers import StompBrokerGetter, STOMP_SERVICE, STOMP_SSL_SERVICE
 
 import logging.config
 import ldap
@@ -44,7 +44,6 @@ def main():
                         help='location of logging config file (optional)', 
                         default='/etc/apel/logging.cfg')
     (options, unused_args) = op.parse_args()
-    
     
     cp = ConfigParser.ConfigParser()
     cp.read(options.config)
@@ -71,7 +70,12 @@ def main():
         bdii_url = cp.get('broker','bdii')
         log.info('Retrieving broker details from %s ...' % bdii_url)
         bg = StompBrokerGetter(bdii_url)
-        brokers = bg.get_broker_hosts_and_ports(STOMP_SERVICE, cp.get('broker','network'))
+        use_ssl = cp.getboolean('broker', 'use_ssl')
+        if use_ssl:
+            service = STOMP_SSL_SERVICE
+        else:
+            service = STOMP_SERVICE
+        brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker','network'))
         log.info('Found %s brokers.' % len(brokers))
     except ConfigParser.NoOptionError, e:
         try:
@@ -85,18 +89,31 @@ def main():
             log.info('========================================')
             print 'SSM failed to start.  See log file for details.'
             sys.exit(1)
-    except ldap.SERVER_DOWN, e:
+    except ldap.LDAPError, e:
         log.error('Could not connect to LDAP server: %s' % e)
         log.error('System will exit.')
         log.info('========================================')
         print 'SSM failed to start.  See log file for details.'
         sys.exit(1)
         
+    if len(brokers) == 0:
+        log.error('No brokers available.')
+        log.error('System will exit.')
+        log.info('========================================')
+        
+        
     try:
         server_cert = cp.get('certificates','server')
     except ConfigParser.NoOptionError:
         log.info('No server certificate supplied.  Will not encrypt messages.')
         server_cert = None
+        
+    try:
+        destination = cp.get('messaging', 'destination')
+        if destination == '':
+            raise Ssm2Exception('No destination queue is configured.')
+    except ConfigParser.NoOptionError, e:
+        raise Ssm2Exception(e)
     
     try:
         sender = Ssm2(brokers, 
@@ -104,6 +121,7 @@ def main():
                    cert=cp.get('certificates','certificate'),
                    key=cp.get('certificates','key'),
                    dest=cp.get('messaging','destination'),
+                   use_ssl=cp.getboolean('broker','use_ssl'),
                    capath=cp.get('certificates', 'capath'),
                    enc_cert=server_cert)
         
