@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        0.0.4
+Version:        2.0.0
 Release:        0%{?dist}
 Summary:        Secure stomp messenger
 
@@ -89,6 +89,10 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+ * Sat Jan 26 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.0.0-0
+ - Fix SSL connection option
+ - First release of SSM2
+
  * Fri Jan 25 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.4-0
  - Sensible defaults for release
 
@@ -99,4 +103,4 @@ rm -rf $RPM_BUILD_ROOT
  - Fixed connection freeze
  
  * Fri Oct 02 2012 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.1-0
- - First release
+ - First tag

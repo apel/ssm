@@ -1,6 +1,10 @@
 Changelog for ssm
 =================
 
+ * Sat Jan 26 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.0.0-0
+ - Fix SSL connection option
+ - First release of SSM2
+
  * Fri Jan 25 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.4-0
  - Sensible defaults for release
 
