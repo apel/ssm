@@ -103,12 +103,14 @@ def main():
         
         
     try:
-        server_cert = cp.get('certificates','server')
-    except ConfigParser.NoOptionError:
-        log.info('No server certificate supplied.  Will not encrypt messages.')
-        server_cert = None
-        
-    try:
+        try:
+            server_cert = cp.get('certificates','server')
+            if not os.path.isfile(server_cert):
+                raise Ssm2Exception('Server cerficate location incorrect.')
+        except ConfigParser.NoOptionError:
+            log.info('No server certificate supplied.  Will not encrypt messages.')
+            server_cert = None
+            
         try:
             destination = cp.get('messaging', 'destination')
             if destination == '':
