@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.0.0
+Version:        2.0.1
 Release:        0%{?dist}
 Summary:        Secure stomp messenger
 
@@ -89,6 +89,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+ * Fri Feb 8 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.0.1-0
+ - Fix crash when receiver sends ping message
+
  * Sat Jan 26 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.0.0-0
  - Fix SSL connection option
  - First release of SSM2
