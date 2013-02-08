@@ -232,7 +232,7 @@ class Ssm2(object):
             if self._enc_cert is not None:
                 to_send = crypto.encrypt(to_send, self._enc_cert)
         else:
-            to_send = None
+            to_send = ''
             
         self._conn.send(to_send, headers=headers)
         
