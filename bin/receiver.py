@@ -19,7 +19,7 @@ Script to run a receiving SSM.
 @author: Will Rogers
 '''
 
-from ssm.brokers import StompBrokerGetter, STOMP_SERVICE
+from ssm.brokers import StompBrokerGetter, STOMP_SERVICE, STOMP_SSL_SERVICE
 from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm import __version__, set_up_logging
 
@@ -111,7 +111,12 @@ def main():
     # If we can't get a broker to connect to, we have to give up.
     try:
         bg = StompBrokerGetter(cp.get('broker','bdii'))
-        brokers = bg.get_broker_hosts_and_ports(STOMP_SERVICE, cp.get('broker','network'))
+        use_ssl = cp.getboolean('broker', 'use_ssl')
+        if use_ssl:
+            service = STOMP_SSL_SERVICE
+        else:
+            service = STOMP_SERVICE
+        brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker','network'))
     except ConfigParser.NoOptionError, e:
         try:
             host = cp.get('broker', 'host')
@@ -143,6 +148,7 @@ def main():
                    cert=cp.get('certificates','certificate'),
                    key=cp.get('certificates','key'),
                    listen=cp.get('messaging','destination'),
+                   use_ssl=cp.getboolean('broker','use_ssl'),
                    capath=cp.get('certificates', 'capath'),
                    pidfile=pidfile)
         
