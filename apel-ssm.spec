@@ -89,6 +89,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+ * Tue Feb 26 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.0.2-0
+ - Fix SSL connection for receiver
+ 
  * Fri Feb 8 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.0.1-0
  - Fix crash when receiver sends ping message
 
