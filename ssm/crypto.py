@@ -246,7 +246,7 @@ def verify_cert(certstring, capath, check_crls=True):
 
 def get_certificate_subject(certstring):
     '''
-    Returns the certificate subject's DN, in legacy openssl format.
+    Return the certificate subject's DN, in legacy openssl format.
     '''
     p1 = Popen(['openssl', 'x509', '-noout', '-subject'],
                stdin=PIPE, stdout=PIPE, stderr=PIPE)
@@ -256,16 +256,13 @@ def get_certificate_subject(certstring):
         log.error(error)
         raise CryptoException('Failed to get subject: %s' % error)
     
-    subject = subject[9:] # remove 'subject= ' from the front
-    subject = subject.strip()
+    subject = subject.strip()[9:] # remove 'subject= ' from the front
     return subject
 
 def get_signer_cert(signed_text):
     '''
-    Read the signer's certificate from the specified message, and return the
+    Read the signer's certificate from the signed specified message, and return the
     certificate string.
-
-    Returns an X509 object for the signer's certificate
     '''
     # This ensures that openssl knows that the string is finished.
     # It makes no difference if the signed message is correct, but 
