@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.0.2
+Version:        2.0.3
 Release:        0%{?dist}
 Summary:        Secure stomp messenger
 
@@ -89,6 +89,11 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+
+ * Wed Feb 27 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.0.3-0
+ - Add support for messages signed with quopri or base64
+   content-transfer-encoding (for UNICORE).
+
  * Tue Feb 26 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.0.2-0
  - Fix SSL connection for receiver
  
