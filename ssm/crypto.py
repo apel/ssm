@@ -22,12 +22,15 @@
 '''
 
 from subprocess import Popen, PIPE
+import quopri
+import base64
 import logging
 
 # logging configuration
 log = logging.getLogger(__name__)
 # Valid ciphers
 CIPHERS = ['aes128', 'aes192', 'aes256']
+
 
 class CryptoException(Exception):
     '''
@@ -123,6 +126,7 @@ def encrypt(text, certpath, cipher='aes128'):
 
     return enc_txt
 
+
 def verify(signed_text, capath, check_crl):
     '''
     Verify the signed message has been signed by the certificate (attached to the
@@ -130,7 +134,8 @@ def verify(signed_text, capath, check_crl):
     capath.
 
     Returns a tuple including the signer's certificate and the plain-text of the
-    message if it has been verified
+    message if it has been verified.  If the content transfer encoding is specified
+    as 'quoted-printable' or 'base64', decode the message body accordingly.
     ''' 
     if signed_text is None or capath is None:
         raise CryptoException('Invalid None argument to verify().')
@@ -147,10 +152,22 @@ def verify(signed_text, capath, check_crl):
     # The -noverify flag removes the certificate verification.  The certificate 
     # is verified above; this check would also check that the certificate
     # is allowed to sign with SMIME, which host certificates sometimes aren't.
-    p1 = Popen(['openssl', 'smime', '-verify', '-CApath', capath, '-noverify', '-text'], 
+    p1 = Popen(['openssl', 'smime', '-verify', '-CApath', capath, '-noverify'], 
                stdin=PIPE, stdout=PIPE, stderr=PIPE)
     
     message, error = p1.communicate(signed_text)
+    
+    # SMIME header and message body are separated by a blank line
+    lines = message.strip().splitlines()
+    blankline = lines.index('')
+    headers = '\n'.join(lines[:blankline])
+    body = '\n'.join(lines[blankline + 1:])
+    # two possible encodings
+    if 'quoted-printable' in headers:
+        body = quopri.decodestring(body)
+    elif 'base64' in headers:
+        body = base64.decodestring(body)
+    # otherwise, plain text
     
     # Interesting problem here - we get a message 'Verification successful'
     # to standard error.  We don't want to log this as an error each time,
@@ -158,7 +175,7 @@ def verify(signed_text, capath, check_crl):
     log.info(str(error).strip())
 
     subj = get_certificate_subject(signer)
-    return message, subj
+    return body, subj
 
 
 def decrypt(encrypted_text, certpath, keypath):
@@ -268,19 +285,3 @@ def get_signer_cert(signed_text):
         
     return certstring
 
-if __name__ == '__main__':
-    
-    CERTPATH = '/etc/grid-security/hostcert.pem'
-    KEYPATH = '/etc/grid-security/hostkey.pem'
-    
-    MESSAGE = ('test')
-    
-    CERTSTRING = _from_file(CERTPATH)
-    print get_certificate_subject(CERTSTRING)
-    
-    ENC = encrypt(MESSAGE, CERTPATH, 'aes256')
-    print ENC
-    DEC = decrypt(ENC, CERTPATH, KEYPATH)
-    print DEC
-    
-    

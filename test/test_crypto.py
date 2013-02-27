@@ -46,15 +46,18 @@ class TestEncryptUtils(unittest.TestCase):
         # Set up an openssl-style CA directory, containing the 
         # self-signed certificate as its own CA certificate, but with its
         # name as <hash-of-subject-DN>.0.
+        
+        ca_certs = [TEST_CERT, CERT2]
 
         self.ca_dir = tempfile.mkdtemp(prefix='ca')
-        p1 = Popen(['openssl', 'x509', '-subject_hash', '-noout'],
-                   stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        hash_name, unused_error = p1.communicate(TEST_CERT)
-        self.ca_certpath = os.path.join(self.ca_dir, hash_name.strip() + '.0')
-        self.ca_cert = open(self.ca_certpath, 'w')
-        self.ca_cert.write(TEST_CERT)
-        self.ca_cert.close()
+        for cert in ca_certs:
+            p1 = Popen(['openssl', 'x509', '-subject_hash', '-noout'],
+                       stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            hash_name, unused_error = p1.communicate(cert)
+            ca_certpath = os.path.join(self.ca_dir, hash_name.strip() + '.0')
+            ca_cert = open(ca_certpath, 'w')
+            ca_cert.write(cert)
+            ca_cert.close()
 
     def tearDown(self):
         '''
@@ -117,7 +120,7 @@ class TestEncryptUtils(unittest.TestCase):
             self.fail("The DN of the verified message didn't match the cert.")
 
         if not retrieved_msg == MSG:
-            self.fail("The verified messge didn't match the original.")
+            self.fail("The verified message didn't match the original.")
             
     def test_verify(self):
         
@@ -126,8 +129,19 @@ class TestEncryptUtils(unittest.TestCase):
         if not retrieved_dn == TEST_CERT_DN:
             self.fail("The DN of the verified message didn't match the cert.")
             
-            
         if not retrieved_msg.strip() == MSG:
+            self.fail("The verified messge didn't match the original.")
+            
+        retrieved_msg2, retrieved_dn2 = verify(SIGNED_MSG2, self.ca_dir, False)
+        
+        if not retrieved_dn2 == CERT2_DN:
+            print retrieved_dn2
+            print CERT2_DN
+            self.fail("The DN of the verified message didn't match the cert.")
+            
+        if not retrieved_msg2.strip() == MSG2:
+            print retrieved_msg2
+            print MSG2
             self.fail("The verified messge didn't match the original.")
             
         # Try empty string    
@@ -251,7 +265,7 @@ C394M6HRs2e09woMb2jimgyS1lL3UtZ7Mw8rmlPwL79m/Ez3Q/232im99HGMtEXe
 gDxVeVCZtrL9vh9WESidGMOfjE18GtS/oly5TuBiIaFr0qaHUVdHyXFPepMtebY/
 J+IH3JWOuaPmEnfxzzwiASjkAg==
 -----END CERTIFICATE-----'''
-    
+
 TEST_KEY = '''-----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQDBX7d39xWYxr8SApsiMsntfDj2uqI4YWARHCwRpvyof0Ac24k8
 RYgbYypzokJ5/IObW8CYWkjqzstM2aT9drrI44YI6pgxMYJvcqmdATbjEzquAcQz
@@ -267,6 +281,27 @@ zIVTIwhhNA/EzMIKtlOHqQ8cLO9g2w7HoYGuzZ3LY5YxmPeiZJAKoc7diZXT9rOw
 wGZmT0l/PzA1vnK+Wp/FAkBERPL/ry6jwr5eZTRUrgPNUjzGbMp46kbiBl9I4yWN
 ba7gkcCbglQsQdB0tSrExAeR0dqym9SAzqkdRf/dJCfX
 -----END RSA PRIVATE KEY-----'''
+
+# Certificate of the key which signed SIGNED_MSG2
+CERT2 = '''
+-----BEGIN CERTIFICATE-----
+MIICXTCCAcagAwIBAgIEUSdrRzANBgkqhkiG9w0BAQUFADBzMSUwIwYDVQQDExx6
+YW0wNTJ2MDUuemFtLmtmYS1qdWVsaWNoLmRlMScwJQYDVQQLEx5Gb3JzY2h1bmdz
+emVudHJ1bSBKdWVsaWNoIEdtYkgxFDASBgNVBAoTC0dyaWRHZXJtYW55MQswCQYD
+VQQGEwJERTAeFw0xMzAyMjIxMjU3NDNaFw0xMzA1MjMxMjU3NDNaMHMxJTAjBgNV
+BAMTHHphbTA1MnYwNS56YW0ua2ZhLWp1ZWxpY2guZGUxJzAlBgNVBAsTHkZvcnNj
+aHVuZ3N6ZW50cnVtIEp1ZWxpY2ggR21iSDEUMBIGA1UEChMLR3JpZEdlcm1hbnkx
+CzAJBgNVBAYTAkRFMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCXa+Yiyot9
+y7oX8yGPgoGtLOMX3QRq+JWYhdgiR49PIKb8yRDm3l2xZWKl2qLfUshNCCj5SfS5
+EyL9/wRZdcbmKo8SHBy+kr6lkCTeIDUhhI3zwKqweliY8+7Kc/E7azxp9hzuvvWE
+ogW184GXiLi+aVvVVepwP6bRnqnG6PUNmwIDAQABMA0GCSqGSIb3DQEBBQUAA4GB
+AHY1RuOjuNjqsF/Azsn1ebVlm8qVVU0By4I6atZTsFLiOH76kbVva/WjpT0oAlRt
+Qhw6AbzXUU1MAiO5tgQamYDmSsrqwPvXybnJM6p21iVgjRKuulmEbdeV+ccUxi7a
++Jb39KeuDQgo9RIvc/j6Qv+1LReBpgGqKLxZijVXd6Ci
+-----END CERTIFICATE-----
+'''
+
+CERT2_DN = '/CN=zam052v05.zam.kfa-juelich.de/OU=Forschungszentrum Juelich GmbH/O=GridGermany/C=DE'
 
 MSG = 'This is some test data.'
 
@@ -326,6 +361,74 @@ SxVQz6HXV3PGNS3QsSreRd75rOrteKRT9RIo/exuFCUB
 
 ------1C12AE3B24C506C96BF5DE14FAB740A7--'''
 
+SIGNED_MSG2 = '''Message-ID: <471108564.1391361545139805.JavaMail.root@zam052v05>
+MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha1;
+        boundary="----=_Part_69_779671724.1361545139802"
+
+------=_Part_69_779671724.1361545139802
+Content-Type: text/xml; charset=utf8
+Content-Transfer-Encoding: quoted-printable
+
+<com:UsageRecord xmlns:com=3D"http://eu-emi.eu/namespaces/2012/11/computere=
+cord"><com:RecordIdentity com:recordId=3D"62991a08-909b-4516-aa30-3732ab3d8=
+998" com:createTime=3D"2013-02-22T15:58:44.567+01:00"/><com:JobIdentity><co=
+m:GlobalJobId>ac2b1157-7aff-42d9-945e-389aa9bbb19a</com:GlobalJobId><com:Lo=
+calJobId>7005</com:LocalJobId></com:JobIdentity><com:UserIdentity><com:Glob=
+alUserName com:type=3D"rfc2253">CN=3DBjoern Hagemeier,OU=3DForschungszentru=
+m Juelich GmbH,O=3DGridGermany,C=3DDE</com:GlobalUserName><com:LocalUserId>=
+bjoernh</com:LocalUserId><com:LocalGroup>users</com:LocalGroup></com:UserId=
+entity><com:JobName>HiLA</com:JobName><com:Status>completed</com:Status><co=
+m:ExitStatus>0</com:ExitStatus><com:Infrastructure com:type=3D"grid"/><com:=
+Middleware com:name=3D"unicore">unicore</com:Middleware><com:WallDuration>P=
+T0S</com:WallDuration><com:CpuDuration>PT0S</com:CpuDuration><com:ServiceLe=
+vel com:type=3D"HEPSPEC">1.0</com:ServiceLevel><com:Memory com:metric=3D"to=
+tal" com:storageUnit=3D"KB" com:type=3D"physical">0</com:Memory><com:Memory=
+ com:metric=3D"total" com:storageUnit=3D"KB" com:type=3D"shared">0</com:Mem=
+ory><com:TimeInstant com:type=3D"uxToBssSubmitTime">2013-02-22T15:58:44.568=
++01:00</com:TimeInstant><com:TimeInstant com:type=3D"uxStartTime">2013-02-2=
+2T15:58:46.563+01:00</com:TimeInstant><com:TimeInstant com:type=3D"uxEndTim=
+e">2013-02-22T15:58:49.978+01:00</com:TimeInstant><com:TimeInstant com:type=
+=3D"etime">2013-02-22T15:58:44+01:00</com:TimeInstant><com:TimeInstant com:=
+type=3D"ctime">2013-02-22T15:58:44+01:00</com:TimeInstant><com:TimeInstant =
+com:type=3D"qtime">2013-02-22T15:58:44+01:00</com:TimeInstant><com:TimeInst=
+ant com:type=3D"maxWalltime">2013-02-22T16:58:45+01:00</com:TimeInstant><co=
+m:NodeCount>1</com:NodeCount><com:Processors>2</com:Processors><com:EndTime=
+>2013-02-22T15:58:45+01:00</com:EndTime><com:StartTime>2013-02-22T15:58:45+=
+01:00</com:StartTime><com:MachineName>zam052v15.zam.kfa-juelich.de</com:Mac=
+hineName><com:SubmitHost>zam052v02</com:SubmitHost><com:Queue com:descripti=
+on=3D"execution">batch</com:Queue><com:Site>zam052v15.zam.kfa-juelich.de</c=
+om:Site><com:Host com:primary=3D"false" com:description=3D"CPUS=3D2;SLOTS=
+=3D1,0">zam052v15</com:Host></com:UsageRecord>
+------=_Part_69_779671724.1361545139802
+Content-Type: application/pkcs7-signature; name=smime.p7s; smime-type=signed-data
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Description: S/MIME Cryptographic Signature
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIAwggJdMIIB
+xqADAgECAgRRJ2tHMA0GCSqGSIb3DQEBBQUAMHMxJTAjBgNVBAMTHHphbTA1MnYwNS56YW0ua2Zh
+LWp1ZWxpY2guZGUxJzAlBgNVBAsTHkZvcnNjaHVuZ3N6ZW50cnVtIEp1ZWxpY2ggR21iSDEUMBIG
+A1UEChMLR3JpZEdlcm1hbnkxCzAJBgNVBAYTAkRFMB4XDTEzMDIyMjEyNTc0M1oXDTEzMDUyMzEy
+NTc0M1owczElMCMGA1UEAxMcemFtMDUydjA1LnphbS5rZmEtanVlbGljaC5kZTEnMCUGA1UECxMe
+Rm9yc2NodW5nc3plbnRydW0gSnVlbGljaCBHbWJIMRQwEgYDVQQKEwtHcmlkR2VybWFueTELMAkG
+A1UEBhMCREUwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAJdr5iLKi33LuhfzIY+Cga0s4xfd
+BGr4lZiF2CJHj08gpvzJEObeXbFlYqXaot9SyE0IKPlJ9LkTIv3/BFl1xuYqjxIcHL6SvqWQJN4g
+NSGEjfPAqrB6WJjz7spz8TtrPGn2HO6+9YSiBbXzgZeIuL5pW9VV6nA/ptGeqcbo9Q2bAgMBAAEw
+DQYJKoZIhvcNAQEFBQADgYEAdjVG46O42OqwX8DOyfV5tWWbypVVTQHLgjpq1lOwUuI4fvqRtW9r
+9aOlPSgCVG1CHDoBvNdRTUwCI7m2BBqZgOZKyurA+9fJuckzqnbWJWCNEq66WYRt15X5xxTGLtr4
+lvf0p64NCCj1Ei9z+PpC/7UtF4GmAaoovFmKNVd3oKIAADGCAYAwggF8AgEBMHswczElMCMGA1UE
+AxMcemFtMDUydjA1LnphbS5rZmEtanVlbGljaC5kZTEnMCUGA1UECxMeRm9yc2NodW5nc3plbnRy
+dW0gSnVlbGljaCBHbWJIMRQwEgYDVQQKEwtHcmlkR2VybWFueTELMAkGA1UEBhMCREUCBFEna0cw
+CQYFKw4DAhoFAKBdMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTEz
+MDIyMjE0NTg1OVowIwYJKoZIhvcNAQkEMRYEFM+ahH3DuE3LLQY78kZCtYbnE45vMA0GCSqGSIb3
+DQEBAQUABIGAKhxtlcEaarnw1pbSlGmvKf5bI7n/WaXnYgkptOvoy75r6ZuhQHOOf3ffehpL9hMc
+S6+br3IZPVEBr8kuhg6EpBNXuhZ3dE+PUF8P9qRDonHc1YuEvrng8svyZN+HpZl5S3XbbL0+4Rwf
+hOcYKM8R3tVUpyuTNzskZnJmsrA7dvQAAAAAAAA=
+------=_Part_69_779671724.1361545139802--
+'''
+
+MSG2 = '''<com:UsageRecord xmlns:com="http://eu-emi.eu/namespaces/2012/11/computerecord"><com:RecordIdentity com:recordId="62991a08-909b-4516-aa30-3732ab3d8998" com:createTime="2013-02-22T15:58:44.567+01:00"/><com:JobIdentity><com:GlobalJobId>ac2b1157-7aff-42d9-945e-389aa9bbb19a</com:GlobalJobId><com:LocalJobId>7005</com:LocalJobId></com:JobIdentity><com:UserIdentity><com:GlobalUserName com:type="rfc2253">CN=Bjoern Hagemeier,OU=Forschungszentrum Juelich GmbH,O=GridGermany,C=DE</com:GlobalUserName><com:LocalUserId>bjoernh</com:LocalUserId><com:LocalGroup>users</com:LocalGroup></com:UserIdentity><com:JobName>HiLA</com:JobName><com:Status>completed</com:Status><com:ExitStatus>0</com:ExitStatus><com:Infrastructure com:type="grid"/><com:Middleware com:name="unicore">unicore</com:Middleware><com:WallDuration>PT0S</com:WallDuration><com:CpuDuration>PT0S</com:CpuDuration><com:ServiceLevel com:type="HEPSPEC">1.0</com:ServiceLevel><com:Memory com:metric="total" com:storageUnit="KB" com:type="physical">0</com:Memory><com:Memory com:metric="total" com:storageUnit="KB" com:type="shared">0</com:Memory><com:TimeInstant com:type="uxToBssSubmitTime">2013-02-22T15:58:44.568+01:00</com:TimeInstant><com:TimeInstant com:type="uxStartTime">2013-02-22T15:58:46.563+01:00</com:TimeInstant><com:TimeInstant com:type="uxEndTime">2013-02-22T15:58:49.978+01:00</com:TimeInstant><com:TimeInstant com:type="etime">2013-02-22T15:58:44+01:00</com:TimeInstant><com:TimeInstant com:type="ctime">2013-02-22T15:58:44+01:00</com:TimeInstant><com:TimeInstant com:type="qtime">2013-02-22T15:58:44+01:00</com:TimeInstant><com:TimeInstant com:type="maxWalltime">2013-02-22T16:58:45+01:00</com:TimeInstant><com:NodeCount>1</com:NodeCount><com:Processors>2</com:Processors><com:EndTime>2013-02-22T15:58:45+01:00</com:EndTime><com:StartTime>2013-02-22T15:58:45+01:00</com:StartTime><com:MachineName>zam052v15.zam.kfa-juelich.de</com:MachineName><com:SubmitHost>zam052v02</com:SubmitHost><com:Queue com:description="execution">batch</com:Queue><com:Site>zam052v15.zam.kfa-juelich.de</com:Site><com:Host com:primary="false" com:description="CPUS=2;SLOTS=1,0">zam052v15</com:Host></com:UsageRecord>'''
 
 if __name__ == '__main__':
     #import sys;sys.argv = ['', 'Test.testName']
