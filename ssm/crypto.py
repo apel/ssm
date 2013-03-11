@@ -100,6 +100,7 @@ def sign(text, certpath, keypath):
             log.error(error)
 
         return signed_msg
+    
     except OSError, e:
         log.error('Failed to sign message: %s' % e)
         raise CryptoException('Message signing failed.  Check cert and key permissions.')
@@ -219,12 +220,12 @@ def verify_cert(certstring, capath, check_crls=True):
     if certstring is None or capath is None:
         raise CryptoException('Invalid None argument to verify_cert().')
     
+    args = ['openssl', 'verify', '-CApath', capath]
+    
     if check_crls:
-        p1 = Popen(['openssl', 'verify', '-CApath', capath, '-crl_check_all'], 
-                   stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    else: 
-        p1 = Popen(['openssl', 'verify', '-CApath', capath], 
-                   stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        args.append('-crl_check_all')
+
+    p1 = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
          
     message, error = p1.communicate(certstring)
     
@@ -250,6 +251,7 @@ def get_certificate_subject(certstring):
     '''
     p1 = Popen(['openssl', 'x509', '-noout', '-subject'],
                stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    
     subject, error = p1.communicate(certstring)
 
     if (error != ''):
@@ -258,6 +260,7 @@ def get_certificate_subject(certstring):
     
     subject = subject.strip()[9:] # remove 'subject= ' from the front
     return subject
+
 
 def get_signer_cert(signed_text):
     '''

@@ -56,7 +56,7 @@ class Ssm2(object):
                  pidfile=None):
         '''
         Creates an SSM2 object.  If a listen value is supplied,
-        this SSM2 will be a consumer.
+        this SSM2 will be a receiver.
         '''
         self._conn = None
         self._last_msg = None
@@ -69,7 +69,7 @@ class Ssm2(object):
         self._user = username
         self._pwd = password
         self._use_ssl = use_ssl
-        # Use pwd if we're supplied user and pwd
+        # use pwd auth if we're supplied both user and pwd
         self._use_pwd = username is not None and password is not None
         self.connected = False
         
@@ -77,7 +77,9 @@ class Ssm2(object):
         self._dest = dest
         
         self._valid_dns = []
+        self._pidfile = pidfile
         
+        # create the filesystem queues for accepted and rejected messages
         if dest is not None and listen is None:
             self._outq = QueueSimple(qpath)
         elif listen is not None:
@@ -94,10 +96,6 @@ class Ssm2(object):
         if enc_cert is not None:
             if not os.path.isfile(enc_cert):
                 raise Ssm2Exception('Specified certificate file does not exist.')
-        
-        self._pidfile = pidfile
-        
-        
     
     def set_dns(self, dn_list):
         '''

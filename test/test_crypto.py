@@ -215,6 +215,13 @@ class TestEncryptUtils(unittest.TestCase):
         if decrypted != MSG:
             self.fail("Encrypted message wasn't decrypted successfully.")
             
+        # invalid cipher
+        try:
+            encrypted = encrypt(MSG, self.certpath, 'aes1024')
+        except CryptoException:
+            pass    
+        
+            
     def test_decrypt(self):
         '''
         Check that the encrypted message can be decrypted and returns the
@@ -244,6 +251,15 @@ class TestEncryptUtils(unittest.TestCase):
         if verify_cert('bloblo', self.ca_dir, False):
             self.fail('Nonsense successfully verified.')
  
+        if verify_cert(TEST_CERT, self.ca_dir, True):
+            self.fail('The self-signed certificate should not be verified ' +
+                      'if CRLs are checked.')
+        
+        try:    
+            if verify_cert(None, self.ca_dir, False):
+                self.fail('Verified None rather than certificate string.')
+        except CryptoException:
+            pass
             
 ################################################################
 # Test data below.
