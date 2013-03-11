@@ -134,6 +134,11 @@ def main():
         log.info('========================================')
         sys.exit(1)    
     
+    if len(brokers) == 0:
+        log.error('No brokers available.')
+        log.error('System will exit.')
+        log.info('========================================')
+        sys.exit(1)
         
     log.info('The SSM will run as a daemon.')
     

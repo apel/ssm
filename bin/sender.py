@@ -100,7 +100,7 @@ def main():
         log.error('No brokers available.')
         log.error('System will exit.')
         log.info('========================================')
-        
+        sys.exit(1)
         
     try:
         try:
