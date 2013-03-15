@@ -155,6 +155,7 @@ def main():
                    listen=cp.get('messaging','destination'),
                    use_ssl=cp.getboolean('broker','use_ssl'),
                    capath=cp.get('certificates', 'capath'),
+                   check_crls=cp.getboolean('certificates', 'check_crls'),
                    pidfile=pidfile)
         
         log.info('Fetching valid DNs.')

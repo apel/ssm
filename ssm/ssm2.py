@@ -52,8 +52,8 @@ class Ssm2(object):
     CONNECTION_TIMEOUT = 10
     
     def __init__(self, hosts_and_ports, qpath, cert, key, dest=None, listen=None, 
-                 capath=None, use_ssl=False, username=None, password=None, enc_cert=None,
-                 pidfile=None):
+                 capath=None, check_crls=False, use_ssl=False, username=None, password=None, 
+                 enc_cert=None, pidfile=None):
         '''
         Creates an SSM2 object.  If a listen value is supplied,
         this SSM2 will be a receiver.
@@ -66,6 +66,7 @@ class Ssm2(object):
         self._key = key
         self._enc_cert = enc_cert
         self._capath = capath
+        self._check_crls = check_crls
         self._user = username
         self._pwd = password
         self._use_ssl = use_ssl
@@ -202,7 +203,7 @@ class Ssm2(object):
         
         # always signed
         try:
-            message, signer = crypto.verify(text, self._capath, False)
+            message, signer = crypto.verify(text, self._capath, self._check_crls)
         except crypto.CryptoException, e:
             log.error('Failed to verify message: %s' % e)
             return None, None
@@ -280,6 +281,9 @@ class Ssm2(object):
         Create the self._connection object with the appropriate properties,
         but don't try to start the connection.
         '''
+        if self._use_ssl:
+            log.info('Connecting using SSL...')
+            
         self._conn = stomp.Connection([(host, port)], 
                                       use_ssl=self._use_ssl,
                                       user = self._user,
