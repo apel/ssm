@@ -21,7 +21,7 @@ Script to run a receiving SSM.
 
 from ssm.brokers import StompBrokerGetter, STOMP_SERVICE, STOMP_SSL_SERVICE
 from ssm.ssm2 import Ssm2, Ssm2Exception
-from ssm import __version__, set_up_logging
+from ssm import __version__, set_up_logging, LOG_BREAK
 
 import time
 import logging.config
@@ -105,7 +105,7 @@ def main():
     global log
     log = logging.getLogger('ssmreceive')
     
-    log.info('================================')
+    log.info(LOG_BREAK)
     log.info('Starting receiving SSM version %s.%s.%s.' % __version__)
         
     # If we can't get a broker to connect to, we have to give up.
@@ -126,18 +126,18 @@ def main():
             log.error('Options incorrectly supplied for either single broker \
                     or broker network.  Please check configuration')
             log.error('System will exit.')
-            log.info('========================================')
+            log.info(LOG_BREAK)
             sys.exit(1)
     except ldap.SERVER_DOWN, e:
         log.error('Could not connect to LDAP server: %s' % e)
         log.error('System will exit.')
-        log.info('========================================')
+        log.info(LOG_BREAK)
         sys.exit(1)    
     
     if len(brokers) == 0:
         log.error('No brokers available.')
         log.error('System will exit.')
-        log.info('========================================')
+        log.info(LOG_BREAK)
         sys.exit(1)
         
     log.info('The SSM will run as a daemon.')
@@ -164,7 +164,7 @@ def main():
         
     except Exception, e:
         log.fatal('Failed to initialise SSM: %s' % e)
-        log.info('================================')
+        log.info(LOG_BREAK)
         sys.exit(1)
         
     try:
@@ -196,13 +196,13 @@ def main():
         dc.close()
     except Exception, e:
         log.error('Unexpected exception: ' + str(e))
-        log.error('Exception type: %s' % type(e))
+        log.error('Exception type: %s' % e.__class__)
         log.error('The SSM will exit.')  
         ssm.shutdown()
         dc.close()
         
     log.info('Receiving SSM has shut down.')
-    log.info('================================')
+    log.info(LOG_BREAK)
     
     
 if __name__ == '__main__':

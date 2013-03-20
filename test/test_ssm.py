@@ -11,13 +11,17 @@ import unittest
 import shutil
 import tempfile
 
+
+
 class TestSsm(unittest.TestCase):
+    '''
+    Class used for testing SSM.
+    '''
     
     def setUp(self):
         '''
         Set up a test SSM, and a test directory containing certificates.
         '''
-        
         self._tmp_dir = tempfile.mkdtemp(prefix='ssm')
         
         self.cert_file, self.cert_path = tempfile.mkstemp(prefix='cert', dir=self._tmp_dir)

@@ -19,7 +19,7 @@ Script to run a sending SSM.
 @author: Will Rogers
 '''
 
-from ssm import __version__, set_up_logging
+from ssm import __version__, set_up_logging, LOG_BREAK
 from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm.crypto import CryptoException
 from ssm.brokers import StompBrokerGetter, STOMP_SERVICE, STOMP_SSL_SERVICE
@@ -63,7 +63,7 @@ def main():
     
     log = logging.getLogger('ssmsend')
     
-    log.info('========================================')
+    log.info(LOG_BREAK)
     log.info('Starting sending SSM version %s.%s.%s.' % __version__)
     # If we can't get a broker to connect to, we have to give up.
     try:
@@ -86,20 +86,20 @@ def main():
             log.error('Options incorrectly supplied for either single broker or \
                     broker network.  Please check configuration')
             log.error('System will exit.')
-            log.info('========================================')
+            log.info(LOG_BREAK)
             print 'SSM failed to start.  See log file for details.'
             sys.exit(1)
     except ldap.LDAPError, e:
         log.error('Could not connect to LDAP server: %s' % e)
         log.error('System will exit.')
-        log.info('========================================')
+        log.info(LOG_BREAK)
         print 'SSM failed to start.  See log file for details.'
         sys.exit(1)
         
     if len(brokers) == 0:
         log.error('No brokers available.')
         log.error('System will exit.')
-        log.info('========================================')
+        log.info(LOG_BREAK)
         sys.exit(1)
         
     try:
@@ -139,8 +139,8 @@ def main():
         log.error('SSM failed to complete successfully: %s' % e)
     except Exception, e:
         print 'SSM failed to complete successfully.  See log file for details.'
-        log.error('Unexpected exception in SSM: %s, %s' % (type(e), e))
-        log.error('Exception type: %s' % type(e))
+        log.error('Unexpected exception in SSM: %s' % (str(e)))
+        log.error('Exception type: %s' % e.__class__)
         
     try:
         sender.close_connection()
@@ -149,7 +149,7 @@ def main():
         pass
 
     log.info('SSM has shut down.')
-    log.info('========================================')
+    log.info(LOG_BREAK)
         
     
 if __name__ == '__main__':

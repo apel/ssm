@@ -21,6 +21,8 @@ import sys
 
 __version__ = (2, 0, 3)
 
+LOG_BREAK = '========================================'
+
 def set_up_logging(logfile, level, console):
     '''
     Programmatically initialise logging system.
