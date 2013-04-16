@@ -90,16 +90,19 @@ class Ssm2(object):
             self._rejectq = Queue(rejectqpath, schema=Ssm2.REJECT_SCHEMA)
         else:
             raise Ssm2Exception('SSM must be either producer or consumer.')
-        
+        # check that the cert and key match
         if not crypto.check_cert_key(self._cert, self._key):
             raise Ssm2Exception('Cert and key don\'t match.')
-        
+        # check the server certificate provided
         if enc_cert is not None:
+            log.info('Server cert: %s' % enc_cert)
+            if not os.path.isfile(self._enc_cert):
+                raise Ssm2Exception('Specified certificate file does not exist: %s.' % self._enc_cert)
             if verify_enc_cert:
-                log.info('Server cert: %s' % enc_cert)
-                crypto.verify_cert_path(self._enc_cert, self._capath, self._check_crls)
-            elif not os.path.isfile(self._enc_cert):
-                raise Ssm2Exception('Specified certificate file does not exist.')
+                if not crypto.verify_cert_path(self._enc_cert, self._capath, self._check_crls):
+                    raise Ssm2Exception('Failed to verify server certificate %s against CA path %s.' 
+                                         % (self._enc_cert, self._capath))
+            
     
     def set_dns(self, dn_list):
         '''
