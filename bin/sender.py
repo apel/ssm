@@ -103,13 +103,16 @@ def main():
         sys.exit(1)
         
     try:
+        server_cert = None
+        verify_server_cert = True
         try:
-            server_cert = cp.get('certificates','server')
-            if not os.path.isfile(server_cert):
-                raise Ssm2Exception('Server cerficate location incorrect.')
+            server_cert = cp.get('certificates','server_cert')
+            try:
+                verify_server_cert = cp.getboolean('certificates', 'verify_server_cert')
+            except ConfigParser.NoOptionError:
+                pass
         except ConfigParser.NoOptionError:
             log.info('No server certificate supplied.  Will not encrypt messages.')
-            server_cert = None
             
         try:
             destination = cp.get('messaging', 'destination')
@@ -125,7 +128,8 @@ def main():
                    dest=cp.get('messaging','destination'),
                    use_ssl=cp.getboolean('broker','use_ssl'),
                    capath=cp.get('certificates', 'capath'),
-                   enc_cert=server_cert)
+                   enc_cert=server_cert,
+                   verify_enc_cert=verify_server_cert)
         
         if sender.has_msgs():
             sender.handle_connect()

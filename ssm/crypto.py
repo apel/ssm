@@ -245,6 +245,15 @@ def verify_cert(certstring, capath, check_crls=True):
     return ('OK' in message and not 'error' in message)
 
 
+def verify_cert_path(certpath, capath, check_crls=True):
+    '''
+    Verify certificate, but using the certificate filepath rather than
+    the certificate string as in verify_cert.
+    '''
+    certstring = _from_file(certpath)
+    return verify_cert(certstring, capath, check_crls)
+
+
 def get_certificate_subject(certstring):
     '''
     Return the certificate subject's DN, in legacy openssl format.

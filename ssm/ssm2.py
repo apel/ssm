@@ -53,7 +53,7 @@ class Ssm2(object):
     
     def __init__(self, hosts_and_ports, qpath, cert, key, dest=None, listen=None, 
                  capath=None, check_crls=False, use_ssl=False, username=None, password=None, 
-                 enc_cert=None, pidfile=None):
+                 enc_cert=None, verify_enc_cert=True, pidfile=None):
         '''
         Creates an SSM2 object.  If a listen value is supplied,
         this SSM2 will be a receiver.
@@ -95,7 +95,10 @@ class Ssm2(object):
             raise Ssm2Exception('Cert and key don\'t match.')
         
         if enc_cert is not None:
-            if not os.path.isfile(enc_cert):
+            if verify_enc_cert:
+                log.info('Server cert: %s' % enc_cert)
+                crypto.verify_cert_path(self._enc_cert, self._capath, self._check_crls)
+            elif not os.path.isfile(self._enc_cert):
                 raise Ssm2Exception('Specified certificate file does not exist.')
     
     def set_dns(self, dn_list):
