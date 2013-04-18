@@ -95,7 +95,7 @@ class Ssm2(object):
             raise Ssm2Exception('Cert and key don\'t match.')
         # check the server certificate provided
         if enc_cert is not None:
-            log.info('Server cert: %s' % enc_cert)
+            log.info('Messages will be encrypted using %s' % enc_cert)
             if not os.path.isfile(self._enc_cert):
                 raise Ssm2Exception('Specified certificate file does not exist: %s.' % self._enc_cert)
             if verify_enc_cert:
@@ -138,15 +138,21 @@ class Ssm2(object):
         raw_msg, signer = self._handle_msg(body)
         
         try:
-            if raw_msg is None:
-                log.warn('Could not extract message; rejecting.')
-                if signer is None:
+            if raw_msg is None: # the message has been rejected
+                log.warn('Message rejected.')
+                if signer is None: # crypto failed
+                    err_msg = 'Could not extract message.'
+                    log.warn(err_msg)
                     signer = 'Not available.'
+                else: # crypto ok but signer not verified
+                    err_msg = 'Signer not in valid DNs list.'
+                    log.warn(err_msg)
+                    
                 self._rejectq.add({'body': body,
                                    'signer': signer,
                                    'empaid': empaid,
-                                   'error': 'Could not extract message.'})
-            else:
+                                   'error': err_msg})
+            else: # message verified ok
                 self._inq.add({'body': raw_msg, 
                                'signer':signer, 
                                'empaid': headers['empa-id']})
@@ -215,7 +221,7 @@ class Ssm2(object):
             return None, None
         
         if signer not in self._valid_dns:
-            log.error('Received message from invalid signer: %s' % signer)
+            log.error('Message signer not in the valid DNs list: %s' % signer)
             return None, signer
         else:
             log.info('Valid signer: %s' % signer)
@@ -347,8 +353,8 @@ class Ssm2(object):
             
         # If reconnection fails, admit defeat.
         if not self.connected:
-            error_message = 'Reconnection attempts failed and have been abandoned.'
-            raise Ssm2Exception(error_message)
+            err_msg = 'Reconnection attempts failed and have been abandoned.'
+            raise Ssm2Exception(err_msg)
         
     def start_connection(self):
         '''
