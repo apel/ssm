@@ -31,6 +31,8 @@ The SSM is written in python.
 %prep
 %setup -q -n %{name}-%{version}
 
+%build
+
 %install
 rm -rf $RPM_BUILD_ROOT
 # Create directories
