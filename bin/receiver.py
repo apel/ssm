@@ -23,6 +23,8 @@ from ssm.brokers import StompBrokerGetter, STOMP_SERVICE, STOMP_SSL_SERVICE
 from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm import __version__, set_up_logging, LOG_BREAK
 
+from stomp.exception import NotConnectedException
+
 import time
 import logging.config
 import ldap
@@ -166,30 +168,38 @@ def main():
         log.fatal('Failed to initialise SSM: %s' % e)
         log.info(LOG_BREAK)
         sys.exit(1)
-        
+
     try:
         # Note: because we need to be compatible with python 2.4, we can't use
         # with dc:
-        # here - we need to call the open() and close() methods 
+        # here - we need to call the open() and close() methods
         # manually.
         dc.open()
         ssm.startup()
         i = 0
         # The message listening loop.
         while True:
-            
+
             time.sleep(1)
-            
+
             if i % REFRESH_DNS == 0:
                 log.info('Refreshing the valid DNs.')
                 dns = get_dns(options.dn_file)
                 ssm.set_dns(dns)
-                
-                log.debug('Sending ping message.')
-                ssm.send_ping()
-                
+
+                try:
+                    log.info('Sending ping.')
+                    ssm.send_ping()
+                except NotConnectedException:
+                    log.error('Connection lost.')
+                    ssm.shutdown()
+                    dc.close()
+                    log.info('Restarting SSM.')
+                    dc.open()
+                    ssm.startup()
+
             i += 1
-            
+
     except SystemExit, e:
         log.info('Received the shutdown signal: ' + str(e))
         ssm.shutdown()
@@ -197,7 +207,7 @@ def main():
     except Exception, e:
         log.error('Unexpected exception: ' + str(e))
         log.error('Exception type: %s' % e.__class__)
-        log.error('The SSM will exit.')  
+        log.error('The SSM will exit.')
         ssm.shutdown()
         dc.close()
         
