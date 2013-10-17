@@ -266,7 +266,7 @@ class Ssm2(object):
         Return True if there are any messages in the outgoing queue.
         '''
         return self._outq.count() > 0
-        
+
     def send_all(self):
         '''
         Send all the messages in the outgoing queue.
@@ -276,22 +276,29 @@ class Ssm2(object):
             if not self._outq.lock(msgid):
                 log.warn('Message queue was locked. %s will not be sent.' % msgid)
                 continue
-            
+
             text = self._outq.get(msgid)
             self._send_msg(text, msgid)
+
+            # Allow some time for the broker to accept the message
+            if self._last_msg is None:
+                time.sleep(0.1)
             
             while self._last_msg is None:
+                if not self.connected:
+                    raise Ssm2Exception('Lost connection.')
+                
                 log.info('Waiting for broker to accept message.')
+                # TODO Use exponential backoff?
                 time.sleep(0.5)
-            
+
             self._last_msg = None
             self._outq.remove(msgid)
-        
-        
-    ###############################################################################           
+
+    ############################################################################
     # Connection handling methods
-    ###############################################################################  
-    
+    ############################################################################
+
     def _initialise_connection(self, host, port):
         '''
         Create the self._connection object with the appropriate properties,
