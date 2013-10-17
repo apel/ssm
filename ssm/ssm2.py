@@ -280,17 +280,17 @@ class Ssm2(object):
             text = self._outq.get(msgid)
             self._send_msg(text, msgid)
 
-            # Allow some time for the broker to accept the message
-            if self._last_msg is None:
-                time.sleep(0.1)
-            
+            sleep_time = 0.2
+
             while self._last_msg is None:
                 if not self.connected:
                     raise Ssm2Exception('Lost connection.')
-                
-                log.info('Waiting for broker to accept message.')
-                # TODO Use exponential backoff?
-                time.sleep(0.5)
+
+                if sleep_time < 60.0:
+                    sleep_time += 0.2
+
+                log.info('Waiting %d s for broker to accept message.' % sleep_time)
+                time.sleep(sleep_time)
 
             self._last_msg = None
             self._outq.remove(msgid)
