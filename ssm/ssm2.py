@@ -280,17 +280,12 @@ class Ssm2(object):
             text = self._outq.get(msgid)
             self._send_msg(text, msgid)
 
-            sleep_time = 0.2
-
+            log.info('Waiting for broker to accept message.')
             while self._last_msg is None:
                 if not self.connected:
                     raise Ssm2Exception('Lost connection.')
 
-                if sleep_time < 60.0:
-                    sleep_time += 0.2
-
-                log.info('Waiting %d s for broker to accept message.' % sleep_time)
-                time.sleep(sleep_time)
+                time.sleep(0.1)
 
             self._last_msg = None
             self._outq.remove(msgid)
