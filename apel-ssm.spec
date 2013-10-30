@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.1.0
+Version:        2.1.1
 Release:        0%{?dist}
 Summary:        Secure stomp messenger
 
@@ -91,6 +91,11 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+ * Wed Oct 30 2013 Adrian Coveney <adrian.coveney@stfc.ac.uk - 2.1.1-0
+ - Change behaviour of ping to start and abort a transaction
+   instead of sending empty message.
+ - Raise exception when not connected during send_all.
+
  * Tue Apr 16 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.1.0-0
  - Verify any certificate supplied for encrypting messages
    against the CA path
