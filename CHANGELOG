@@ -1,7 +1,7 @@
 Changelog for ssm
 =================
 
- * Wed Oct 30 2013 Adrian Coveney <adrian.coveney@stfc.ac.uk - 2.1.1-0
+ * Wed Oct 30 2013 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.1-0
  - Change behaviour of ping to start and abort a transaction
    instead of sending empty message.
  - Raise exception when not connected during send_all.
