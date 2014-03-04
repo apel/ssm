@@ -135,23 +135,19 @@ def parse_stomp_url(stomp_url):
 if __name__ == '__main__':
     # BDII URL
     BDII = 'ldap://lcg-bdii.cern.ch:2170'
-
     BG = StompBrokerGetter(BDII)
 
     def print_brokers(text, service, network):
         brokers = BG.get_broker_hosts_and_ports(service, network)
-        print '='*5
-        print text
-        print '-'*5
+        # Print section heading
+        print '==', text, '=='
+        # Print brokers in form 'host:port'
         for broker in brokers:
             print '%s:%i' % (broker[0], broker[1])
+        # Leave space between sections
+        print
 
-    print_brokers('Production SSL brokers', STOMP_SSL_SERVICE, 'PROD')
-    print_brokers('Production brokers without SSL', STOMP_SERVICE, 'PROD')
-    print_brokers('Test SSL brokers', STOMP_SSL_SERVICE, 'TEST-NWOB')
-    print_brokers('Test brokers without SSL', STOMP_SERVICE, 'TEST-NWOB')
-
-    #print(BG.get_broker_hosts_and_ports(STOMP_SSL_SERVICE, 'PROD'))
-    #print(BG.get_broker_hosts_and_ports(STOMP_SERVICE, 'PROD'))
-    #print(BG.get_broker_hosts_and_ports(STOMP_SSL_SERVICE, 'TEST-NWOB'))
-    #print(BG.get_broker_hosts_and_ports(STOMP_SERVICE, 'TEST-NWOB'))
+    print_brokers('SSL production brokers', STOMP_SSL_SERVICE, 'PROD')
+    print_brokers('Production brokers', STOMP_SERVICE, 'PROD')
+    print_brokers('SSL test brokers', STOMP_SSL_SERVICE, 'TEST-NWOB')
+    print_brokers('Test brokers', STOMP_SERVICE, 'TEST-NWOB')
