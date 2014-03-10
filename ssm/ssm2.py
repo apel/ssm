@@ -290,8 +290,11 @@ class Ssm2(object):
             self._last_msg = None
             self._outq.remove(msgid)
         log.info('Tidying message queue.')
-        # Remove empty dirs and unlock msgs older than 5 min (default)
-        self._outq.purge()
+        try:
+            # Remove empty dirs and unlock msgs older than 5 min (default)
+            self._outq.purge()
+        except OSError, e:
+            log.error('OSError raised while purging message queue: %s' % e)
 
     ############################################################################
     # Connection handling methods
