@@ -289,6 +289,9 @@ class Ssm2(object):
 
             self._last_msg = None
             self._outq.remove(msgid)
+        log.info('Tidying message queue.')
+        # Remove empty dirs and unlock msgs older than 5 min (default)
+        self._outq.purge()
 
     ############################################################################
     # Connection handling methods
