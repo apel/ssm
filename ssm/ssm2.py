@@ -42,7 +42,8 @@ class Ssm2Exception(Exception):
     '''
     pass
 
-class Ssm2(object):
+
+class Ssm2(stomp.ConnectionListener):
     '''
     Minimal SSM implementation.
     '''
