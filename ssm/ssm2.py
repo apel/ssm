@@ -275,7 +275,7 @@ class Ssm2(stomp.ConnectionListener):
         log.info('Found %s messages.' % self._outq.count())
         for msgid in self._outq:
             if not self._outq.lock(msgid):
-                log.warn('Message queue was locked. %s will not be sent.' % msgid)
+                log.warn('Message was locked. %s will not be sent.' % msgid)
                 continue
 
             text = self._outq.get(msgid)
@@ -290,6 +290,13 @@ class Ssm2(stomp.ConnectionListener):
 
             self._last_msg = None
             self._outq.remove(msgid)
+
+        log.info('Tidying message directory.')
+        try:
+            # Remove empty dirs and unlock msgs older than 5 min (default)
+            self._outq.purge()
+        except OSError, e:
+            log.error('OSError raised while purging message queue: %s' % e)
 
     ############################################################################
     # Connection handling methods
