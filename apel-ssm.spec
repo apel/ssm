@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.1.1
+Version:        2.1.2
 Release:        0%{?dist}
 Summary:        Secure stomp messenger
 
@@ -91,10 +91,15 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
- * Wed Oct 30 2013 Adrian Coveney <adrian.coveney@stfc.ac.uk - 2.1.1-0
- - Change behaviour of ping to start and abort a transaction
-   instead of sending empty message.
- - Raise exception when not connected during send_all.
+ * Mon Jun 02 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.2-0
+ - The output of brokers.py has been improved so that it can be used to query
+   the BDII for valid brokers.
+ - The outgoing message directory will now be regularly cleared of empty
+   directories and locked messages will be unlocked after five minutes.
+
+ * Wed Oct 30 2013 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.1-0
+ - Reduced impact on message brokers of sending pings to refresh the connection.
+ - Improved lost connection behaviour.
 
  * Tue Apr 16 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.1.0-0
  - Verify any certificate supplied for encrypting messages
