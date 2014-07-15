@@ -21,16 +21,16 @@ the RPM for your version of SL, which is available on this page:
 http://fedoraproject.org/wiki/EPEL
 
 The python stomp library
- * yum install stomppy
+* `yum install stomppy`
 
 The python daemon library
- * yum install python-daemon
+* `yum install python-daemon`
 
 The python ldap library
- * yum install python-ldap
+* `yum install python-ldap`
 
 The python dirq library
- * yum install python-dirq
+* `yum install python-dirq`
 
 You need a certificate and key in PEM format accessible to the SSM.
 There are a number of ways to do this.  One is to make a copy of the
@@ -44,21 +44,22 @@ You need certificates against which you're going to verify any certs
 you use or receive in the directory /etc/grid-security/certificates (or other
 configured location).  The best way to do this for EGI is to install the
 ca-policy-egi-core package:
- * cd /etc/yum.repos.d/
- * wget http://repository.egi.eu/sw/production/cas/1/current/repo-files/EGI-trustanchors.repo
- * yum install ca-policy-egi-core
+* `cd /etc/yum.repos.d/`
+* `wget http://repository.egi.eu/sw/production/cas/1/current/repo-files/EGI-trustanchors.repo`
+* `yum install ca-policy-egi-core`
 
 If you want to check CRLs when verifying certificates, you need
 fetch_crl installed:
- * yum install fetch-crl
- * service fetch-crl-cron start
- * chkconfig fetch-crl-cron on
+* `yum install fetch-crl`
+* `service fetch-crl-cron start`
+* `chkconfig fetch-crl-cron on`
+
 fetch-crl must have run once for the certificates to be verified
 successfully.
 
 ### Installation
 
- * rpm -i apelssm-<version>.noarch.rpm
+* `rpm -i apelssm-<version>.noarch.rpm`
 
 ### What the RPM does
 
@@ -76,13 +77,13 @@ The RPM carries out a number of steps to run the SSM in a specific way.
 ## Configuring the SSM
 
 Create the apel user:
- * useradd -r apel
+* `useradd -r apel`
 
 Ensure that the apel user running the SSM has access to the following:
- * the host certificate and key, or a copy
- * chown apel:apel /var/spool/apel/ 
- * chown apel:apel /var/log/apel/
- * chown apel:apel /var/run/apel
+* the host certificate and key, or a copy
+* `chown apel:apel /var/spool/apel/`
+* `chown apel:apel /var/log/apel/`
+* `chown apel:apel /var/run/apel`
 
 The configuration files are in /etc/apel/.  The default
 configuration will send messages to the test apel server.
@@ -110,6 +111,7 @@ Use the python or perl dirq libraries:
 Create a QueueSimple object with path /var/spool/apel/outgoing/ and 
 add your messages.
 
+
 ## Running the SSM
 
 ###  Sender
@@ -120,9 +122,9 @@ add your messages.
    
 ### Receiver (service)
   
- * Run 'service apelssm start'
+ * Run `service apelssm start`
  * If this fails, check /var/log/apel/ssmreceive.log for details
- * To stop, run 'service apelssm stop'
+ * To stop, run `service apelssm stop`
 
 ### Receiver (manual)
 
@@ -133,16 +135,16 @@ add your messages.
 
 ## Removing the RPM
 
- * rpm -e apelssm
+* `rpm -e apelssm`
 
 ## Cleaning the system
 
-* yum remove stomppy
-* yum remove python-daemon
-* yum remove python-ldap
+* `yum remove stomppy`
+* `yum remove python-daemon`
+* `yum remove python-ldap`
 
-* rm -rf /var/spool/apel
-* rm -rf /var/log/apel
-* rm -rf /var/run/apel
+* `rm -rf /var/spool/apel`
+* `rm -rf /var/log/apel`
+* `rm -rf /var/run/apel`
 
 * revert any changes to or copies of the host certificate and key
