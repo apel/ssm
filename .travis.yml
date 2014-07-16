@@ -19,6 +19,7 @@ install:
 
 before_script:
   - export TMPDIR=$PWD/tmp
+  - mkdir $TMPDIR
 # command to run tests, e.g. python setup.py test
 script:
   - export PYTHONPATH=$PYTHONPATH:`pwd -P`
