@@ -15,7 +15,7 @@ Source0:        %{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
-Requires:       stomppy, python-daemon, python-dirq, python-ldap
+Requires:       stomppy < 4.0.0, python-daemon, python-dirq, python-ldap
 Requires(pre):  shadow-utils
 
 %define ssmconf %_sysconfdir/apel
