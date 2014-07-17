@@ -242,8 +242,8 @@ class TestEncryptUtils(unittest.TestCase):
         I can't check the CRLs of a self-signed certificate easily.
         '''
         if not verify_cert(TEST_CERT, self.ca_dir, False):
-            self.fail('The self signed certificate should validate against \
-            itself in a CA directory.')
+            self.fail('The self signed certificate should validate against'
+                      'itself in a CA directory.')
             
         if verify_cert(TEST_CERT, '/tmp', False):
             self.fail("The verify method isn't checking the CA dir correctly.")
