@@ -59,7 +59,7 @@ cp -rp conf/dns %{buildroot}%{ssmconf}
 cp -rp ssm %{buildroot}%{python_sitelib}
 cp -rp conf/ssm.logrotate %{buildroot}%_sysconfdir/logrotate.d/%{name}
 # Readme
-cp -rp README %{buildroot}%_defaultdocdir/%{name}
+cp -rp README.md %{buildroot}%_defaultdocdir/%{name}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
