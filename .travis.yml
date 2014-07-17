@@ -16,10 +16,14 @@ install:
   - pip install python-ldap
   - pip install dirq
   - pip install unittest2
+
+before_script:
+  - export TMPDIR=$PWD/tmp
+  - mkdir $TMPDIR
 # command to run tests, e.g. python setup.py test
 script:
   - export PYTHONPATH=$PYTHONPATH:`pwd -P`
   - cd test
-  #- unit2 discover
-  # Just run test_brokers for the moment until other tests are worked on
-  - unit2 test_brokers
+  #- unit2 -b discover
+  # Don't run test_crypto until it's fixed
+  - unit2 -b test_brokers test_ssm
