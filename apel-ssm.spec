@@ -4,18 +4,19 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.1.2
-Release:        0%{?dist}
+Version:        2.1.3
+Release:        0.2.alpha1%{?dist}
 Summary:        Secure stomp messenger
 
 Group:          Development/Languages
 License:        ASL 2.0
 URL:            https://wiki.egi.eu/wiki/APEL/SSM
-Source0:        %{name}-%{version}.tar.gz
+# Value between %{version} and extension must match "Release" without %{dist}
+Source0:        %{name}-%{version}-0.2.alpha1.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
-Requires:       stomppy, python-daemon, python-dirq, python-ldap
+Requires:       stomppy < 4.0.0, python-daemon, python-dirq, python-ldap
 Requires(pre):  shadow-utils
 
 %define ssmconf %_sysconfdir/apel
@@ -29,7 +30,8 @@ can act as either a sender or receiver.
 The SSM is written in python.
 
 %prep
-%setup -q -n %{name}-%{version}
+# Value after %{version} must match "Release" without %{dist}
+%setup -q -n %{name}-%{version}-0.2.alpha1
 
 %build
 
@@ -57,7 +59,7 @@ cp -rp conf/dns %{buildroot}%{ssmconf}
 cp -rp ssm %{buildroot}%{python_sitelib}
 cp -rp conf/ssm.logrotate %{buildroot}%_sysconfdir/logrotate.d/%{name}
 # Readme
-cp -rp README %{buildroot}%_defaultdocdir/%{name}
+cp -rp README.md %{buildroot}%_defaultdocdir/%{name}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
