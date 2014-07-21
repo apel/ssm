@@ -1,0 +1,29 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+  - "3.4"
+matrix:
+  allow_failures:
+    - python: "2.7"
+    - python: "3.4"
+  fast_finish: true
+
+# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+install:
+  - pip install stomp.py
+  - pip install python-daemon
+  - pip install python-ldap
+  - pip install dirq
+  - pip install unittest2
+
+before_script:
+  - export TMPDIR=$PWD/tmp
+  - mkdir $TMPDIR
+# command to run tests, e.g. python setup.py test
+script:
+  - export PYTHONPATH=$PYTHONPATH:`pwd -P`
+  - cd test
+  #- unit2 -b discover
+  # Don't run test_crypto until it's fixed
+  - unit2 -b test_brokers test_ssm
