@@ -1,6 +1,15 @@
 Changelog for ssm
 =================
 
+ * Mon Jul 21 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.3-1
+ - (No changes from pre-release version.)
+
+ * Thu Jul 17 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.3-0.2.alpha1
+ - RPM now enforces the use of stomppy < 4.0.0 as versions greater than this are
+   currently incompatible with SSM.
+ - Changes made to disconnection method which should prevent threading
+   exceptions (mostly during shutdown).
+
  * Mon Jun 02 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.2-0
  - The output of brokers.py has been improved so that it can be used to query
    the BDII for valid brokers.

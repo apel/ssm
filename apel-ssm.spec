@@ -5,14 +5,14 @@
 
 Name:           apel-ssm
 Version:        2.1.3
-Release:        0.2.alpha1%{?dist}
+Release:        1%{?dist}
 Summary:        Secure stomp messenger
 
 Group:          Development/Languages
 License:        ASL 2.0
 URL:            https://wiki.egi.eu/wiki/APEL/SSM
 # Value between %{version} and extension must match "Release" without %{dist}
-Source0:        %{name}-%{version}-0.2.alpha1.tar.gz
+Source0:        %{name}-%{version}-1.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
@@ -31,7 +31,7 @@ The SSM is written in python.
 
 %prep
 # Value after %{version} must match "Release" without %{dist}
-%setup -q -n %{name}-%{version}-0.2.alpha1
+%setup -q -n %{name}-%{version}-1
 
 %build
 
@@ -93,6 +93,15 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+ * Mon Jul 21 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.3-1
+ - (No changes from pre-release version.)
+
+ * Thu Jul 17 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.3-0.2.alpha1
+ - RPM now enforces the use of stomppy < 4.0.0 as versions greater than this are
+   currently incompatible with SSM.
+ - Changes made to disconnection method which should prevent threading
+   exceptions (mostly during shutdown).
+
  * Mon Jun 02 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.2-0
  - The output of brokers.py has been improved so that it can be used to query
    the BDII for valid brokers.
