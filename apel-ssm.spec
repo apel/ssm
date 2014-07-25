@@ -4,15 +4,15 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.1.3
-Release:        1%{?dist}
+Version:        2.1.4
+%define releasenumber 0.1.alpha1
+Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
 
 Group:          Development/Languages
 License:        ASL 2.0
 URL:            https://wiki.egi.eu/wiki/APEL/SSM
-# Value between %{version} and extension must match "Release" without %{dist}
-Source0:        %{name}-%{version}-1.tar.gz
+Source:         %{name}-%{version}-%{releasenumber}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
@@ -30,8 +30,7 @@ can act as either a sender or receiver.
 The SSM is written in python.
 
 %prep
-# Value after %{version} must match "Release" without %{dist}
-%setup -q -n %{name}-%{version}-1
+%setup -q -n %{name}-%{version}-%{releasenumber}
 
 %build
 
