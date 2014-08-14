@@ -1,6 +1,7 @@
 # Secure Stomp Messenger
 
 [![Build Status](https://travis-ci.org/apel/ssm.svg?branch=dev)](https://travis-ci.org/apel/ssm)
+[![Coverage Status](https://coveralls.io/repos/apel/ssm/badge.png?branch=dev)](https://coveralls.io/r/apel/ssm)
 
 Secure Stomp Messenger (SSM) is designed to simply send messages
 using the STOMP protocol.  Messages are signed and may be encrypted
