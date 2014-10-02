@@ -27,7 +27,7 @@ script:
   - cd test
   #- unit2 -b discover
   # Don't run test_crypto until it's fixed
-  - coverage run --source=ssm -m unittest2 -b test_brokers test_ssm
+  - coverage run --source=ssm,bin -m unittest2 -b test_brokers test_ssm
 
 after_success:
   - coveralls
