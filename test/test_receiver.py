@@ -55,7 +55,7 @@ class getDNsTest(unittest.TestCase):
         f.write(dn_text)
         f.close()
         bin.receiver.get_dns(self.tf_path)
-        self.assertEqual(self.mock_log.warn.call_count, 3)
+        self.assertEqual(self.mock_log.warn.call_count, 2)
 
     def tearDown(self):
         os.remove(self.tf_path)
