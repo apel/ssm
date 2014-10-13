@@ -98,7 +98,7 @@ class Ssm2(stomp.ConnectionListener):
             raise Ssm2Exception('Cert and key don\'t match.')
         # check the server certificate provided
         if enc_cert is not None:
-            log.info('Messages will be encrypted using %s' % enc_cert)
+            log.info('Messages will be encrypted using %s', enc_cert)
             if not os.path.isfile(self._enc_cert):
                 raise Ssm2Exception('Specified certificate file does not exist: %s.' % self._enc_cert)
             if verify_enc_cert:
@@ -160,13 +160,13 @@ class Ssm2(stomp.ConnectionListener):
                                'signer':signer, 
                                'empaid': headers['empa-id']})
         except OSError, e:
-            log.error('Failed to read or write file: %s' % e)
+            log.error('Failed to read or write file: %s', e)
         
     def on_error(self, unused_headers, body):
         '''
         Called by stomppy when an error frame is received.
         '''
-        log.warn('Error message received: %s' % body)
+        log.warn('Error message received: %s', body)
         raise Ssm2Exception()
     
     def on_connected(self, unused_headers, unused_body):
@@ -213,21 +213,21 @@ class Ssm2(stomp.ConnectionListener):
             try:
                 text = crypto.decrypt(text, self._cert, self._key)
             except crypto.CryptoException, e:
-                log.error('Failed to decrypt message: %s' % e)
+                log.error('Failed to decrypt message: %s', e)
                 return None, None
         
         # always signed
         try:
             message, signer = crypto.verify(text, self._capath, self._check_crls)
         except crypto.CryptoException, e:
-            log.error('Failed to verify message: %s' % e)
+            log.error('Failed to verify message: %s', e)
             return None, None
         
         if signer not in self._valid_dns:
-            log.error('Message signer not in the valid DNs list: %s' % signer)
+            log.error('Message signer not in the valid DNs list: %s', signer)
             return None, signer
         else:
-            log.info('Valid signer: %s' % signer)
+            log.info('Valid signer: %s', signer)
             
         return message, signer
         
@@ -274,10 +274,10 @@ class Ssm2(stomp.ConnectionListener):
         '''
         Send all the messages in the outgoing queue.
         '''
-        log.info('Found %s messages.' % self._outq.count())
+        log.info('Found %s messages.', self._outq.count())
         for msgid in self._outq:
             if not self._outq.lock(msgid):
-                log.warn('Message was locked. %s will not be sent.' % msgid)
+                log.warn('Message was locked. %s will not be sent.', msgid)
                 continue
 
             text = self._outq.get(msgid)
@@ -298,7 +298,7 @@ class Ssm2(stomp.ConnectionListener):
             # Remove empty dirs and unlock msgs older than 5 min (default)
             self._outq.purge()
         except OSError, e:
-            log.warn('OSError raised while purging message queue: %s' % e)
+            log.warn('OSError raised while purging message queue: %s', e)
 
     ############################################################################
     # Connection handling methods
@@ -342,10 +342,10 @@ class Ssm2(stomp.ConnectionListener):
                 break
             except ConnectFailedException, e:
                 # ConnectFailedException doesn't provide a message.
-                log.warn('Failed to connect to %s:%s.' % (host, port))
+                log.warn('Failed to connect to %s:%s.', host, port)
             except Ssm2Exception, e:
-                log.warn('Failed to connect to %s:%s: %s' % (host, port, str(e)))
-                
+                log.warn('Failed to connect to %s:%s: %s', host, port, e)
+
         if not self.connected:
             raise Ssm2Exception('Attempts to start the SSM failed.  The system will exit.')
 
@@ -389,12 +389,12 @@ class Ssm2(stomp.ConnectionListener):
         self._conn.connect(wait = True)
         
         if self._dest is not None:
-            log.info('Will send messages to: %s' % self._dest)
-             
+            log.info('Will send messages to: %s', self._dest)
+
         if self._listen is not None:
             self._conn.subscribe(destination=self._listen, ack='auto')
-            log.info('Subscribing to: %s' % self._listen)
-            
+            log.info('Subscribing to: %s', self._listen)
+
         i = 0
         while not self.connected:
             time.sleep(0.1)
@@ -431,8 +431,8 @@ class Ssm2(stomp.ConnectionListener):
                 f.write('\n')
                 f.close()
             except IOError, e:
-                log.warn('Failed to create pidfile %s: %s' % (self._pidfile, e))
-                
+                log.warn('Failed to create pidfile %s: %s', self._pidfile, e)
+
         self.handle_connect()
         
     def shutdown(self):
@@ -445,9 +445,9 @@ class Ssm2(stomp.ConnectionListener):
                 if os.path.exists(self._pidfile):
                     os.remove(self._pidfile)
                 else:
-                    log.warn('pidfile %s not found.' % self._pidfile)
+                    log.warn('pidfile %s not found.', self._pidfile)
             except IOError, e:
-                log.warn('Failed to remove pidfile %s: %e' % (self._pidfile, e))
+                log.warn('Failed to remove pidfile %s: %e', self._pidfile, e)
                 log.warn('SSM may not start again until it is removed.')
         
         

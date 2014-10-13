@@ -41,7 +41,7 @@ class StompBrokerGetter(object):
         Set up the LDAP connection and strings which are re-used.
         '''
         # Set up the LDAP connection
-        log.debug('Connecting to %s...' % bdii_url)
+        log.debug('Connecting to %s...', bdii_url)
         self._ldap_conn = ldap.initialize(bdii_url)
 
         self._base_dn = 'o=grid'
