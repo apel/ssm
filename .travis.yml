@@ -25,7 +25,7 @@ before_script:
 script:
   - export PYTHONPATH=$PYTHONPATH:`pwd -P`
   - cd test
-  - coverage run --source=ssm,bin -m unittest2 -b discover
+  - coverage run --source=ssm,bin -m unittest2 discover --buffer
 
 after_success:
   - coveralls
