@@ -25,9 +25,7 @@ before_script:
 script:
   - export PYTHONPATH=$PYTHONPATH:`pwd -P`
   - cd test
-  #- unit2 -b discover
-  # Don't run test_crypto until it's fixed
-  - coverage run --source=ssm,bin -m unittest2 -b test_brokers test_ssm test_receiver
+  - coverage run --source=ssm,bin -m unittest2 discover
 
 after_success:
   - coveralls
