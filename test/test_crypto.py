@@ -341,15 +341,18 @@ DgICAKAECCntgjVbfq2WgCDZLJYHU7+qvZ0tcqx8dQkRaHJj7v99RUGX2PuaIglQ
 2g==
 '''
 
+# openssl smime -sign -signer test.cert -inkey test.key -in msg.text -text
 SIGNED_MSG = '''MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha1"; boundary="----75C746878BE47CBCE9CC86039A11C0DA"
+Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha1"; boundary="----67738FDB572078F189F11E9C26F02E69"
 
 This is an S/MIME signed message
 
-------75C746878BE47CBCE9CC86039A11C0DA
+------67738FDB572078F189F11E9C26F02E69
+Content-Type: text/plain
+
 This is some test data.
 
-------75C746878BE47CBCE9CC86039A11C0DA
+------67738FDB572078F189F11E9C26F02E69
 Content-Type: application/x-pkcs7-signature; name="smime.p7s"
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="smime.p7s"
@@ -370,16 +373,16 @@ zGjUzyZCu6TuRms4RQJ9O8qpvJ4NAfGjwj9KvnZUZsSMpiAuCcgoSd6yGMrVEzEq
 DBCpvETSaJkyYRzEJDRgRWq+rUITFY5iYo0yJvemMYIB0DCCAcwCAQEwTzBCMQsw
 CQYDVQQGEwJVSzENMAsGA1UECgwEU1RGQzELMAkGA1UECwwCU0MxFzAVBgNVBAMM
 DmFkcmlhbiBjb3ZlbmV5AgkA5m/vcEl2+3EwCQYFKw4DAhoFAKCB2DAYBgkqhkiG
-9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0xNDEwMTYwOTQyMDVa
-MCMGCSqGSIb3DQEJBDEWBBTZ9n+NhKrYFSBH6w0K4+tpPDS5FjB5BgkqhkiG9w0B
+9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0xNDEwMTYxMDU0NDFa
+MCMGCSqGSIb3DQEJBDEWBBS4mGqHlYCOu0+aUiwPuT3+Q8yGEDB5BgkqhkiG9w0B
 CQ8xbDBqMAsGCWCGSAFlAwQBKjALBglghkgBZQMEARYwCwYJYIZIAWUDBAECMAoG
 CCqGSIb3DQMHMA4GCCqGSIb3DQMCAgIAgDANBggqhkiG9w0DAgIBQDAHBgUrDgMC
-BzANBggqhkiG9w0DAgIBKDANBgkqhkiG9w0BAQEFAASBgCVDmnx8NHnx2CnthO32
-nh2pWdbpITqVms0vQj8D090VZ+58wh4fV3Vj4SlPEuJ6+SG3ykyFsSkwfNQuQoib
-F9hcuy4ZnFhbLzNBNR0EJmxybkirS0Q5iQv4SgAkfFIEgedsMWtAS904/hr/BCIH
-UABUQKW4IyhAVpixFN94YQ7e
+BzANBggqhkiG9w0DAgIBKDANBgkqhkiG9w0BAQEFAASBgJvrPVgEv1QkISmm0w8p
+2EwYhr3v4lvOkdFTrzFnk+pZZeCWaLzS9voZB/n0Gh44r4XB4BXpkRwUis7RlnSZ
+UyJDw7BNTVD4IIBTLFuJkbLC7JIeRznsGLnbHGZx0Dy//echx3hveOvdig0X5+XE
+5iQwwM+TFruSiJR1wn9QwATn
 
-------75C746878BE47CBCE9CC86039A11C0DA--'''
+------67738FDB572078F189F11E9C26F02E69--'''
 
 SIGNED_MSG2 = '''Message-ID: <471108564.1391361545139805.JavaMail.root@zam052v05>
 MIME-Version: 1.0
