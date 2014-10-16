@@ -266,7 +266,7 @@ class TestEncryptUtils(unittest.TestCase):
 ################################################################
 
 # openssl req -x509 -nodes -days 365 -subj '/C=UK/O=STFC/OU=SC/CN=adrian coveney' -newkey rsa:1024 -keyout test.key -out test.cert
-
+# Expires 2015-10-16
 TEST_CERT_DN = '/C=UK/O=STFC/OU=SC/CN=adrian coveney'
 
 TEST_CERT = '''-----BEGIN CERTIFICATE-----
