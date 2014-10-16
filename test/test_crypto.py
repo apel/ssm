@@ -47,7 +47,7 @@ class TestEncryptUtils(unittest.TestCase):
         # self-signed certificate as its own CA certificate, but with its
         # name as <hash-of-subject-DN>.0.
         
-        ca_certs = [TEST_CERT, CERT2]
+        ca_certs = [TEST_CERT]
 
         self.ca_dir = tempfile.mkdtemp(prefix='ca')
         for cert in ca_certs:
@@ -134,9 +134,9 @@ class TestEncryptUtils(unittest.TestCase):
             
         retrieved_msg2, retrieved_dn2 = verify(SIGNED_MSG2, self.ca_dir, False)
         
-        if not retrieved_dn2 == CERT2_DN:
+        if not retrieved_dn2 == TEST_CERT_DN:
             print retrieved_dn2
-            print CERT2_DN
+            print TEST_CERT_DN
             self.fail("The DN of the verified message didn't match the cert.")
             
         if not retrieved_msg2.strip() == MSG2:
@@ -302,27 +302,6 @@ PuvWcyQ8RQbdEZ663u4QlEYzHnQoxuebirtbewDIzmSCLmRx5GZySZ0CQHGdTWwf
 GDG32bRsY7byBfE=
 -----END PRIVATE KEY-----'''
 
-# Certificate of the key which signed SIGNED_MSG2
-CERT2 = '''
------BEGIN CERTIFICATE-----
-MIICXTCCAcagAwIBAgIEUSdrRzANBgkqhkiG9w0BAQUFADBzMSUwIwYDVQQDExx6
-YW0wNTJ2MDUuemFtLmtmYS1qdWVsaWNoLmRlMScwJQYDVQQLEx5Gb3JzY2h1bmdz
-emVudHJ1bSBKdWVsaWNoIEdtYkgxFDASBgNVBAoTC0dyaWRHZXJtYW55MQswCQYD
-VQQGEwJERTAeFw0xMzAyMjIxMjU3NDNaFw0xMzA1MjMxMjU3NDNaMHMxJTAjBgNV
-BAMTHHphbTA1MnYwNS56YW0ua2ZhLWp1ZWxpY2guZGUxJzAlBgNVBAsTHkZvcnNj
-aHVuZ3N6ZW50cnVtIEp1ZWxpY2ggR21iSDEUMBIGA1UEChMLR3JpZEdlcm1hbnkx
-CzAJBgNVBAYTAkRFMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCXa+Yiyot9
-y7oX8yGPgoGtLOMX3QRq+JWYhdgiR49PIKb8yRDm3l2xZWKl2qLfUshNCCj5SfS5
-EyL9/wRZdcbmKo8SHBy+kr6lkCTeIDUhhI3zwKqweliY8+7Kc/E7azxp9hzuvvWE
-ogW184GXiLi+aVvVVepwP6bRnqnG6PUNmwIDAQABMA0GCSqGSIb3DQEBBQUAA4GB
-AHY1RuOjuNjqsF/Azsn1ebVlm8qVVU0By4I6atZTsFLiOH76kbVva/WjpT0oAlRt
-Qhw6AbzXUU1MAiO5tgQamYDmSsrqwPvXybnJM6p21iVgjRKuulmEbdeV+ccUxi7a
-+Jb39KeuDQgo9RIvc/j6Qv+1LReBpgGqKLxZijVXd6Ci
------END CERTIFICATE-----
-'''
-
-CERT2_DN = '/CN=zam052v05.zam.kfa-juelich.de/OU=Forschungszentrum Juelich GmbH/O=GridGermany/C=DE'
-
 MSG = 'This is some test data.'
 
 # openssl smime -encrypt -in msg.text test.cert
@@ -384,12 +363,14 @@ UyJDw7BNTVD4IIBTLFuJkbLC7JIeRznsGLnbHGZx0Dy//echx3hveOvdig0X5+XE
 
 ------67738FDB572078F189F11E9C26F02E69--'''
 
-SIGNED_MSG2 = '''Message-ID: <471108564.1391361545139805.JavaMail.root@zam052v05>
-MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha1;
-        boundary="----=_Part_69_779671724.1361545139802"
+# Created same way as SIGNED_MSG but text manually converted to quoted-printable
+# and Content-Type and Content-Transfer-Encoding fields added in manually.
+SIGNED_MSG2 = '''MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha1"; boundary="----4BE6B93D7D20765BBC2405B636FDBBFA"
 
-------=_Part_69_779671724.1361545139802
+This is an S/MIME signed message
+
+------4BE6B93D7D20765BBC2405B636FDBBFA
 Content-Type: text/xml; charset=utf8
 Content-Transfer-Encoding: quoted-printable
 
@@ -423,33 +404,38 @@ hineName><com:SubmitHost>zam052v02</com:SubmitHost><com:Queue com:descripti=
 on=3D"execution">batch</com:Queue><com:Site>zam052v15.zam.kfa-juelich.de</c=
 om:Site><com:Host com:primary=3D"false" com:description=3D"CPUS=3D2;SLOTS=
 =3D1,0">zam052v15</com:Host></com:UsageRecord>
-------=_Part_69_779671724.1361545139802
-Content-Type: application/pkcs7-signature; name=smime.p7s; smime-type=signed-data
+
+------4BE6B93D7D20765BBC2405B636FDBBFA
+Content-Type: application/x-pkcs7-signature; name="smime.p7s"
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
 
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIAwggJdMIIB
-xqADAgECAgRRJ2tHMA0GCSqGSIb3DQEBBQUAMHMxJTAjBgNVBAMTHHphbTA1MnYwNS56YW0ua2Zh
-LWp1ZWxpY2guZGUxJzAlBgNVBAsTHkZvcnNjaHVuZ3N6ZW50cnVtIEp1ZWxpY2ggR21iSDEUMBIG
-A1UEChMLR3JpZEdlcm1hbnkxCzAJBgNVBAYTAkRFMB4XDTEzMDIyMjEyNTc0M1oXDTEzMDUyMzEy
-NTc0M1owczElMCMGA1UEAxMcemFtMDUydjA1LnphbS5rZmEtanVlbGljaC5kZTEnMCUGA1UECxMe
-Rm9yc2NodW5nc3plbnRydW0gSnVlbGljaCBHbWJIMRQwEgYDVQQKEwtHcmlkR2VybWFueTELMAkG
-A1UEBhMCREUwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAJdr5iLKi33LuhfzIY+Cga0s4xfd
-BGr4lZiF2CJHj08gpvzJEObeXbFlYqXaot9SyE0IKPlJ9LkTIv3/BFl1xuYqjxIcHL6SvqWQJN4g
-NSGEjfPAqrB6WJjz7spz8TtrPGn2HO6+9YSiBbXzgZeIuL5pW9VV6nA/ptGeqcbo9Q2bAgMBAAEw
-DQYJKoZIhvcNAQEFBQADgYEAdjVG46O42OqwX8DOyfV5tWWbypVVTQHLgjpq1lOwUuI4fvqRtW9r
-9aOlPSgCVG1CHDoBvNdRTUwCI7m2BBqZgOZKyurA+9fJuckzqnbWJWCNEq66WYRt15X5xxTGLtr4
-lvf0p64NCCj1Ei9z+PpC/7UtF4GmAaoovFmKNVd3oKIAADGCAYAwggF8AgEBMHswczElMCMGA1UE
-AxMcemFtMDUydjA1LnphbS5rZmEtanVlbGljaC5kZTEnMCUGA1UECxMeRm9yc2NodW5nc3plbnRy
-dW0gSnVlbGljaCBHbWJIMRQwEgYDVQQKEwtHcmlkR2VybWFueTELMAkGA1UEBhMCREUCBFEna0cw
-CQYFKw4DAhoFAKBdMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTEz
-MDIyMjE0NTg1OVowIwYJKoZIhvcNAQkEMRYEFM+ahH3DuE3LLQY78kZCtYbnE45vMA0GCSqGSIb3
-DQEBAQUABIGAKhxtlcEaarnw1pbSlGmvKf5bI7n/WaXnYgkptOvoy75r6ZuhQHOOf3ffehpL9hMc
-S6+br3IZPVEBr8kuhg6EpBNXuhZ3dE+PUF8P9qRDonHc1YuEvrng8svyZN+HpZl5S3XbbL0+4Rwf
-hOcYKM8R3tVUpyuTNzskZnJmsrA7dvQAAAAAAAA=
-------=_Part_69_779671724.1361545139802--
-'''
+MIIEXgYJKoZIhvcNAQcCoIIETzCCBEsCAQExCzAJBgUrDgMCGgUAMAsGCSqGSIb3
+DQEHAaCCAlYwggJSMIIBu6ADAgECAgkA5m/vcEl2+3EwDQYJKoZIhvcNAQEFBQAw
+QjELMAkGA1UEBhMCVUsxDTALBgNVBAoMBFNURkMxCzAJBgNVBAsMAlNDMRcwFQYD
+VQQDDA5hZHJpYW4gY292ZW5leTAeFw0xNDEwMTYwOTEwNThaFw0xNTEwMTYwOTEw
+NThaMEIxCzAJBgNVBAYTAlVLMQ0wCwYDVQQKDARTVEZDMQswCQYDVQQLDAJTQzEX
+MBUGA1UEAwwOYWRyaWFuIGNvdmVuZXkwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJ
+AoGBAKprde44RVoR3iPqNCe9EtgJnV/MoNBuw3ox6jWHzFtStwQUmg3juSByUjDg
+qSoKfKIFSn59gdaW6XH9/VYjYEPs/GyUampv1g6xapCEba1b+zwCiUMjgq2ET1Xu
+gDg3WjCeX4mKF8mvKQGgrs3xmIpAPWBzH43Vttsj0S/YC+4HAgMBAAGjUDBOMB0G
+A1UdDgQWBBTc1YpusWljyPjEtQft0Uliw/o/3DAfBgNVHSMEGDAWgBTc1YpusWlj
+yPjEtQft0Uliw/o/3DAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBBQUAA4GBAEKs
+tVZ50yqpRYgwO6KoqQBcP1dvTdJAokolDZDI368/uz7ANeXSsvHl4R5y8bAys36H
+zGjUzyZCu6TuRms4RQJ9O8qpvJ4NAfGjwj9KvnZUZsSMpiAuCcgoSd6yGMrVEzEq
+DBCpvETSaJkyYRzEJDRgRWq+rUITFY5iYo0yJvemMYIB0DCCAcwCAQEwTzBCMQsw
+CQYDVQQGEwJVSzENMAsGA1UECgwEU1RGQzELMAkGA1UECwwCU0MxFzAVBgNVBAMM
+DmFkcmlhbiBjb3ZlbmV5AgkA5m/vcEl2+3EwCQYFKw4DAhoFAKCB2DAYBgkqhkiG
+9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0xNDEwMTYxMjMzNDRa
+MCMGCSqGSIb3DQEJBDEWBBSeJD0gdxmqeQqqVmTXCR2C2BaXvzB5BgkqhkiG9w0B
+CQ8xbDBqMAsGCWCGSAFlAwQBKjALBglghkgBZQMEARYwCwYJYIZIAWUDBAECMAoG
+CCqGSIb3DQMHMA4GCCqGSIb3DQMCAgIAgDANBggqhkiG9w0DAgIBQDAHBgUrDgMC
+BzANBggqhkiG9w0DAgIBKDANBgkqhkiG9w0BAQEFAASBgCDwzwTaHcu1NLJI8wlX
+KJmeDJaC+qb2Xrlx2iNsRjVWeIWTE2FEa4C8t1w5cPya1gpHom2siI7GGct+U3XZ
+oW1+owBpbROWsatfCmMyNLO34H6Lfknc5bCu/cdnDwCYCduFK05mhrJmx+/2rDaB
+M3LRk9KaE6T05VQg831+4bgj
+
+------4BE6B93D7D20765BBC2405B636FDBBFA--'''
 
 MSG2 = '''<com:UsageRecord xmlns:com="http://eu-emi.eu/namespaces/2012/11/computerecord"><com:RecordIdentity com:recordId="62991a08-909b-4516-aa30-3732ab3d8998" com:createTime="2013-02-22T15:58:44.567+01:00"/><com:JobIdentity><com:GlobalJobId>ac2b1157-7aff-42d9-945e-389aa9bbb19a</com:GlobalJobId><com:LocalJobId>7005</com:LocalJobId></com:JobIdentity><com:UserIdentity><com:GlobalUserName com:type="rfc2253">CN=Bjoern Hagemeier,OU=Forschungszentrum Juelich GmbH,O=GridGermany,C=DE</com:GlobalUserName><com:LocalUserId>bjoernh</com:LocalUserId><com:LocalGroup>users</com:LocalGroup></com:UserIdentity><com:JobName>HiLA</com:JobName><com:Status>completed</com:Status><com:ExitStatus>0</com:ExitStatus><com:Infrastructure com:type="grid"/><com:Middleware com:name="unicore">unicore</com:Middleware><com:WallDuration>PT0S</com:WallDuration><com:CpuDuration>PT0S</com:CpuDuration><com:ServiceLevel com:type="HEPSPEC">1.0</com:ServiceLevel><com:Memory com:metric="total" com:storageUnit="KB" com:type="physical">0</com:Memory><com:Memory com:metric="total" com:storageUnit="KB" com:type="shared">0</com:Memory><com:TimeInstant com:type="uxToBssSubmitTime">2013-02-22T15:58:44.568+01:00</com:TimeInstant><com:TimeInstant com:type="uxStartTime">2013-02-22T15:58:46.563+01:00</com:TimeInstant><com:TimeInstant com:type="uxEndTime">2013-02-22T15:58:49.978+01:00</com:TimeInstant><com:TimeInstant com:type="etime">2013-02-22T15:58:44+01:00</com:TimeInstant><com:TimeInstant com:type="ctime">2013-02-22T15:58:44+01:00</com:TimeInstant><com:TimeInstant com:type="qtime">2013-02-22T15:58:44+01:00</com:TimeInstant><com:TimeInstant com:type="maxWalltime">2013-02-22T16:58:45+01:00</com:TimeInstant><com:NodeCount>1</com:NodeCount><com:Processors>2</com:Processors><com:EndTime>2013-02-22T15:58:45+01:00</com:EndTime><com:StartTime>2013-02-22T15:58:45+01:00</com:StartTime><com:MachineName>zam052v15.zam.kfa-juelich.de</com:MachineName><com:SubmitHost>zam052v02</com:SubmitHost><com:Queue com:description="execution">batch</com:Queue><com:Site>zam052v15.zam.kfa-juelich.de</com:Site><com:Host com:primary="false" com:description="CPUS=2;SLOTS=1,0">zam052v15</com:Host></com:UsageRecord>'''
 
