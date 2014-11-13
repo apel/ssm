@@ -296,7 +296,7 @@ class Ssm2(stomp.ConnectionListener):
             # Remove empty dirs and unlock msgs older than 5 min (default)
             self._outq.purge()
         except OSError, e:
-            log.error('OSError raised while purging message queue: %s' % e)
+            log.warn('OSError raised while purging message queue: %s' % e)
 
     ############################################################################
     # Connection handling methods
