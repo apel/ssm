@@ -16,6 +16,8 @@
    @author: Will Rogers
 '''
 
+import ssl
+
 from ssm import crypto
 from dirq.QueueSimple import QueueSimple
 from dirq.queue import Queue
@@ -315,7 +317,8 @@ class Ssm2(stomp.ConnectionListener):
                                       user = self._user,
                                       passcode = self._pwd,
                                       ssl_key_file = self._key,
-                                      ssl_cert_file = self._cert)
+                                      ssl_cert_file=self._cert,
+                                      ssl_version=ssl.PROTOCOL_SSLv23)
         
         # You can set this in the constructor but only for stomppy version 3.
         # This works for stomppy 3 but doesn't break stomppy 2.
