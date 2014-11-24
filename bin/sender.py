@@ -64,11 +64,11 @@ def main():
     log = logging.getLogger('ssmsend')
     
     log.info(LOG_BREAK)
-    log.info('Starting sending SSM version %s.%s.%s.' % __version__)
+    log.info('Starting sending SSM version %s.%s.%s.', *__version__)
     # If we can't get a broker to connect to, we have to give up.
     try:
         bdii_url = cp.get('broker','bdii')
-        log.info('Retrieving broker details from %s ...' % bdii_url)
+        log.info('Retrieving broker details from %s ...', bdii_url)
         bg = StompBrokerGetter(bdii_url)
         use_ssl = cp.getboolean('broker', 'use_ssl')
         if use_ssl:
@@ -76,7 +76,7 @@ def main():
         else:
             service = STOMP_SERVICE
         brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker','network'))
-        log.info('Found %s brokers.' % len(brokers))
+        log.info('Found %s brokers.', len(brokers))
     except ConfigParser.NoOptionError, e:
         try:
             host = cp.get('broker', 'host')
@@ -90,7 +90,7 @@ def main():
             print 'SSM failed to start.  See log file for details.'
             sys.exit(1)
     except ldap.LDAPError, e:
-        log.error('Could not connect to LDAP server: %s' % e)
+        log.error('Could not connect to LDAP server: %s', e)
         log.error('System will exit.')
         log.info(LOG_BREAK)
         print 'SSM failed to start.  See log file for details.'
@@ -140,12 +140,12 @@ def main():
         
     except (Ssm2Exception, CryptoException), e:
         print 'SSM failed to complete successfully.  See log file for details.'
-        log.error('SSM failed to complete successfully: %s' % e)
+        log.error('SSM failed to complete successfully: %s', e)
     except Exception, e:
         print 'SSM failed to complete successfully.  See log file for details.'
-        log.error('Unexpected exception in SSM: %s' % (str(e)))
-        log.error('Exception type: %s' % e.__class__)
-        
+        log.error('Unexpected exception in SSM: %s', e)
+        log.error('Exception type: %s', e.__class__)
+
     try:
         sender.close_connection()
     except UnboundLocalError:

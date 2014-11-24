@@ -58,7 +58,7 @@ def check_cert_key(certpath, keypath):
         cert = _from_file(certpath)
         key = _from_file(keypath)
     except IOError, e:
-        log.error('Could not find cert or key file: %s' % e)
+        log.error('Could not find cert or key file: %s', e)
         return False
     
     # Two things the same have the same modulus.
@@ -102,7 +102,7 @@ def sign(text, certpath, keypath):
         return signed_msg
     
     except OSError, e:
-        log.error('Failed to sign message: %s' % e)
+        log.error('Failed to sign message: %s', e)
         raise CryptoException('Message signing failed.  Check cert and key permissions.')
 
 
@@ -241,8 +241,8 @@ def verify_cert(certstring, capath, check_crls=True):
     # If it fails, openssl prints 'error'
     # So:
     log.info('Certificate verification: ' + str(message).strip())
-      
-    return ('OK' in message and not 'error' in message)
+
+    return ('OK' in message and 'error' not in message)
 
 
 def verify_cert_path(certpath, capath, check_crls=True):
