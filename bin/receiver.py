@@ -53,15 +53,15 @@ def get_dns(dn_file):
             elif line.strip().startswith('/'):
                 dns.append(line.strip())
             else:
-                log.warn('DN in incorrect format: %s' % line)
+                log.warn('DN in incorrect format: %s', line)
     finally:
         if f is not None:
             f.close()
     # If no valid DNs, SSM cannot receive any messages.
     if len(dns) == 0:
         raise Ssm2Exception('No valid DNs found in %s.  SSM will not start' % dn_file)
-    
-    log.debug('%s DNs found.' % len(dns))
+
+    log.debug('%s DNs found.', len(dns))
     return dns
 
 
@@ -108,8 +108,8 @@ def main():
     log = logging.getLogger('ssmreceive')
     
     log.info(LOG_BREAK)
-    log.info('Starting receiving SSM version %s.%s.%s.' % __version__)
-        
+    log.info('Starting receiving SSM version %s.%s.%s.', *__version__)
+
     # If we can't get a broker to connect to, we have to give up.
     try:
         bg = StompBrokerGetter(cp.get('broker','bdii'))
@@ -131,7 +131,7 @@ def main():
             log.info(LOG_BREAK)
             sys.exit(1)
     except ldap.SERVER_DOWN, e:
-        log.error('Could not connect to LDAP server: %s' % e)
+        log.error('Could not connect to LDAP server: %s', e)
         log.error('System will exit.')
         log.info(LOG_BREAK)
         sys.exit(1)    
@@ -165,7 +165,7 @@ def main():
         ssm.set_dns(dns)
         
     except Exception, e:
-        log.fatal('Failed to initialise SSM: %s' % e)
+        log.fatal('Failed to initialise SSM: %s', e)
         log.info(LOG_BREAK)
         sys.exit(1)
 
@@ -206,7 +206,7 @@ def main():
         dc.close()
     except Exception, e:
         log.error('Unexpected exception: ' + str(e))
-        log.error('Exception type: %s' % e.__class__)
+        log.error('Exception type: %s', e.__class__)
         log.error('The SSM will exit.')
         ssm.shutdown()
         dc.close()
