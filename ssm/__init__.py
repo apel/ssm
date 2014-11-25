@@ -19,7 +19,7 @@
 import logging
 import sys
 
-__version__ = (2, 1, 4)
+__version__ = (2, 1, 5)
 
 LOG_BREAK = '========================================'
 
