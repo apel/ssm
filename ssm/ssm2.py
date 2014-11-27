@@ -311,15 +311,26 @@ class Ssm2(stomp.ConnectionListener):
         '''
         if self._use_ssl:
             log.info('Connecting using SSL...')
-            
-        self._conn = stomp.Connection([(host, port)], 
-                                      use_ssl=self._use_ssl,
-                                      user = self._user,
-                                      passcode = self._pwd,
-                                      ssl_key_file = self._key,
-                                      ssl_cert_file=self._cert,
-                                      ssl_version=ssl.PROTOCOL_SSLv23)
-        
+
+        try:
+            self._conn = stomp.Connection([(host, port)],
+                                          use_ssl=self._use_ssl,
+                                          user=self._user,
+                                          passcode=self._pwd,
+                                          ssl_key_file=self._key,
+                                          ssl_cert_file=self._cert,
+                                          ssl_version=ssl.PROTOCOL_SSLv23)
+        except TypeError:
+            # If stomp.py complains about the ssl_version argument, then it is
+            # probably version <= 3.0.3. Only version >= 3.0.4 supports this.
+            log.warn("Using a version of stomp.py that is limited to SSL 3.0.")
+            self._conn = stomp.Connection([(host, port)],
+                                          use_ssl=self._use_ssl,
+                                          user=self._user,
+                                          passcode=self._pwd,
+                                          ssl_key_file=self._key,
+                                          ssl_cert_file=self._cert)
+
         # You can set this in the constructor but only for stomppy version 3.
         # This works for stomppy 3 but doesn't break stomppy 2.
         self._conn.__reconnect_attempts_max = 1
