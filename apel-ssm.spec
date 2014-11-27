@@ -5,7 +5,7 @@
 
 Name:           apel-ssm
 Version:        2.1.5
-%define releasenumber 0.1.rc1
+%define releasenumber 0.2.rc2
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
 
@@ -92,6 +92,10 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+ * Thu Nov 27 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.5-0.2.rc2
+ - Added a warning for old versions of stomp.py (3.0.3 and lower) that are
+   limited to using SSL 3.0 for secure connections.
+
  * Tue Nov 25 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.5-0.1.rc1
  - The highest version of SSL/TLS available is now used (previously only SSLv3).
  - Added python-ssl as a dependency (SL5/EL5 only).
