@@ -333,7 +333,7 @@ class Ssm2(stomp.ConnectionListener):
             except TypeError:
                 # For stomp.py <= 3.0.3, override ssl.PROTOCOL_SSLv3 and then
                 # try to set up the connection again below.
-                stomp.ssl.PROTOCOL_SSLv3 = ssl.PROTOCOL_SSLv23
+                ssl.PROTOCOL_SSLv3 = ssl.PROTOCOL_SSLv23
 
         if self._conn is None:
             # If _conn is None then either SSL wasn't requested or trying to
