@@ -1,5 +1,8 @@
 Changelog for ssm
 =================
+ * Fri Nov 28 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.5-1
+ - (No changes from pre-release version.)
+
  * Fri Nov 28 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.5-0.4.rc4
  - Corrected namespace of overridden variable (to enable SSL/TLS changes).
 
