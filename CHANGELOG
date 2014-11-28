@@ -1,5 +1,10 @@
 Changelog for ssm
 =================
+ * Fri Nov 28 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.5-0.3.rc3
+ - Removed python-ssl as a dependency as it can be option in some contexts.
+ - Made it possible for old versions of stomp.py (3.0.3 and lower) to use
+   SSL/TLS versions that aren't SSL 3.0.
+
  * Thu Nov 27 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.5-0.2.rc2
  - Added a warning for old versions of stomp.py (3.0.3 and lower) that are
    limited to using SSL 3.0 for secure connections.
