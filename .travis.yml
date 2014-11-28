@@ -16,6 +16,7 @@ install:
   - pip install python-ldap
   - pip install dirq
   - pip install unittest2
+  - pip install coveralls
 
 before_script:
   - export TMPDIR=$PWD/tmp
@@ -24,6 +25,7 @@ before_script:
 script:
   - export PYTHONPATH=$PYTHONPATH:`pwd -P`
   - cd test
-  #- unit2 -b discover
-  # Don't run test_crypto until it's fixed
-  - unit2 -b test_brokers test_ssm
+  - coverage run --source=ssm,bin -m unittest2 discover --buffer
+
+after_success:
+  - coveralls
