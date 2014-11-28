@@ -16,7 +16,13 @@
    @author: Will Rogers
 '''
 
-import ssl
+# It's possible for SSM to be used without SSL, and the ssl module isn't in the
+# standard library until 2.6, so this makes it safe for earlier Python versions.
+try:
+    import ssl
+except ImportError:
+    # ImportError is raised later on if SSL is actually requested.
+    ssl = None
 
 from ssm import crypto
 from dirq.QueueSimple import QueueSimple
@@ -310,20 +316,28 @@ class Ssm2(stomp.ConnectionListener):
         but don't try to start the connection.
         '''
         if self._use_ssl:
+            if ssl is None:
+                raise ImportError("SSL connection requested but the ssl module "
+                                  "wasn't found.")
             log.info('Connecting using SSL...')
 
-        try:
-            self._conn = stomp.Connection([(host, port)],
-                                          use_ssl=self._use_ssl,
-                                          user=self._user,
-                                          passcode=self._pwd,
-                                          ssl_key_file=self._key,
-                                          ssl_cert_file=self._cert,
-                                          ssl_version=ssl.PROTOCOL_SSLv23)
-        except TypeError:
-            # If stomp.py complains about the ssl_version argument, then it is
-            # probably version <= 3.0.3. Only version >= 3.0.4 supports this.
-            log.warn("Using a version of stomp.py that is limited to SSL 3.0.")
+            try:
+                # Compatible with stomp.py >= 3.0.4
+                self._conn = stomp.Connection([(host, port)],
+                                              use_ssl=self._use_ssl,
+                                              user=self._user,
+                                              passcode=self._pwd,
+                                              ssl_key_file=self._key,
+                                              ssl_cert_file=self._cert,
+                                              ssl_version=ssl.PROTOCOL_SSLv23)
+            except TypeError:
+                # For stomp.py <= 3.0.3, override ssl.PROTOCOL_SSLv3 and then
+                # try to set up the connection again below.
+                stomp.ssl.PROTOCOL_SSLv3 = ssl.PROTOCOL_SSLv23
+
+        if self._conn is None:
+            # If _conn is None then either SSL wasn't requested or trying to
+            # set ssl_version failed.
             self._conn = stomp.Connection([(host, port)],
                                           use_ssl=self._use_ssl,
                                           user=self._user,
