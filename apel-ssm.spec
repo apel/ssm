@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.1.4
+Version:        2.1.5
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -16,7 +16,7 @@ Source:         %{name}-%{version}-%{releasenumber}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
-Requires:       stomppy < 4.0.0, python-daemon, python-dirq, python-ldap %{?el5:python-ssl}
+Requires:       stomppy < 4.0.0, python-daemon, python-dirq, python-ldap
 Requires(pre):  shadow-utils
 
 %define ssmconf %_sysconfdir/apel
@@ -92,6 +92,26 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+ * Fri Nov 28 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.5-1
+ - (No changes from pre-release version.)
+
+ * Fri Nov 28 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.5-0.4.rc4
+ - Corrected namespace of overridden variable (to enable SSL/TLS changes).
+
+ * Fri Nov 28 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.5-0.3.rc3
+ - Removed python-ssl as a dependency as it can be option in some contexts.
+ - Made it possible for old versions of stomp.py (3.0.3 and lower) to use
+   SSL/TLS versions that aren't SSL 3.0.
+
+ * Thu Nov 27 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.5-0.2.rc2
+ - Added a warning for old versions of stomp.py (3.0.3 and lower) that are
+   limited to using SSL 3.0 for secure connections.
+
+ * Tue Nov 25 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.5-0.1.rc1
+ - The highest version of SSL/TLS available is now used (previously only SSLv3).
+ - Added python-ssl as a dependency (SL5/EL5 only).
+ - Minor tweaks made to logging calls and the logging level of certain messages.
+
  * Fri Aug 08 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.4-1
  - Corrected version number used in Python code.
 
