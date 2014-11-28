@@ -5,7 +5,7 @@
 
 Name:           apel-ssm
 Version:        2.1.5
-%define releasenumber 0.3.rc3
+%define releasenumber 0.4.rc4
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
 
@@ -92,6 +92,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+ * Fri Nov 28 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.5-0.4.rc4
+ - Corrected namespace of overridden variable (to enable SSL/TLS changes).
+
  * Fri Nov 28 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.5-0.3.rc3
  - Removed python-ssl as a dependency as it can be option in some contexts.
  - Made it possible for old versions of stomp.py (3.0.3 and lower) to use
