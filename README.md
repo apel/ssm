@@ -1,8 +1,8 @@
 # Secure Stomp Messenger
 
 [![Build Status](https://travis-ci.org/apel/ssm.svg?branch=dev)](https://travis-ci.org/apel/ssm)
-[![Coverage Status](https://coveralls.io/repos/apel/ssm/badge.png?branch=dev)](https://coveralls.io/r/apel/ssm?branch=dev)
-[![Code Health](https://landscape.io/github/apel/ssm/dev/landscape.png)](https://landscape.io/github/apel/ssm/dev)
+[![Coverage Status](https://coveralls.io/repos/apel/ssm/badge.svg?branch=dev)](https://coveralls.io/r/apel/ssm?branch=dev)
+[![Code Health](https://landscape.io/github/apel/ssm/dev/landscape.svg?style=flat)](https://landscape.io/github/apel/ssm/dev)
 
 Secure Stomp Messenger (SSM) is designed to simply send messages
 using the STOMP protocol.  Messages are signed and may be encrypted
