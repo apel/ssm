@@ -147,21 +147,20 @@ class Ssm2(stomp.ConnectionListener):
         raw_msg, signer = self._handle_msg(body)
         
         try:
-            if raw_msg is None: # the message has been rejected
-                log.warn('Message rejected.')
-                if signer is None: # crypto failed
+            if raw_msg is None:  # the message has been rejected
+                if signer is None:  # crypto failed
                     err_msg = 'Could not extract message.'
-                    log.warn(err_msg)
                     signer = 'Not available.'
-                else: # crypto ok but signer not verified
+                else:  # crypto ok but signer not verified
                     err_msg = 'Signer not in valid DNs list.'
-                    log.warn(err_msg)
-                    
-                self._rejectq.add({'body': body,
-                                   'signer': signer,
-                                   'empaid': empaid,
-                                   'error': err_msg})
-            else: # message verified ok
+                log.warn("Message rejected: %s", err_msg)
+
+                name = self._rejectq.add({'body': body,
+                                          'signer': signer,
+                                          'empaid': empaid,
+                                          'error': err_msg})
+                log.warn("Message moved to reject queue as %s", name)
+            else:  # message verified ok
                 self._inq.add({'body': raw_msg, 
                                'signer':signer, 
                                'empaid': headers['empa-id']})
@@ -230,7 +229,7 @@ class Ssm2(stomp.ConnectionListener):
             return None, None
         
         if signer not in self._valid_dns:
-            log.error('Message signer not in the valid DNs list: %s', signer)
+            log.warn('Signer not in valid DNs list: %s', signer)
             return None, signer
         else:
             log.info('Valid signer: %s', signer)
