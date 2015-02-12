@@ -201,11 +201,11 @@ def main():
             i += 1
 
     except SystemExit, e:
-        log.info('Received the shutdown signal: ' + str(e))
+        log.info('Received the shutdown signal: %s', e)
         ssm.shutdown()
         dc.close()
     except Exception, e:
-        log.error('Unexpected exception: ' + str(e))
+        log.error('Unexpected exception: %s', e)
         log.error('Exception type: %s', e.__class__)
         log.error('The SSM will exit.')
         ssm.shutdown()

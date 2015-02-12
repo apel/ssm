@@ -127,8 +127,8 @@ class Ssm2(stomp.ConnectionListener):
         '''
         Called by stomppy when a message is sent.
         '''
-        log.debug('Sent message: ' + headers['empa-id'])
-        
+        log.debug('Sent message: %s', headers['empa-id'])
+
     def on_message(self, headers, body):
         '''
         Called by stomppy when a message is received.
@@ -195,7 +195,7 @@ class Ssm2(stomp.ConnectionListener):
         '''
         Called by stomppy when the broker acknowledges receipt of a message.
         '''
-        log.info('Broker received message: ' + headers['receipt-id'])
+        log.info('Broker received message: %s', headers['receipt-id'])
         self._last_msg = headers['receipt-id']
         
     ##########################################################################
@@ -243,7 +243,7 @@ class Ssm2(stomp.ConnectionListener):
         the host cert and key.  If an encryption certificate
         has been supplied, the message will also be encrypted.
         '''
-        log.info('Sending message: ' + msgid)
+        log.info('Sending message: %s', msgid)
         headers = {'destination': self._dest, 'receipt': msgid,
                    'empa-id': msgid}
         
