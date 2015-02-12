@@ -142,10 +142,10 @@ class Ssm2(stomp.ConnectionListener):
                 return
         except KeyError:
             empaid = 'noid'
-            
-        log.info('Received message: ' + empaid)
+
+        log.info("Received message. ID = %s", empaid)
         raw_msg, signer = self._handle_msg(body)
-        
+
         try:
             if raw_msg is None:  # the message has been rejected
                 if signer is None:  # crypto failed
