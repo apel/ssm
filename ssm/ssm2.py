@@ -159,11 +159,12 @@ class Ssm2(stomp.ConnectionListener):
                                           'signer': signer,
                                           'empaid': empaid,
                                           'error': err_msg})
-                log.warn("Message moved to reject queue as %s", name)
+                log.info("Message saved to reject queue as %s", name)
             else:  # message verified ok
-                self._inq.add({'body': raw_msg, 
-                               'signer':signer, 
-                               'empaid': headers['empa-id']})
+                name = self._inq.add({'body': raw_msg,
+                                      'signer': signer,
+                                      'empaid': empaid})
+                log.info("Message saved to accept queue as %s", name)
         except OSError, e:
             log.error('Failed to read or write file: %s', e)
         
