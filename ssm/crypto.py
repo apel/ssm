@@ -169,11 +169,14 @@ def verify(signed_text, capath, check_crl):
     elif 'base64' in headers:
         body = base64.decodestring(body)
     # otherwise, plain text
-    
-    # Interesting problem here - we get a message 'Verification successful'
-    # to standard error.  We don't want to log this as an error each time,
-    # but we do want to see if there's a genuine error...
-    log.info(str(error).strip())
+
+    # 'openssl smime' returns "Verification successful" to standard error. We
+    # don't want to log this as an error each time, but we do want to see if
+    # there's a genuine error.
+    if "Verification successful" not in error:
+        log.warn(error)
+    else:
+        log.debug(error)
 
     subj = get_certificate_subject(signer)
     return body, subj
@@ -232,17 +235,21 @@ def verify_cert(certstring, capath, check_crls=True):
     # I think this is unlikely ever to happen
     if (error != ''):
         log.error(error)
-        
-    # There was a tricky problem here.  
-    # 'openssl verify' returns 0 whatever happens, so we can't 
-    # use the return code to determine whether the verification was 
-    # successful.  
+
+    # 'openssl verify' returns 0 whatever happens, so we can't use the return
+    # code to determine whether the verification was successful.
     # If it is successful, openssl prints 'OK'
     # If it fails, openssl prints 'error'
-    # So:
-    log.info('Certificate verification: ' + str(message).strip())
+    return_bool = 'OK' in message and 'error' not in message
 
-    return ('OK' in message and 'error' not in message)
+    if return_bool:
+        # We're not interested in the ouput if successful.
+        level = logging.DEBUG
+    else:
+        level = logging.WARNING
+    log.log(level, 'Certificate verification: %s', message)
+
+    return return_bool
 
 
 def verify_cert_path(certpath, capath, check_crls=True):
