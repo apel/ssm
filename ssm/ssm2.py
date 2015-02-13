@@ -164,7 +164,7 @@ class Ssm2(stomp.ConnectionListener):
                 name = self._inq.add({'body': raw_msg,
                                       'signer': signer,
                                       'empaid': empaid})
-                log.info("Message saved to accept queue as %s", name)
+                log.info("Message saved to incoming queue as %s", name)
         except OSError, e:
             log.error('Failed to read or write file: %s', e)
         
