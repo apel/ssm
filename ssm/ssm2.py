@@ -127,8 +127,8 @@ class Ssm2(stomp.ConnectionListener):
         '''
         Called by stomppy when a message is sent.
         '''
-        log.debug('Sent message: ' + headers['empa-id'])
-        
+        log.debug('Sent message: %s', headers['empa-id'])
+
     def on_message(self, headers, body):
         '''
         Called by stomppy when a message is received.
@@ -142,29 +142,29 @@ class Ssm2(stomp.ConnectionListener):
                 return
         except KeyError:
             empaid = 'noid'
-            
-        log.info('Received message: ' + empaid)
+
+        log.info("Received message. ID = %s", empaid)
         raw_msg, signer = self._handle_msg(body)
-        
+
         try:
-            if raw_msg is None: # the message has been rejected
-                log.warn('Message rejected.')
-                if signer is None: # crypto failed
+            if raw_msg is None:  # the message has been rejected
+                if signer is None:  # crypto failed
                     err_msg = 'Could not extract message.'
-                    log.warn(err_msg)
                     signer = 'Not available.'
-                else: # crypto ok but signer not verified
+                else:  # crypto ok but signer not verified
                     err_msg = 'Signer not in valid DNs list.'
-                    log.warn(err_msg)
-                    
-                self._rejectq.add({'body': body,
-                                   'signer': signer,
-                                   'empaid': empaid,
-                                   'error': err_msg})
-            else: # message verified ok
-                self._inq.add({'body': raw_msg, 
-                               'signer':signer, 
-                               'empaid': headers['empa-id']})
+                log.warn("Message rejected: %s", err_msg)
+
+                name = self._rejectq.add({'body': body,
+                                          'signer': signer,
+                                          'empaid': empaid,
+                                          'error': err_msg})
+                log.info("Message saved to reject queue as %s", name)
+            else:  # message verified ok
+                name = self._inq.add({'body': raw_msg,
+                                      'signer': signer,
+                                      'empaid': empaid})
+                log.info("Message saved to incoming queue as %s", name)
         except OSError, e:
             log.error('Failed to read or write file: %s', e)
         
@@ -195,7 +195,7 @@ class Ssm2(stomp.ConnectionListener):
         '''
         Called by stomppy when the broker acknowledges receipt of a message.
         '''
-        log.info('Broker received message: ' + headers['receipt-id'])
+        log.info('Broker received message: %s', headers['receipt-id'])
         self._last_msg = headers['receipt-id']
         
     ##########################################################################
@@ -230,7 +230,7 @@ class Ssm2(stomp.ConnectionListener):
             return None, None
         
         if signer not in self._valid_dns:
-            log.error('Message signer not in the valid DNs list: %s', signer)
+            log.warn('Signer not in valid DNs list: %s', signer)
             return None, signer
         else:
             log.info('Valid signer: %s', signer)
@@ -243,7 +243,7 @@ class Ssm2(stomp.ConnectionListener):
         the host cert and key.  If an encryption certificate
         has been supplied, the message will also be encrypted.
         '''
-        log.info('Sending message: ' + msgid)
+        log.info('Sending message: %s', msgid)
         headers = {'destination': self._dest, 'receipt': msgid,
                    'empa-id': msgid}
         
