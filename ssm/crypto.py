@@ -173,10 +173,10 @@ def verify(signed_text, capath, check_crl):
     # 'openssl smime' returns "Verification successful" to standard error. We
     # don't want to log this as an error each time, but we do want to see if
     # there's a genuine error.
-    if "Verification successful" not in error:
-        log.warn(error)
-    else:
+    if "Verification successful" in error:
         log.debug(error)
+    else:
+        log.warn(error)
 
     subj = get_certificate_subject(signer)
     return body, subj
