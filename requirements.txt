@@ -1,4 +1,4 @@
-stomp.py
+stomp.py<=3.1.6
 python-daemon
 python-ldap
 dirq
