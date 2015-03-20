@@ -1,0 +1,7 @@
+stomp.py
+python-daemon
+python-ldap
+dirq
+# Dependencies for testing
+unittest2
+coveralls
