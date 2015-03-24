@@ -9,22 +9,21 @@ matrix:
     - python: "3.4"
   fast_finish: true
 
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install:
-  - pip install stomp.py
-  - pip install python-daemon
-  - pip install python-ldap
-  - pip install dirq
-  - pip install unittest2
-  - pip install coveralls
+# Route build to container-based infrastructure
+sudo: false
+# Cache the dependencies installed by pip
+cache: pip
+
+# Install defaults to "pip install -r requirements.txt"
 
 before_script:
   - export TMPDIR=$PWD/tmp
   - mkdir $TMPDIR
-# command to run tests, e.g. python setup.py test
-script:
   - export PYTHONPATH=$PYTHONPATH:`pwd -P`
   - cd test
+  
+# Command to run tests
+script:
   - coverage run --source=ssm,bin -m unittest2 discover --buffer
 
 after_success:
