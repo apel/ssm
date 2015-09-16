@@ -194,6 +194,8 @@ def main():
                     log.error('Connection lost.')
                     ssm.shutdown()
                     dc.close()
+                    log.info("Waiting for 10 minutes before restarting...")
+                    time.sleep(10 * 60)
                     log.info('Restarting SSM.')
                     dc.open()
                     ssm.startup()
