@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.1.6
+Version:        2.1.7
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -92,6 +92,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+ * Tue Jan 12 2016 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.7-1
+ - Added a delay when receiver is reconnecting to improve reliability.
+
  * Mon Mar 02 2014 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.6-1
  - Improved the log output for SSM receivers so that there are fewer trivial
    entries and so it's more useful in tracking messages on the filesystem.
