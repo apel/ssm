@@ -26,5 +26,5 @@ setup(name='ssm',
           'unittest2': ['unittest2'],
           'coveralls': ['coveralls'],
       },
-      packages=find_packages('bin'),  # include all packages under nin
+      packages=find_packages('bin'),  # include all packages under bin
       package_dir={'': 'bin'})  # tell distutils packages are under bin
