@@ -1,3 +1,4 @@
+"""A setup up script for the APEL-SSM."""
 from setuptools import setup, find_packages
 
 # required to parse the requiremnts.txt file
@@ -26,5 +27,5 @@ setup(name='ssm',
           'unittest2': ['unittest2'],
           'coveralls': ['coveralls'],
       },
-      packages=find_packages('bin'),  # include all packages under bin
-      package_dir={'': 'bin'})  # tell distutils packages are under bin
+      packages=find_packages('ssm'),  # include all packages under ssm
+      package_dir={'': 'ssm'})  # tell distutils packages are under ssm
