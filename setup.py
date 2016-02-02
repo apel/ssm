@@ -1,14 +1,11 @@
 """A setup up script for the APEL-SSM."""
-import sys
-import os
+
+
 from setuptools import setup, find_packages
 
 
 def main():
     """Called when run as script, i.e. "python setup.py install"."""
-    bin_dir = os.path.join(sys.prefix, "bin")
-    bin_files = ['bin/apel-ssm', 'bin/receiver.py', 'bin/sender.py']
-
     conf_dir = '/etc/apel/'
     conf_files = ['conf/logging.cfg',
                   'conf/receiver.cfg',
@@ -31,7 +28,8 @@ def main():
               'coveralls': ['coveralls'],
           },
           packages=find_packages(exclude=['bin']),
-          data_files=[(bin_dir, bin_files)])#,
+          scripts=['bin/apel-ssm', 'bin/receiver.py', 'bin/sender.py'])
+#          data_files=[(bin_dir, bin_files)])#,
 #                      (conf_dir, conf_files),
 #                      ('/etc/logrotate.d', 'conf/ssm.logrotate')])
 
