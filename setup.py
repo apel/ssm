@@ -1,6 +1,4 @@
 """A setup up script for the APEL-SSM."""
-
-
 from setuptools import setup, find_packages
 
 
@@ -28,10 +26,10 @@ def main():
               'coveralls': ['coveralls'],
           },
           packages=find_packages(exclude=['bin']),
-          scripts=['bin/apel-ssm', 'bin/receiver.py', 'bin/sender.py'])
-#          data_files=[(bin_dir, bin_files)])#,
-#                      (conf_dir, conf_files),
-#                      ('/etc/logrotate.d', 'conf/ssm.logrotate')])
+          scripts=['bin/apel-ssm', 'bin/receiver.py', 'bin/sender.py'],
+          data_files=[(conf_dir, conf_files),
+                      ('/etc/logrotate.d', ['conf/ssm.logrotate'])],
+          zip_safe=True)
 
 if __name__ == "__main__":
     main()
