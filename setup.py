@@ -9,6 +9,12 @@ def main():
     bin_dir = os.path.join(sys.prefix, "bin")
     bin_files = ['bin/apel-ssm', 'bin/receiver.py', 'bin/sender.py']
 
+    conf_dir = '/etc/apel/'
+    conf_files = ['conf/logging.cfg',
+                  'conf/receiver.cfg',
+                  'conf/sender.cfg',
+                  'conf/dns']
+
     setup(name='apel-ssm',
           version='2.1.7-1',
           description=("Secure Stomp Messenger (SSM) is designed to simply "
@@ -24,9 +30,10 @@ def main():
               'unittest2': ['unittest2'],
               'coveralls': ['coveralls'],
           },
-          packages=find_packages('ssm'),  # include all packages under ssm
-          package_dir={'': 'ssm'},  # tell distutils packages are under ssm
-          data_files=[(bin_dir, bin_files)])
+          packages=find_packages(exclude=['bin']),
+          data_files=[(bin_dir, bin_files)])#,
+#                      (conf_dir, conf_files),
+#                      ('/etc/logrotate.d', 'conf/ssm.logrotate')])
 
 if __name__ == "__main__":
     main()
