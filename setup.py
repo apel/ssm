@@ -1,11 +1,15 @@
 """A setup up script for the APEL-SSM."""
 from shutil import copyfile
 from os import remove
+import sys
 from setuptools import setup, find_packages
 
 
 def main():
     """Called when run as script, i.e. "python setup.py install"."""
+    if sys.argv[1] == 'install':
+        rename_files()
+
     conf_dir = '/etc/apel/'
     conf_files = ['conf/logging.cfg',
                   'conf/receiver.cfg',
@@ -33,6 +37,9 @@ def main():
           test_suite='test',
           tests_require=['mock', 'unittest2', 'coveralls'])
 
+    if sys.argv[1] == 'install':
+        delete_files()
+
 
 def rename_files():
     """(Copy and) Rename receiver.py to ssmreceive and sender.py to ssmsend."""
@@ -46,6 +53,4 @@ def delete_files():
     remove('bin/ssmsend')
 
 if __name__ == "__main__":
-    rename_files()
     main()
-    delete_files()
