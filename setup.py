@@ -8,7 +8,8 @@ from setuptools import setup, find_packages
 def main():
     """Called when run as script, i.e. "python setup.py install"."""
     if sys.argv[1] == 'install':
-        rename_files()
+        copyfile('bin/receiver.py', 'bin/ssmreceive')
+        copyfile('bin/sender.py', 'bin/ssmsend')
 
     conf_dir = '/etc/apel/'
     conf_files = ['conf/logging.cfg',
@@ -16,6 +17,9 @@ def main():
                   'conf/sender.cfg',
                   'conf/dns']
 
+    # For 'python setup.py test' to work (on Linux SL6)
+    # 'python-daemon' and 'mock' must be installed
+    # or included in 'install_requires'
     setup(name='apel-ssm',
           version='2.1.7-1',
           description=("Secure Stomp Messenger (SSM) is designed to simply "
@@ -35,22 +39,11 @@ def main():
                       ('/etc/logrotate.d', ['conf/ssm.logrotate'])],
           zip_safe=True,
           test_suite='test',
-          tests_require=['mock', 'unittest2', 'coveralls'])
+          tests_require=['unittest2', 'coveralls'])
 
     if sys.argv[1] == 'install':
-        delete_files()
-
-
-def rename_files():
-    """(Copy and) Rename receiver.py to ssmreceive and sender.py to ssmsend."""
-    copyfile('bin/receiver.py', 'bin/ssmreceive')
-    copyfile('bin/sender.py', 'bin/ssmsend')
-
-
-def delete_files():
-    """Delete the files bin/ssmreceive and bin/ssmsend."""
-    remove('bin/ssmreceive')
-    remove('bin/ssmsend')
+        remove('bin/ssmreceive')
+        remove('bin/ssmsend')
 
 if __name__ == "__main__":
     main()
