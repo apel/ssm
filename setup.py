@@ -1,4 +1,8 @@
-"""A setup up script for the APEL-SSM."""
+"""A setup script for APEL SSM.
+
+Requires setuptools.
+"""
+
 from os import remove
 from shutil import copyfile
 import sys
@@ -9,7 +13,7 @@ from ssm import __version__
 
 
 def main():
-    """Called when run as script, i.e. "python setup.py install"."""
+    """Called when run as script, e.g. 'python setup.py install'."""
     if 'install' in sys.argv:
         copyfile('bin/receiver.py', 'bin/ssmreceive')
         copyfile('bin/sender.py', 'bin/ssmsend')
@@ -37,9 +41,10 @@ def main():
               'python-daemon': ['python-daemon'],
           },
           packages=find_packages(exclude=['bin']),
-          scripts=['bin/apel-ssm', 'bin/ssmreceive', 'bin/ssmsend'],
+          scripts=['bin/ssmreceive', 'bin/ssmsend'],
           data_files=[(conf_dir, conf_files),
-                      ('/etc/logrotate.d', ['conf/ssm.logrotate'])],
+                      ('/etc/logrotate.d', ['conf/ssm.logrotate']),
+                      ('/etc/init.d', ['bin/apel-ssm'])],
           zip_safe=True,
           test_suite='test',
           tests_require=['unittest2', 'coveralls'])
