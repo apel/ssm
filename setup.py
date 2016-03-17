@@ -10,7 +10,7 @@ from ssm import __version__
 
 def main():
     """Called when run as script, i.e. "python setup.py install"."""
-    if sys.argv[1] == 'install':
+    if 'install' in sys.argv:
         copyfile('bin/receiver.py', 'bin/ssmreceive')
         copyfile('bin/sender.py', 'bin/ssmsend')
 
@@ -44,7 +44,7 @@ def main():
           test_suite='test',
           tests_require=['unittest2', 'coveralls'])
 
-    if sys.argv[1] == 'install':
+    if 'install' in sys.argv:
         remove('bin/ssmreceive')
         remove('bin/ssmsend')
 
