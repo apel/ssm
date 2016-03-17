@@ -5,6 +5,8 @@ import sys
 
 from setuptools import setup, find_packages
 
+from ssm import __version__
+
 
 def main():
     """Called when run as script, i.e. "python setup.py install"."""
@@ -22,7 +24,7 @@ def main():
     # 'python-daemon' and 'mock' must be installed
     # or included in 'install_requires'
     setup(name='apel-ssm',
-          version='2.1.7-1',
+          version='%i.%i.%i' % __version__,
           description=("Secure Stomp Messenger (SSM) is designed to simply "
                        "send messages using the STOMP protocol."),
           author='APEL',
