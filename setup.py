@@ -1,7 +1,8 @@
 """A setup up script for the APEL-SSM."""
-from shutil import copyfile
 from os import remove
+from shutil import copyfile
 import sys
+
 from setuptools import setup, find_packages
 
 
