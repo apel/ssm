@@ -1,13 +1,20 @@
-"""A setup up script for the APEL-SSM."""
-from shutil import copyfile
+"""A setup script for APEL SSM.
+
+Requires setuptools.
+"""
+
 from os import remove
+from shutil import copyfile
 import sys
+
 from setuptools import setup, find_packages
+
+from ssm import __version__
 
 
 def main():
-    """Called when run as script, i.e. "python setup.py install"."""
-    if sys.argv[1] == 'install':
+    """Called when run as script, e.g. 'python setup.py install'."""
+    if 'install' in sys.argv:
         copyfile('bin/receiver.py', 'bin/ssmreceive')
         copyfile('bin/sender.py', 'bin/ssmsend')
 
@@ -21,27 +28,28 @@ def main():
     # 'python-daemon' and 'mock' must be installed
     # or included in 'install_requires'
     setup(name='apel-ssm',
-          version='2.1.7-1',
+          version='%i.%i.%i' % __version__,
           description=("Secure Stomp Messenger (SSM) is designed to simply "
                        "send messages using the STOMP protocol."),
           author='APEL',
           author_email='apel-admins@stfc.ac.uk',
-          url='https://wiki.egi.eu/wiki/APEL/SSM',
-          download_url='https://github.com/apel/ssm/archive/2.1.7-1.zip',
-          license='Apache License, v2 - http://www.apache.org/licenses/',
+          url='http://apel.github.io/',
+          download_url='https://github.com/apel/ssm/releases',
+          license='Apache License, Version 2.0',
           install_requires=['stomp.py<=3.1.6', 'python-ldap', 'dirq'],
           extras_require={
               'python-daemon': ['python-daemon'],
           },
           packages=find_packages(exclude=['bin']),
-          scripts=['bin/apel-ssm', 'bin/ssmreceive', 'bin/ssmsend'],
+          scripts=['bin/ssmreceive', 'bin/ssmsend'],
           data_files=[(conf_dir, conf_files),
-                      ('/etc/logrotate.d', ['conf/ssm.logrotate'])],
+                      ('/etc/logrotate.d', ['conf/ssm.logrotate']),
+                      ('/etc/init.d', ['bin/apel-ssm'])],
           zip_safe=True,
           test_suite='test',
           tests_require=['unittest2', 'coveralls'])
 
-    if sys.argv[1] == 'install':
+    if 'install' in sys.argv:
         remove('bin/ssmreceive')
         remove('bin/ssmsend')
 
