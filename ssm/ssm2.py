@@ -28,7 +28,9 @@ from ssm import crypto
 from dirq.QueueSimple import QueueSimple
 from dirq.queue import Queue
 
+import urllib2
 import stomp
+
 # Exception changed name between stomppy versions
 try:
     from stomp.exception import ConnectFailedException
@@ -62,7 +64,7 @@ class Ssm2(stomp.ConnectionListener):
     
     def __init__(self, hosts_and_ports, qpath, cert, key, dest=None, listen=None, 
                  capath=None, check_crls=False, use_ssl=False, username=None, password=None, 
-                 enc_cert=None, verify_enc_cert=True, pidfile=None):
+                 enc_cert=None, verify_enc_cert=True, pidfile=None, send_via_rest=False):
         '''
         Creates an SSM2 object.  If a listen value is supplied,
         this SSM2 will be a receiver.
@@ -88,10 +90,14 @@ class Ssm2(stomp.ConnectionListener):
         
         self._valid_dns = []
         self._pidfile = pidfile
-        
+       
+        self._send_via_rest = send_via_rest
+ 
         # create the filesystem queues for accepted and rejected messages
         if dest is not None and listen is None:
             self._outq = QueueSimple(qpath)
+            # add test message
+            self._outq.add("BOO\n") 
         elif listen is not None:
             inqpath = os.path.join(qpath, 'incoming')
             rejectqpath = os.path.join(qpath, 'reject')
@@ -236,7 +242,17 @@ class Ssm2(stomp.ConnectionListener):
             log.info('Valid signer: %s', signer)
             
         return message, signer
-        
+
+
+    def _send_msg_rest(self,message,msgid):
+        '''
+        Send one message using REST.
+        '''
+        #self._conn.request("POST", "", "BOO", None)
+        log.info('Sending message via HTTP: %s', msgid)
+        response = urllib2.urlopen(url=self._dest, data="BOO")
+        log.info(response)
+ 
     def _send_msg(self, message, msgid):
         '''
         Send one message using stomppy.  The message will be signed using 
@@ -277,6 +293,33 @@ class Ssm2(stomp.ConnectionListener):
         return self._outq.count() > 0
 
     def send_all(self):
+        if self._send_via_rest:
+            self.send_all_rest()
+        else:
+            self.send_all_broker()
+
+    def send_all_rest(self):
+        log.info('Found %s messages.', self._outq.count())
+        for msgid in self._outq:
+            if not self._outq.lock(msgid):
+                log.warn('Message was locked. %s will not be sent.', msgid)
+                continue
+
+            text = self._outq.get(msgid)
+            self._send_msg_rest(text,msgid)
+
+            time.sleep(0.1)
+
+            self._outq.remove(msgid)
+
+        log.info('Tidying message directory.')
+        try:
+            # Remove empty dirs and unlock msgs older than 5 min (default)
+            self._outq.purge()
+        except OSError, e:
+            log.warn('OSError raised while purging message queue: %s', e)
+
+    def send_all_broker(self):
         '''
         Send all the messages in the outgoing queue.
         '''
@@ -360,6 +403,13 @@ class Ssm2(stomp.ConnectionListener):
         If more than one is in the list self._network_brokers, try to 
         connect to each in turn until successful.
         '''
+
+        if self._send_via_rest:
+            #log.info('Will send messages to: %s', self._dest)
+            #self._conn = httplib.HTTPConnection(self._dest)
+            #self._conn.connect()
+            return
+
         for host, port in self._brokers:
             self._initialise_connection(host, port)
             try:
@@ -435,6 +485,10 @@ class Ssm2(stomp.ConnectionListener):
         in a separate thread, so it can outlive the main process 
         if it is not ended.
         '''
+        if self._send_via_rest:
+            #log.info('Closing REST connection')
+            #self._conn.close()
+            return
         try:
             self._conn.stop()  # Same as diconnect() but waits for thread exit
         except (stomp.exception.NotConnectedException, socket.error):
