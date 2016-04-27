@@ -28,8 +28,9 @@ from ssm import crypto
 from dirq.QueueSimple import QueueSimple
 from dirq.queue import Queue
 
-import urllib2
+import httplib
 import stomp
+import urllib2
 
 # Exception changed name between stomppy versions
 try:
@@ -64,7 +65,7 @@ class Ssm2(stomp.ConnectionListener):
     
     def __init__(self, hosts_and_ports, qpath, cert, key, dest=None, listen=None, 
                  capath=None, check_crls=False, use_ssl=False, username=None, password=None, 
-                 enc_cert=None, verify_enc_cert=True, pidfile=None, send_via_rest=False):
+                 enc_cert=None, verify_enc_cert=True, pidfile=None, protocol="STOMP"):
         '''
         Creates an SSM2 object.  If a listen value is supplied,
         this SSM2 will be a receiver.
@@ -91,13 +92,13 @@ class Ssm2(stomp.ConnectionListener):
         self._valid_dns = []
         self._pidfile = pidfile
        
-        self._send_via_rest = send_via_rest
+        self._protocol = protocol
  
         # create the filesystem queues for accepted and rejected messages
         if dest is not None and listen is None:
             self._outq = QueueSimple(qpath)
             # add test message
-            self._outq.add("BOO\n") 
+            self._outq.add(MESSAGE) 
         elif listen is not None:
             inqpath = os.path.join(qpath, 'incoming')
             rejectqpath = os.path.join(qpath, 'reject')
@@ -243,6 +244,17 @@ class Ssm2(stomp.ConnectionListener):
             
         return message, signer
 
+    def _send_msg(self,message,msgid):
+        '''
+        Calls the appropriate method based
+        on the chosen protocol
+        '''
+        if self._protocol == "STOMP":
+            self._send_msg_stomp(message, msgid)
+        elif self._protocol == "REST":
+            self._send_msg_rest(message, msgid)
+        else:
+            raise Ssm2Exception('Unsupported protocol defined: %s' % protocol)
 
     def _send_msg_rest(self,message,msgid):
         '''
@@ -250,16 +262,30 @@ class Ssm2(stomp.ConnectionListener):
         '''
         #self._conn.request("POST", "", "BOO", None)
         log.info('Sending message via HTTP: %s', msgid)
-        response = urllib2.urlopen(url=self._dest, data="BOO")
-        log.info(response)
+
+        request_headers = {"empa-id": msgid}
+        try:
+            request = urllib2.Request(self._dest, data=message, headers=request_headers)
+            response = urllib2.urlopen(request)
+        except urllib2.HTTPError, e:
+            log.error('HTTPError = ' + str(e.code))
+            raise Ssm2Exception('Message %s did not send to %s' % (msgid, self._dest))
+        except urllib2.URLError, e:
+            log.error('URLError = ' + str(e.reason))
+            raise Ssm2Exception('Message %s did not send to %s' % (msgid, self._dest))
+        except httplib.HTTPException:
+            log.error('HTTPException')
+            raise Ssm2Exception('Message %s did not send to %s' % (msgid, self._dest))
+        
+        log.info('Message %s received response %s.' % (msgid, response.getcode()))
  
-    def _send_msg(self, message, msgid):
+    def _send_msg_stomp(self, message, msgid):
         '''
         Send one message using stomppy.  The message will be signed using 
         the host cert and key.  If an encryption certificate
         has been supplied, the message will also be encrypted.
         '''
-        log.info('Sending message: %s', msgid)
+        log.info('Sending message via STOMP: %s', msgid)
         headers = {'destination': self._dest, 'receipt': msgid,
                    'empa-id': msgid}
         
@@ -293,33 +319,6 @@ class Ssm2(stomp.ConnectionListener):
         return self._outq.count() > 0
 
     def send_all(self):
-        if self._send_via_rest:
-            self.send_all_rest()
-        else:
-            self.send_all_broker()
-
-    def send_all_rest(self):
-        log.info('Found %s messages.', self._outq.count())
-        for msgid in self._outq:
-            if not self._outq.lock(msgid):
-                log.warn('Message was locked. %s will not be sent.', msgid)
-                continue
-
-            text = self._outq.get(msgid)
-            self._send_msg_rest(text,msgid)
-
-            time.sleep(0.1)
-
-            self._outq.remove(msgid)
-
-        log.info('Tidying message directory.')
-        try:
-            # Remove empty dirs and unlock msgs older than 5 min (default)
-            self._outq.purge()
-        except OSError, e:
-            log.warn('OSError raised while purging message queue: %s', e)
-
-    def send_all_broker(self):
         '''
         Send all the messages in the outgoing queue.
         '''
@@ -332,12 +331,13 @@ class Ssm2(stomp.ConnectionListener):
             text = self._outq.get(msgid)
             self._send_msg(text, msgid)
 
-            log.info('Waiting for broker to accept message.')
-            while self._last_msg is None:
-                if not self.connected:
-                    raise Ssm2Exception('Lost connection.')
+            if self._protocol == "STOMP":
+                log.info('Waiting for broker to accept message.')
+                while self._last_msg is None:
+                    if not self.connected:
+                        raise Ssm2Exception('Lost connection.')
 
-                time.sleep(0.1)
+                    time.sleep(0.1)
 
             self._last_msg = None
             self._outq.remove(msgid)
@@ -403,26 +403,20 @@ class Ssm2(stomp.ConnectionListener):
         If more than one is in the list self._network_brokers, try to 
         connect to each in turn until successful.
         '''
+        if self._protocol == "STOMP":
+            for host, port in self._brokers:
+                self._initialise_connection(host, port)
+                try:
+                    self.start_connection()
+                    break
+                except ConnectFailedException, e:
+                    # ConnectFailedException doesn't provide a message.
+                    log.warn('Failed to connect to %s:%s.', host, port)
+                except Ssm2Exception, e:
+                    log.warn('Failed to connect to %s:%s: %s', host, port, e)
 
-        if self._send_via_rest:
-            #log.info('Will send messages to: %s', self._dest)
-            #self._conn = httplib.HTTPConnection(self._dest)
-            #self._conn.connect()
-            return
-
-        for host, port in self._brokers:
-            self._initialise_connection(host, port)
-            try:
-                self.start_connection()
-                break
-            except ConnectFailedException, e:
-                # ConnectFailedException doesn't provide a message.
-                log.warn('Failed to connect to %s:%s.', host, port)
-            except Ssm2Exception, e:
-                log.warn('Failed to connect to %s:%s: %s', host, port, e)
-
-        if not self.connected:
-            raise Ssm2Exception('Attempts to start the SSM failed.  The system will exit.')
+            if not self.connected:
+                raise Ssm2Exception('Attempts to start the SSM failed.  The system will exit.')
 
     def handle_disconnect(self):
         '''
@@ -485,19 +479,16 @@ class Ssm2(stomp.ConnectionListener):
         in a separate thread, so it can outlive the main process 
         if it is not ended.
         '''
-        if self._send_via_rest:
-            #log.info('Closing REST connection')
-            #self._conn.close()
-            return
-        try:
-            self._conn.stop()  # Same as diconnect() but waits for thread exit
-        except (stomp.exception.NotConnectedException, socket.error):
-            self._conn = None
-        except AttributeError:
-            # AttributeError if self._connection is None already
-            pass
+        if self._protocol == "STOMP":
+            try:
+                self._conn.stop()  # Same as diconnect() but waits for thread exit
+            except (stomp.exception.NotConnectedException, socket.error):
+                self._conn = None
+            except AttributeError:
+                # AttributeError if self._connection is None already
+                pass
         
-        log.info('SSM connection ended.')
+            log.info('SSM connection ended.')
         
     def startup(self):
         '''
@@ -529,4 +520,49 @@ class Ssm2(stomp.ConnectionListener):
                 log.warn('Failed to remove pidfile %s: %e', self._pidfile, e)
                 log.warn('SSM may not start again until it is removed.')
         
-        
+MESSAGE = """APEL-cloud-message: v0.2
+VMUUID: exampleVM1 2013-02-25 17:37:27+00:00
+SiteName: exampleSite1
+MachineName: one-2421
+LocalUserId: 19
+LocalGroupId: 101
+GlobalUserName: NULL
+FQAN: NULL
+Status: completed
+StartTime: 1361813847
+EndTime: 1361813870
+SuspendDuration: NULL
+WallDuration: NULL
+CpuDuration: NULL
+CpuCount: 1
+NetworkType: NULL
+NetworkInbound: 0
+NetworkOutbound: 0
+Memory: 1000
+Disk: NULL
+StorageRecordId: NULL
+ImageId: NULL
+CloudType: OpenNebula
+%%
+VMUUID: exampleVM2 2013-02-25 12:37:27+00:00
+SiteName: exampleSite2
+MachineName: one-2421
+LocalUserId: 12
+LocalGroupId: 201
+GlobalUserName: NULL
+FQAN: NULL
+Status: completed
+StartTime: 1361822827
+EndTime: 1362813870
+SuspendDuration: NULL
+WallDuration: NULL
+CpuDuration: NULL
+CpuCount: 2
+NetworkType: NULL
+NetworkInbound: 0
+NetworkOutbound: 0
+Memory: 1000
+Disk: NULL
+StorageRecordId: NULL
+ImageId: NULL
+CloudType: OpenNebula""" 

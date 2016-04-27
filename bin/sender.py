@@ -67,13 +67,13 @@ def main():
     log.info('Starting sending SSM version %s.%s.%s.', *__version__)
 
     try:
-        send_via_rest = cp.get('messaging', 'send_via_rest')
-        if send_via_rest == '':
-            send_via_rest = False
+        protocol = cp.get('messaging', 'protocol')
+        if protocol == '':
+            protocol = False
     except ConfigParser.NoOptionError, e:
-        send_via_rest = False
+        protocol = False
 
-    if not send_via_rest:
+    if protocol == "STOMP":
         # If we can't get a broker to connect to, we have to give up.
         try:
             bdii_url = cp.get('broker','bdii')
@@ -110,8 +110,14 @@ def main():
             log.error('System will exit.')
             log.info(LOG_BREAK)
             sys.exit(1)
+
+    elif protocol == "REST":
+        brokers = None     
+
     else:
-        brokers = None        
+       log.error('Unsupported protocol defined: %s' % protocol)
+       print 'SSM failed to start.  See log file for details.'
+       sys.exit(1)   
 
     try:
         server_cert = None
@@ -141,7 +147,7 @@ def main():
                    capath=cp.get('certificates', 'capath'),
                    enc_cert=server_cert,
                    verify_enc_cert=verify_server_cert,
-                   send_via_rest=send_via_rest)
+                   protocol=protocol)
         
         if sender.has_msgs():
             sender.handle_connect()
