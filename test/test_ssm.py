@@ -103,7 +103,7 @@ class TestSsm(unittest.TestCase):
         # send message
         self._ssm.send_all()
 
-        self.assertEqual(self._ssm._send_msg_rest.call_count, 22
+        self.assertEqual(self._ssm._send_msg_rest.call_count, 2)
 
 TEST_CERT = '''-----BEGIN CERTIFICATE-----
 MIICHzCCAYgCCQDmzJkJ04gm+DANBgkqhkiG9w0BAQUFADBUMQswCQYDVQQGEwJ1
