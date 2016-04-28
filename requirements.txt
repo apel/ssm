@@ -3,5 +3,6 @@ python-daemon
 python-ldap
 dirq
 # Dependencies for testing
+mock
 unittest2
 coveralls
