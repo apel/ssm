@@ -94,7 +94,7 @@ class TestSsm(unittest.TestCase):
         # set SSM to use REST
         self._ssm._protocol = "REST"
         # set up a queue
-        self._ssm._outq = QueueSimple('.')
+        self._ssm._outq = QueueSimple('/tmp/apel/')
         # mock the send message
         self._ssm._send_msg_rest = MagicMock()
 
@@ -103,7 +103,7 @@ class TestSsm(unittest.TestCase):
         # send message
         self._ssm.send_all()
 
-        self.assertEqual(self._ssm._send_msg_rest.call_count, 2)
+        self.assertEqual(self._ssm._send_msg_rest.call_count, 1)
 
 TEST_CERT = '''-----BEGIN CERTIFICATE-----
 MIICHzCCAYgCCQDmzJkJ04gm+DANBgkqhkiG9w0BAQUFADBUMQswCQYDVQQGEwJ1
