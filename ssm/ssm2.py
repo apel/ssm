@@ -97,8 +97,6 @@ class Ssm2(stomp.ConnectionListener):
         # create the filesystem queues for accepted and rejected messages
         if dest is not None and listen is None:
             self._outq = QueueSimple(qpath)
-            # add test message
-            self._outq.add(MESSAGE) 
         elif listen is not None:
             inqpath = os.path.join(qpath, 'incoming')
             rejectqpath = os.path.join(qpath, 'reject')
@@ -519,50 +517,3 @@ class Ssm2(stomp.ConnectionListener):
             except IOError, e:
                 log.warn('Failed to remove pidfile %s: %e', self._pidfile, e)
                 log.warn('SSM may not start again until it is removed.')
-        
-MESSAGE = """APEL-cloud-message: v0.2
-VMUUID: exampleVM1 2013-02-25 17:37:27+00:00
-SiteName: exampleSite1
-MachineName: one-2421
-LocalUserId: 19
-LocalGroupId: 101
-GlobalUserName: NULL
-FQAN: NULL
-Status: completed
-StartTime: 1361813847
-EndTime: 1361813870
-SuspendDuration: NULL
-WallDuration: NULL
-CpuDuration: NULL
-CpuCount: 1
-NetworkType: NULL
-NetworkInbound: 0
-NetworkOutbound: 0
-Memory: 1000
-Disk: NULL
-StorageRecordId: NULL
-ImageId: NULL
-CloudType: OpenNebula
-%%
-VMUUID: exampleVM2 2013-02-25 12:37:27+00:00
-SiteName: exampleSite2
-MachineName: one-2421
-LocalUserId: 12
-LocalGroupId: 201
-GlobalUserName: NULL
-FQAN: NULL
-Status: completed
-StartTime: 1361822827
-EndTime: 1362813870
-SuspendDuration: NULL
-WallDuration: NULL
-CpuDuration: NULL
-CpuCount: 2
-NetworkType: NULL
-NetworkInbound: 0
-NetworkOutbound: 0
-Memory: 1000
-Disk: NULL
-StorageRecordId: NULL
-ImageId: NULL
-CloudType: OpenNebula""" 
