@@ -94,7 +94,7 @@ class TestSsm(unittest.TestCase):
         # set SSM to use REST
         self._ssm._protocol = "REST"
         # set up a queue
-        self._ssm._outq = QueueSimple('/tmp/apel/')
+        self._ssm._outq = QueueSimple('.')
         # mock the send message
         self._ssm._send_msg_rest = MagicMock()
 
