@@ -262,20 +262,40 @@ class Ssm2(stomp.ConnectionListener):
         log.info('Sending message via HTTP: %s', msgid)
 
         request_headers = {"empa-id": msgid}
-        try:
-            request = urllib2.Request(self._dest, data=message, headers=request_headers)
-            response = urllib2.urlopen(request)
-        except urllib2.HTTPError, e:
-            log.error('HTTPError = ' + str(e.code))
-            raise Ssm2Exception('Message %s did not send to %s' % (msgid, self._dest))
-        except urllib2.URLError, e:
-            log.error('URLError = ' + str(e.reason))
-            raise Ssm2Exception('Message %s did not send to %s' % (msgid, self._dest))
-        except httplib.HTTPException:
-            log.error('HTTPException')
-            raise Ssm2Exception('Message %s did not send to %s' % (msgid, self._dest))
-        
-        log.info('Message %s received response %s.' % (msgid, response.getcode()))
+        response_code = -1
+        attempts = 0
+        while response_code is not 202:
+            try:
+                attempts = attempts + 1
+                request = urllib2.Request(self._dest, data=message, headers=request_headers)
+	        response = urllib2.urlopen(request)
+	    except urllib2.HTTPError, e:
+                log.error('HTTPError = ' + str(e.code))
+                raise Ssm2Exception('Message %s did not send to %s' % (msgid, self._dest))
+            except urllib2.URLError, e:
+                log.error('URLError = ' + str(e.reason))
+                raise Ssm2Exception('Message %s did not send to %s' % (msgid, self._dest))
+            except httplib.HTTPException:
+                log.error('HTTPException')
+                raise Ssm2Exception('Message %s did not send to %s' % (msgid, self._dest))
+
+            response_code = response.getcode()
+
+            if response_code is 202:
+                # send successful. break out of loop
+                log.info('Message %s received response %s.' % (msgid, response_code))
+                break;
+            elif response_code is 401: # unauthorized HTTP responses
+                log.error("401 response from %s", self._dest)
+                raise Ssm2Exception("401 response from %s" % (self._dest))
+            elif response_code is 403: # forbidden HTTP responses
+                log.error("403 response from %s", self._dest)
+                raise Ssm2Exception("403 response from %s" % (self._dest))
+            elif attempts >= 3:
+                log.error("Attempted to send 3 times and failed.")
+                raise Ssm2Exception("Could not send message.")
+            else:
+                log.info("%s response from %s, trying again.", response_code, self._dest)
  
     def _send_msg_stomp(self, message, msgid):
         '''
