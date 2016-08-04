@@ -26,7 +26,7 @@ except ImportError:
 
 from ssm import crypto
 from dirq.QueueSimple import QueueSimple
-from dirq.queue import Queue
+from dirq.queue import Queue, QueueError
 
 import httplib
 import stomp
@@ -253,6 +253,26 @@ class Ssm2(stomp.ConnectionListener):
             self._send_msg_rest(message, msgid)
         else:
             raise Ssm2Exception('Unsupported protocol defined: %s' % protocol)
+
+    def _pull_msg_rest(self):
+        if self._protocol != "REST":
+            raise Ssm2Exception('Pull via REST called, '
+                                'but protocol not set to REST. '
+                                'Protocol: %s' % self._protocol)
+
+        request = urllib2.Request(self._dest)
+
+        response = urllib2.urlopen(request)
+
+        try:
+            name = self._inq.add({'body': response.read(),
+                                  'signer': '',
+                                  'empaid': ''})
+        except QueueError as err:
+            log.info("Could not save message.\n%s", err)
+            print "Could not save message.\n%s" % err
+
+        print "Message saved."
 
     def _send_msg_rest(self,message,msgid):
         '''
