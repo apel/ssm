@@ -260,19 +260,27 @@ class Ssm2(stomp.ConnectionListener):
                                 'but protocol not set to REST. '
                                 'Protocol: %s' % self._protocol)
 
-        request = urllib2.Request(self._dest)
-
-        response = urllib2.urlopen(request)
+        try:
+            request = urllib2.Request(self._dest)
+            response = urllib2.urlopen(request)
+        except urllib2.HTTPError, e:
+            log.error('HTTPError = ' + str(e.code))
+            log.error('Could not fetch from %s', self._dest)
+        except urllib2.URLError, e:
+            log.error('URLError = ' + str(e.reason))
+            log.error('Could not fetch from %s', self._dest)
+        except httplib.HTTPException:
+            log.error('HTTPException')
+            log.error('Could not fetch from %s', self._dest)
 
         try:
             name = self._inq.add({'body': response.read(),
                                   'signer': '',
                                   'empaid': ''})
         except QueueError as err:
-            log.info("Could not save message.\n%s", err)
-            print "Could not save message.\n%s" % err
+            log.error("Could not save message.\n%s", err)
 
-        print "Message saved."
+        log.info("Message saved.")
 
     def _send_msg_rest(self,message,msgid):
         '''
