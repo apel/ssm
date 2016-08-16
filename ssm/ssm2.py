@@ -263,15 +263,33 @@ class Ssm2(stomp.ConnectionListener):
         try:
             request = urllib2.Request(self._dest)
             response = urllib2.urlopen(request)
-        except urllib2.HTTPError, e:
+        except AttributeError, e:  # Most liekly called when self._dest = None
+            log.error('AttributeError = ' + str(e.message))
+            log.error('Could not fetch from %s', self._dest) 
+            raise Ssm2Exception('AttributeError, could not fetch from %s'
+                                % self._dest)
+        except ValueError, e:  # Most likely thrown if self._dest is not url
+            log.error('ValueError = ' + str(e.message))
+            log.error('Could not fetch from %s', self._dest)
+            raise Ssm2Exception('ValueError, could not fetch from "%s"'
+                                % self._dest)
+        except urllib2.HTTPError, e:  # Likely thrown if respnse is not 200
             log.error('HTTPError = ' + str(e.code))
             log.error('Could not fetch from %s', self._dest)
-        except urllib2.URLError, e:
+            raise Ssm2Exception('HTTPError, could not fetch from %s'
+                                % self._dest)
+        except urllib2.URLError, e:  # Likely thrown if URL doesn't resolve
             log.error('URLError = ' + str(e.reason))
             log.error('Could not fetch from %s', self._dest)
-        except httplib.HTTPException:
+            raise Ssm2Exception('URLError, could not fetch from %s'
+                                % self._dest)
+        except httplib.HTTPException:  # Catches invalid HTTP responses:
+                                       # broken headers; invalid status codes;
+                                       # prematurely broken connections; etc.
             log.error('HTTPException')
             log.error('Could not fetch from %s', self._dest)
+            raise Ssm2Exception('HTTPRxception, could not fetch from %s'
+                                % self._dest)
 
         try:
             name = self._inq.add({'body': response.read(),
@@ -280,7 +298,7 @@ class Ssm2(stomp.ConnectionListener):
         except QueueError as err:
             log.error("Could not save message.\n%s", err)
 
-        log.info("Message saved.")
+        log.info('Message saved from %s.', self._dest)
 
     def _send_msg_rest(self,message,msgid):
         '''
