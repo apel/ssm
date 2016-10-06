@@ -16,6 +16,9 @@ Source:         %{name}-%{version}-%{releasenumber}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
+%if ! (0%{?fedora} > 12 || 0%{?rhel} > 5)
+BuildRequires:  python-devel
+%endif
 Requires:       stomppy < 4.0.0, python-daemon, python-dirq, python-ldap
 Requires(pre):  shadow-utils
 
