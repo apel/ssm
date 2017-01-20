@@ -62,7 +62,7 @@ class Ssm2(stomp.ConnectionListener):
     
     def __init__(self, hosts_and_ports, qpath, cert, key, dest=None, listen=None, 
                  capath=None, check_crls=False, use_ssl=False, username=None, password=None, 
-                 enc_cert=None, verify_enc_cert=True, pidfile=None):
+                 enc_cert=None, verify_enc_cert=True, pidfile=None, protocol="STOMP"):
         '''
         Creates an SSM2 object.  If a listen value is supplied,
         this SSM2 will be a receiver.
@@ -88,6 +88,9 @@ class Ssm2(stomp.ConnectionListener):
         
         self._valid_dns = []
         self._pidfile = pidfile
+
+        # used to differentiate between STOMP and REST methods
+        self._protocol = protocol
         
         # create the filesystem queues for accepted and rejected messages
         if dest is not None and listen is None:
