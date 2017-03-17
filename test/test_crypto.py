@@ -8,7 +8,7 @@ import logging
 import os
 import tempfile
 import shutil
-from subprocess import Popen, PIPE
+from subprocess import call, Popen, PIPE
 
 from ssm.crypto import _from_file, \
     check_cert_key, \
@@ -33,43 +33,35 @@ class TestEncryptUtils(unittest.TestCase):
     
     def setUp(self):
         '''
-        Some of the functions require the certificate and key to be files.
+        If no key/cert pair found, generate a new
+        key/cert pair and store as a file.
         '''
-        self.certfile, self.certpath = tempfile.mkstemp(prefix='cert')
-        os.write(self.certfile, TEST_CERT)
-        os.close(self.certfile)
+        # create a key/cert pair
+        call(['openssl', 'req', '-x509', '-nodes', '-days', '1',
+              '-newkey', 'rsa:2048', '-keyout', TEST_KEY_FILE,
+              '-out', TEST_CERT_FILE, '-subj', TEST_CERT_DN])
 
-        self.keyfile, self.keypath = tempfile.mkstemp(prefix='key')
-        os.write(self.keyfile, TEST_KEY)
-        os.close(self.keyfile)
-        
         # Set up an openssl-style CA directory, containing the 
         # self-signed certificate as its own CA certificate, but with its
         # name as <hash-of-subject-DN>.0.
-        
-        ca_certs = [TEST_CERT]
+        p1 = Popen(['openssl', 'x509', '-subject_hash', '-noout'],
+                    stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
-        self.ca_dir = tempfile.mkdtemp(prefix='ca')
-        for cert in ca_certs:
-            p1 = Popen(['openssl', 'x509', '-subject_hash', '-noout'],
-                       stdin=PIPE, stdout=PIPE, stderr=PIPE)
-            hash_name, unused_error = p1.communicate(cert)
-            ca_certpath = os.path.join(self.ca_dir, hash_name.strip() + '.0')
-            ca_cert = open(ca_certpath, 'w')
-            ca_cert.write(cert)
-            ca_cert.close()
+        with open(TEST_CERT_FILE, 'r') as test_cert:
+            cert_string = test_cert.read()
+
+        hash_name, unused_error = p1.communicate(cert_string)
+
+        self.ca_certpath = os.path.join(TEST_CA_DIR, hash_name.strip() + '.0')
+        with open(self.ca_certpath, 'w') as ca_cert:
+            ca_cert.write(cert_string)
 
     def tearDown(self):
-        '''
-        Remove temporary files.
-        '''
-        os.remove(self.certpath)
-        os.remove(self.keypath)
-        
-        # Remove the CA dir and any contents.
-        shutil.rmtree(self.ca_dir)
-        
-    
+        '''Remove temporary files.'''
+        os.remove(TEST_CERT_FILE)
+        os.remove(TEST_KEY_FILE)
+        os.remove(self.ca_certpath)
+ 
     def test_from_file(self):
         '''
         Just test that the temporary file that has been set up contains the 
@@ -260,47 +252,18 @@ class TestEncryptUtils(unittest.TestCase):
                 self.fail('Verified None rather than certificate string.')
         except CryptoException:
             pass
-            
+
 ################################################################
 # Test data below.
 ################################################################
 
-# openssl req -x509 -nodes -days 366 -subj '/C=UK/O=STFC/OU=SC/CN=Test Cert' -newkey rsa:1024 -keyout test.key -out test.cert
-# Expires 2016-11-26
 TEST_CERT_DN = '/C=UK/O=STFC/OU=SC/CN=Test Cert'
 
-TEST_CERT = '''-----BEGIN CERTIFICATE-----
-MIICSDCCAbGgAwIBAgIJAO90ilCRmLiVMA0GCSqGSIb3DQEBBQUAMD0xCzAJBgNV
-BAYTAlVLMQ0wCwYDVQQKDARTVEZDMQswCQYDVQQLDAJTQzESMBAGA1UEAwwJVGVz
-dCBDZXJ0MB4XDTE1MTEyNjE2MDYzNloXDTE2MTEyNjE2MDYzNlowPTELMAkGA1UE
-BhMCVUsxDTALBgNVBAoMBFNURkMxCzAJBgNVBAsMAlNDMRIwEAYDVQQDDAlUZXN0
-IENlcnQwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMAqQkxmeXPiG4ytez29
-Vv+XoPDXw9evCfULEqoMd8meaAbiizAZuQT8zJ54H04Pob4sSiyZRrRHhGQ0iJUc
-xTmRiFLYZPicA1V5GFmSPFmBPuHTi7Vn7syjxYXWmFHbKyEbVb3NIogMf5Lpr3oS
-DV6Uune1Q1ZUvbFclEjlhJD1AgMBAAGjUDBOMB0GA1UdDgQWBBSkmf0/0tdpomsM
-qeZmi9BkxDYpcTAfBgNVHSMEGDAWgBSkmf0/0tdpomsMqeZmi9BkxDYpcTAMBgNV
-HRMEBTADAQH/MA0GCSqGSIb3DQEBBQUAA4GBAFQ1mjNmsW5adnJmJd8OZR0om5eM
-BMbJ+ONFZ64ZabHOfOviYNjf3eew8qzvEllb0orzeFZBDUnrzwrSqCW+3crM8ZS1
-KYYO16yW/YXBVC+f5ilfOMf9M/1E2w+2gfTw0/J9FMIG1AqQfeD978e7UJ6+IIG3
-CKDg/8NpsXhtw3e0
------END CERTIFICATE-----'''
+TEST_CERT_FILE = '/tmp/test.crt'
 
-TEST_KEY = '''-----BEGIN PRIVATE KEY-----
-MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAMAqQkxmeXPiG4yt
-ez29Vv+XoPDXw9evCfULEqoMd8meaAbiizAZuQT8zJ54H04Pob4sSiyZRrRHhGQ0
-iJUcxTmRiFLYZPicA1V5GFmSPFmBPuHTi7Vn7syjxYXWmFHbKyEbVb3NIogMf5Lp
-r3oSDV6Uune1Q1ZUvbFclEjlhJD1AgMBAAECgYBCuKmKY246GUDdiIKo/ivN1PTx
-iskaA1Gevnh9iJSy8YhHE7OmQNgn7iqRvz2HWhAbur8KWzHceJR0QnVF6NZlOoVf
-34Qh8hvGenk4BrNrt41kwtfClLa6Vdhz3y3rEa8dyDI9LwT6iR8suvEoWCiL4dWk
-46bEkQgklT95NLUbpQJBAPpoWWqeGT1Cn3dkUDWOxtVsedFtvy5nFvdCDGgTNPwx
-5wPjp/UwHXFbG1ypBd9NYWpzpLjkZSb+V1jjjCpR6VcCQQDEdOu0Z/ABrrFS4J2k
-PGm4cYbR8uE3EvcK82UvdAsWulJGslHzaxSkPGXi+oOeapON9ZyNvVF191wdI0su
-IIyTAkA5yGiRzMfANiZ8M366zSaeyzhVFoEeYRWQmwIn5f69D3rij98LGj5BESgA
-OtSrEb0gBm2FaNbap6haT6/heCNjAkAYyBLvh+jrnWi65qCcFg7T+GYkV7n3I4pM
-NFXAPagkbs5wIpBZ31kUOpYzopw1wIXqc2ATNR1wfwp8lnYmVG7HAkEApODeLt2Z
-B63LXZyg4TTAEjpBKKnhszT7vDWfJG+GjurGQY+maCGBNeUj+aAyfJ/0pMGsz89P
-9185znbe5undog==
------END PRIVATE KEY-----'''
+TEST_KEY_FILE = '/tmp/test.key'
+
+TEST_CA_DIR='/tmp'
 
 MSG = 'This is some test data.'
 
