@@ -61,17 +61,7 @@ class TestEncryptUtils(unittest.TestCase):
         os.remove(TEST_CERT_FILE)
         os.remove(TEST_KEY_FILE)
         os.remove(self.ca_certpath)
- 
-    def test_from_file(self):
-        '''
-        Just test that the temporary file that has been set up contains the 
-        certificate it should.
-        '''
-        cert = _from_file(self.certpath)
-        
-        if not cert == TEST_CERT:
-            self.fail('The temporary file should include exactly the test certificate.')
-    
+
     def test_check_cert_key(self):
         '''
         This will print an error log message for the tests that are 
