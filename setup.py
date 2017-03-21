@@ -24,9 +24,10 @@ def main():
                   'conf/sender.cfg',
                   'conf/dns']
 
-    # For 'python setup.py test' to work (on Linux SL6)
-    # 'python-daemon' and 'mock' must be installed
-    # or included in 'install_requires'
+    # For 'python setup.py install | test' to 
+    # work (on Linux SL6), 'python-daemon'
+    # must be installed or included
+    # in install_required | tests_require
     setup(name='apel-ssm',
           version='%i.%i.%i' % __version__,
           description=("Secure Stomp Messenger (SSM) is designed to simply "
@@ -45,8 +46,23 @@ def main():
           data_files=[(conf_dir, conf_files),
                       ('/etc/logrotate.d', ['conf/ssm.logrotate']),
                       ('/etc/init.d', ['bin/apel-ssm'])],
+          # zip_safe allows setuptools to install the project
+          # as a zipfile, for maximum performance!
           zip_safe=True,
+          # The following two settings allow the test suite
+          # to be run via 'python setup.py test'
+
+          # The test command runs the project's unit tests without
+          # actually deploying it, by temporarily putting the project's
+          # source on sys.path, after first running build_ext -i and
+          # egg_info to ensure that any C extensions and
+          # project metadata are up-to-date.
+
+          # This does require a old version of unittest to work
+          # on python2.6 (unittest2==0.5.1)
+          # The python package where the tests are located
           test_suite='test',
+          # the test requirements
           tests_require=['unittest2', 'coveralls'])
 
     if 'install' in sys.argv:
