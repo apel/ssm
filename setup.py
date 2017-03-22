@@ -63,7 +63,7 @@ def main():
           # The python package where the tests are located
           test_suite='test',
           # the test requirements
-          tests_require=['unittest2', 'coveralls', 'mock'])
+          tests_require=['unittest2', 'mock'])
 
     if 'install' in sys.argv:
         remove('bin/ssmreceive')
