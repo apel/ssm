@@ -11,6 +11,7 @@ import unittest
 import shutil
 import tempfile
 
+from time import sleep
 from OpenSSL import crypto
 
 
@@ -23,7 +24,10 @@ class TestSsm(unittest.TestCase):
         '''
         Set up a test SSM, and a test directory, and a key/cert pair.
         '''
-        if not (os.path.exists(TEST_CERT_FILE) and os.path.exists(TEST_KEY_FILE)):
+        if not (os.path.exists(TEST_CERT_FILE) and
+                os.path.exists(TEST_KEY_FILE) and
+                os.path.exists(EXPIRED_CERT_FILE)):
+
             # create a key pair
             key_pair = crypto.PKey()
             key_pair.generate_key(crypto.TYPE_RSA, 1024)
@@ -43,6 +47,22 @@ class TestSsm(unittest.TestCase):
             cert.sign(key_pair, 'sha1')
 
             open(TEST_CERT_FILE, "w").write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+
+            # create a short lived, self-signed, cert.
+            # both certificates are signed by the same key
+            expired_cert = crypto.X509()
+            expired_cert.get_subject().C = "UK"
+            expired_cert.get_subject().O = "STFC"
+            expired_cert.get_subject().OU = "SC"
+            expired_cert.get_subject().CN = "Test Cert"
+            expired_cert.set_serial_number(1000)
+            expired_cert.gmtime_adj_notBefore(0)
+            expired_cert.gmtime_adj_notAfter(EXPIRED_CERT_LIFETIME)
+            expired_cert.set_issuer(cert.get_subject())
+            expired_cert.set_pubkey(key_pair)
+            expired_cert.sign(key_pair, 'sha1')
+
+            open(EXPIRED_CERT_FILE, "w").write(crypto.dump_certificate(crypto.FILETYPE_PEM, expired_cert))
 
         self._tmp_dir = tempfile.mkdtemp(prefix='ssm')
         
@@ -73,6 +93,7 @@ class TestSsm(unittest.TestCase):
             shutil.rmtree(self._tmp_dir)
             os.remove(TEST_CERT_FILE)
             os.remove(TEST_KEY_FILE)
+            os.remove(EXPIRED_CERT_FILE)
         except OSError, e:
             print 'Error removing temporary directory %s' % self._tmp_dir
             print e
@@ -95,10 +116,40 @@ class TestSsm(unittest.TestCase):
         self._ssm.on_message({'nothing': 'dummy'}, 'Not signed or encrypted.')
         os.chmod(self._msgdir, 0777)
 
+    def test_init_expired_cert(self):
+        """
+        Test an exception is thrown when creating an
+        SSM object with an expired certificate.
+        """
+        # Make sure expired certificate has expired       
+        sleep(EXPIRED_CERT_LIFETIME * 2)
+
+        try:
+            self._ssm = ssm.ssm2.Ssm2(None, self._msgdir, EXPIRED_CERT_FILE, TEST_KEY_FILE,
+                                      listen='/topic/test')
+
+        except ssm.ssm2.Ssm2Exception, error:
+            expected_error = ('Certificate %s has expired, '
+                              'so cannot sign messages.' % EXPIRED_CERT_FILE)
+
+            if str(error) == expected_error:
+                # then this test has worked exactly as expected.
+                return
+            else:
+                # otherwise this test may or may not have
+                # failed, but something has gone wrong
+                raise(error)
+
+        # if the test gets here, then the test has
+        # failed as no exception was thrown
+        self.fail('A SSM was created with an expired certificate!')
+
 TEST_CERT_FILE = '/tmp/test.crt'
+EXPIRED_CERT_FILE = '/tmp/expired.crt'
+EXPIRED_CERT_LIFETIME = 1
 
 TEST_KEY_FILE = '/tmp/test.key'
- 
+
 if __name__ == '__main__':
     #import sys;sys.argv = ['', 'Test.test_get_a_broker']
     unittest.main()
