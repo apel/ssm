@@ -212,10 +212,12 @@ class Ssm2(stomp.ConnectionListener):
         Deal with the raw message contents appropriately:
         - decrypt if necessary
         - verify signature
-        Return plain-text message and signer's DN.
+        Return plain-text message, signer's DN and an error/None.
         '''
         if text is None or text == '':
-            return None, None
+            warning = 'Empty text passed to _handle_msg.'
+            log.warn(warning)
+            return None, None, warning
 #        if not text.startswith('MIME-Version: 1.0'):
 #            raise Ssm2Exception('Not a valid message.')
         
@@ -224,23 +226,26 @@ class Ssm2(stomp.ConnectionListener):
             try:
                 text = crypto.decrypt(text, self._cert, self._key)
             except crypto.CryptoException, e:
-                log.error('Failed to decrypt message: %s', e)
-                return None, None
+                error = 'Failed to decrypt message: %s' % e
+                log.error(error)
+                return None, None, error
         
         # always signed
         try:
             message, signer = crypto.verify(text, self._capath, self._check_crls)
         except crypto.CryptoException, e:
-            log.error('Failed to verify message: %s', e)
-            return None, None
+            error = 'Failed to verify message: %s' % e
+            log.error(error)
+            return None, None, error
         
         if signer not in self._valid_dns:
-            log.warn('Signer not in valid DNs list: %s', signer)
-            return None, signer
+            warning = 'Signer not in valid DNs list: %s' % signer
+            log.warn(warning)
+            return None, signer, warning
         else:
             log.info('Valid signer: %s', signer)
             
-        return message, signer
+        return message, signer, None
         
     def _send_msg(self, message, msgid):
         '''
