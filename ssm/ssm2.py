@@ -149,15 +149,15 @@ class Ssm2(stomp.ConnectionListener):
             empaid = 'noid'
 
         log.info("Received message. ID = %s", empaid)
-        raw_msg, signer = self._handle_msg(body)
+        raw_msg, signer, err_msg = self._handle_msg(body)
 
         try:
-            if raw_msg is None:  # the message has been rejected
+            # If the message is empty or the error message is not empty
+            # then reject the message.
+            if raw_msg is None or err_msg is not None:
                 if signer is None:  # crypto failed
-                    err_msg = 'Could not extract message.'
                     signer = 'Not available.'
-                else:  # crypto ok but signer not verified
-                    err_msg = 'Signer not in valid DNs list.'
+
                 log.warn("Message rejected: %s", err_msg)
 
                 name = self._rejectq.add({'body': body,
@@ -165,11 +165,13 @@ class Ssm2(stomp.ConnectionListener):
                                           'empaid': empaid,
                                           'error': err_msg})
                 log.info("Message saved to reject queue as %s", name)
+
             else:  # message verified ok
                 name = self._inq.add({'body': raw_msg,
                                       'signer': signer,
                                       'empaid': empaid})
                 log.info("Message saved to incoming queue as %s", name)
+
         except OSError, e:
             log.error('Failed to read or write file: %s', e)
         
