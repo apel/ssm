@@ -3,7 +3,7 @@
 Requires setuptools.
 """
 
-from os import remove
+from os import remove, path, makedirs
 from shutil import copyfile
 import sys
 
@@ -17,6 +17,17 @@ def main():
     if 'install' in sys.argv:
         copyfile('bin/receiver.py', 'bin/ssmreceive')
         copyfile('bin/sender.py', 'bin/ssmsend')
+        copyfile('conf/ssm.logrotate', 'conf/apel-ssm')
+        copyfile('README.md', 'apel-ssm')
+
+        if not path.exists('/var/log/apel'):
+            makedirs('/var/log/apel')
+
+        if not path.exists('/var/run/apel'):
+            makedirs('/var/run/apel')
+
+        if not path.exists('/var/spool/apel'):
+            makedirs('/var/spool/apel')
 
     conf_dir = '/etc/apel/'
     conf_files = ['conf/logging.cfg',
@@ -44,8 +55,9 @@ def main():
           packages=find_packages(exclude=['bin']),
           scripts=['bin/ssmreceive', 'bin/ssmsend'],
           data_files=[(conf_dir, conf_files),
-                      ('/etc/logrotate.d', ['conf/ssm.logrotate']),
-                      ('/etc/init.d', ['bin/apel-ssm'])],
+                      ('/etc/logrotate.d', ['conf/apel-ssm']),
+                      ('/etc/init.d', ['bin/apel-ssm']),
+                      ('/usr/share/doc', ['apel-ssm'])],
           # zip_safe allows setuptools to install the project
           # as a zipfile, for maximum performance!
           zip_safe=True,
@@ -68,6 +80,8 @@ def main():
     if 'install' in sys.argv:
         remove('bin/ssmreceive')
         remove('bin/ssmsend')
+        remove('conf/apel-ssm')
+        remove('apel-ssm')
 
 if __name__ == "__main__":
     main()
