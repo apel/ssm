@@ -11,8 +11,7 @@ import unittest
 import shutil
 import tempfile
 
-from time import sleep
-from OpenSSL import crypto
+from subprocess import call
 
 
 class TestSsm(unittest.TestCase):
@@ -22,80 +21,60 @@ class TestSsm(unittest.TestCase):
     
     def setUp(self):
         '''
-        Set up a test SSM, and a test directory, and a key/cert pair.
+        Set up a test SSM, and a test directory, and new valid cert.
         '''
-        if not (os.path.exists(TEST_CERT_FILE) and
-                os.path.exists(TEST_KEY_FILE) and
-                os.path.exists(EXPIRED_CERT_FILE)):
 
-            # create a key pair
-            key_pair = crypto.PKey()
-            key_pair.generate_key(crypto.TYPE_RSA, 1024)
-            open(TEST_KEY_FILE, "w").write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key_pair))
+        # Some of the functions require the hardcoded
+        # expired certificate and key to be files.
+        _, self._key_path = tempfile.mkstemp(prefix='key')
+        with open(self._key_path, 'w') as key_path:
+            key_path.write(TEST_KEY)
 
-            # create a self-signed cert
-            cert = crypto.X509()
-            cert.get_subject().C = "UK"
-            cert.get_subject().O = "STFC"
-            cert.get_subject().OU = "SC"
-            cert.get_subject().CN = "Test Cert"
-            cert.set_serial_number(1000)
-            cert.gmtime_adj_notBefore(0)
-            cert.gmtime_adj_notAfter(10*365*24*60*60)
-            cert.set_issuer(cert.get_subject())
-            cert.set_pubkey(key_pair)
-            cert.sign(key_pair, 'sha1')
+        _, self._expired_cert_path = tempfile.mkstemp(prefix='cert')
+        with open(self._expired_cert_path, 'w') as expired_cert_path:
+            expired_cert_path.write(EXPIRED_CERT)
 
-            open(TEST_CERT_FILE, "w").write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
-
-            # create a short lived, self-signed, cert.
-            # both certificates are signed by the same key
-            expired_cert = crypto.X509()
-            expired_cert.get_subject().C = "UK"
-            expired_cert.get_subject().O = "STFC"
-            expired_cert.get_subject().OU = "SC"
-            expired_cert.get_subject().CN = "Test Cert"
-            expired_cert.set_serial_number(1000)
-            expired_cert.gmtime_adj_notBefore(0)
-            expired_cert.gmtime_adj_notAfter(EXPIRED_CERT_LIFETIME)
-            expired_cert.set_issuer(cert.get_subject())
-            expired_cert.set_pubkey(key_pair)
-            expired_cert.sign(key_pair, 'sha1')
-
-            open(EXPIRED_CERT_FILE, "w").write(crypto.dump_certificate(crypto.FILETYPE_PEM, expired_cert))
+        # Create a new cert using the hardcoded key
+        # The subj has been hardcoded so the generated certificate
+        # subject matches the subject of the hardcoded, expired,
+        # certificate at the bottom of this file
+        call(['openssl', 'req', '-x509', '-nodes', '-days', '1',
+              '-new', '-key', self._key_path,
+              '-out', TEST_CERT_FILE, '-subj',
+              '/C=UK/O=STFC/OU=SC/CN=Test Cert'])
 
         self._tmp_dir = tempfile.mkdtemp(prefix='ssm')
-        
+
+        # Store these variables as class variables so new SSMs can be
+        # instantiated in each test method. (We cant simply create the
+        # as SSM here as one of the two tests checks the instantiation
+        # fails as it is expected to with a expired certificate.)
         self._valid_dn = '/test/dn'
         self.valid_dn_file, self.valid_dn_path = tempfile.mkstemp(prefix='valid', dir=self._tmp_dir)
         os.write(self.valid_dn_file, self._valid_dn)
         os.close(self.valid_dn_file)
         
-        hosts_and_ports = [('not.a.broker', 123)]
-        capath = '/not/a/path'
-        check_crls = False
-        pidfile = self._tmp_dir + '/pidfile'
+        self._hosts_and_ports = [('not.a.broker', 123)]
+        self._capath = '/not/a/path'
+        self._check_crls = False
+        self._pidfile = self._tmp_dir + '/pidfile'
         
-        listen = '/topic/test'
+        self._listen = '/topic/test'
         
-        dest = '/topic/test'
+        self._dest = '/topic/test'
         
         self._msgdir =  tempfile.mkdtemp(prefix='msgq')
         
-        self._ssm = ssm.ssm2.Ssm2(hosts_and_ports, self._msgdir, TEST_CERT_FILE, TEST_KEY_FILE,
-                                  dest=dest, listen=listen)
-
-
     def tearDown(self):
-        '''Remove test directory and all contents.'''
+        '''Remove test directories and files.'''
         try:
             shutil.rmtree(self._msgdir)
             shutil.rmtree(self._tmp_dir)
             os.remove(TEST_CERT_FILE)
-            os.remove(TEST_KEY_FILE)
-            os.remove(EXPIRED_CERT_FILE)
+            os.remove(self._key_path)
+            os.remove(self._expired_cert_path)
         except OSError, e:
-            print 'Error removing temporary directory %s' % self._tmp_dir
+            print 'Error removing temporary directory/file'
             print e
         
     def test_on_message(self):
@@ -104,33 +83,33 @@ class TestSsm(unittest.TestCase):
         to write a comprehensive test.  Instead, I will start with where there
         might be problems.
         '''
+        test_ssm = ssm.ssm2.Ssm2(self._hosts_and_ports, self._msgdir,
+                                 TEST_CERT_FILE, self._key_path,
+                                 dest=self._dest, listen=self._listen)
         # SSM crashed when headers were missing.  It should just ignore the
         # message.
-        self._ssm.on_message({}, '')
-        self._ssm.on_message({'nothing': 'dummy'}, '')
-        self._ssm.on_message({'nothing': 'dummy'}, 'Not signed or encrypted.')
+        test_ssm.on_message({}, '')
+        test_ssm.on_message({'nothing': 'dummy'}, '')
+        test_ssm.on_message({'nothing': 'dummy'}, 'Not signed or encrypted.')
 
         # Try changing permissions on the directory we're writing to.
         # The on_message function shouldn't throw an exception.
         os.chmod(self._msgdir, 0400)
-        self._ssm.on_message({'nothing': 'dummy'}, 'Not signed or encrypted.')
+        test_ssm.on_message({'nothing': 'dummy'}, 'Not signed or encrypted.')
         os.chmod(self._msgdir, 0777)
 
     def test_init_expired_cert(self):
-        """
-        Test an exception is thrown when creating an
-        SSM object with an expired certificate.
-        """
-        # Make sure expired certificate has expired       
-        sleep(EXPIRED_CERT_LIFETIME * 2)
-
+        """Test exception is thrown creating an SSM with an expired cert."""
         try:
-            self._ssm = ssm.ssm2.Ssm2(None, self._msgdir, EXPIRED_CERT_FILE, TEST_KEY_FILE,
-                                      listen='/topic/test')
+            # Indirectly test crypto.verify_cert_date
+            test_ssm = ssm.ssm2.Ssm2(self._hosts_and_ports, self._msgdir,
+                                     self._expired_cert_path, self._key_path,
+                                     listen=self._listen)
 
         except ssm.ssm2.Ssm2Exception, error:
             expected_error = ('Certificate %s has expired, '
-                              'so cannot sign messages.' % EXPIRED_CERT_FILE)
+                              'so cannot sign messages.'
+                              % self._expired_cert_path)
 
             if str(error) == expected_error:
                 # then this test has worked exactly as expected.
@@ -138,17 +117,69 @@ class TestSsm(unittest.TestCase):
             else:
                 # otherwise this test may or may not have
                 # failed, but something has gone wrong
-                raise(error)
+                raise error
 
         # if the test gets here, then the test has
         # failed as no exception was thrown
         self.fail('A SSM was created with an expired certificate!')
 
 TEST_CERT_FILE = '/tmp/test.crt'
-EXPIRED_CERT_FILE = '/tmp/expired.crt'
-EXPIRED_CERT_LIFETIME = 1
 
-TEST_KEY_FILE = '/tmp/test.key'
+# As we want the expired cert to match the key used,
+# we can't generate them on the fly.
+# The cert below has the subject
+# '/C=UK/O=STFC/OU=SC/CN=Test Cert'
+EXPIRED_CERT = '''-----BEGIN CERTIFICATE-----
+MIIDTTCCAjWgAwIBAgIJAI/H+MkYrMbMMA0GCSqGSIb3DQEBBQUAMD0xCzAJBgNV
+BAYTAlVLMQ0wCwYDVQQKDARTVEZDMQswCQYDVQQLDAJTQzESMBAGA1UEAwwJVGVz
+dCBDZXJ0MB4XDTE3MDQxODE1MDM1M1oXDTE3MDQxOTE1MDM1M1owPTELMAkGA1UE
+BhMCVUsxDTALBgNVBAoMBFNURkMxCzAJBgNVBAsMAlNDMRIwEAYDVQQDDAlUZXN0
+IENlcnQwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC3n//lZBP0LIUI
+9vnNAMPgDHeY3wTqDSUWPKbrmr5VqTdMjWSLF32WM3dgpagBywqSKYyo64jwnkon
+KDlp5F1ji1Mw98cagSmZo9ZnBNqjZYGD/3n1MPgGh6RAZEmXDtHbjO93Afk+JS6p
+z+JGKveDA/+FfKVe9li4B7kYnfzqd+hR7CNPq9i6kJTwqKhv7PLPWUq/xF5w6ymx
+TYqhxjgEgT6KBpRMNk9uG97LrSFiDRhurc13r2FZeAtJygK1OhGrq/f9Ptvf3Q0f
+dbnJ/7kEOtVXfeTIeellI5DNMo+O8oSHMeCHPQBFGvLZIK9gPhj/XpNtGOkZK1Rk
+SdqNfNzdAgMBAAGjUDBOMB0GA1UdDgQWBBQXikGk4aUeus+fd0EWxDdY+5VX5DAf
+BgNVHSMEGDAWgBQXikGk4aUeus+fd0EWxDdY+5VX5DAMBgNVHRMEBTADAQH/MA0G
+CSqGSIb3DQEBBQUAA4IBAQAStgDqGi/GtRZUfXojFu2vOyfvOqY24uHQLODtIRN+
+nQqppV6LzA4ZbgxvrM0usVwFuVG5QD3ZP2dZ7pwS7FCu7JG9NQctgkM4bR9SM/St
+1QPOhNsU8GQT0iD8VPFe4Y/I04Kn88+fNBiwe7txPC3aUUvMG5rEukDHlabw2tVi
+l0+9Nckw4KIywSgA4DOccRdalm/xSDM3rVI87EpD4NQdXAl+18Z0bXDYGavaV1FG
+uMvzfkzYoyCtL0CxuZEYbxXHUMrJ0fAdHC/itYVwtssNmtlw9yG+S87yVr89mEI5
+BwQaxGNoKpW2K5w4e6KK0d1SAvDnIcTUONt3nQZND9sH
+-----END CERTIFICATE-----'''
+
+# A key used to generate the above, expired, certificate and the
+# certificates generated by the test methods
+TEST_KEY = '''-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC3n//lZBP0LIUI
+9vnNAMPgDHeY3wTqDSUWPKbrmr5VqTdMjWSLF32WM3dgpagBywqSKYyo64jwnkon
+KDlp5F1ji1Mw98cagSmZo9ZnBNqjZYGD/3n1MPgGh6RAZEmXDtHbjO93Afk+JS6p
+z+JGKveDA/+FfKVe9li4B7kYnfzqd+hR7CNPq9i6kJTwqKhv7PLPWUq/xF5w6ymx
+TYqhxjgEgT6KBpRMNk9uG97LrSFiDRhurc13r2FZeAtJygK1OhGrq/f9Ptvf3Q0f
+dbnJ/7kEOtVXfeTIeellI5DNMo+O8oSHMeCHPQBFGvLZIK9gPhj/XpNtGOkZK1Rk
+SdqNfNzdAgMBAAECggEBAKZaAQ3juGAA5RTWCkA6bTlQkhigEmenOO4ITIAtVDlu
+b3aesXOA+HlWbtPTv3zAYPdBRPjTSOATxsHqovjXtfM0iU1Xa70LPpC96MKzlw9o
+KglXLTl//3KK97aOJE0BVAU+jMKXuyEdtkSI3EkNK+Y5fQeFgJujOYSfGoS+vB38
+sCXKR1CcD5L1NO3iql/vNKyMpw+xVR85VAOVhAaF5d/VEkfO6onAa47oHKmXWs5A
+rs7WmkKZqrpiAXtxPjgIKg8JLG5nDOcWBqSccMwpdVvVGWjjyh09qQ2Q1gvvcrNr
+dv0GqFhWsm+rwb8Ih3aaPxxvPu8TDhsb908gfdylOFECgYEA8PssPKdTdZlFoYKm
+oArMriJdXxKHr5a6XrnqDJDgzVVgx7BmCQg+I+nGhZd1hK+ZX1rcuMagE2rFrMM+
+16EoRgTJ0ETxBwbqMIp4wzSoOO0ybK2fzj/CzeMfcI6lj7aIfRPscHbmDuaXwEbR
+nbKxiBTcQ4zXjT11FL46tJFwba8CgYEAwxG3RcxBsGs+zzKBw6vH7PC5rQQk2AlD
+zXIumNVeKZ7H8U0kxKB0DQbcjQ8VftXUBtRtXr7xr244I5XvAUzaroZbyNy7eYyD
+hgqeLxC37D3UE1VIO0Qfybmc5zjIpWOFSVmDm6Jx1iSWRE6NVn95d09GMOhERLzZ
+BplQefk07TMCgYAj0WGA3moER7TWzcGQdip4E3mHYQyz55Zp7/4+weX3/yG0bJ6t
+5wC9e8jbIGkCQMtuJeY6vKMcX7lj9V1I1ZZT2fBZOXYN0lRKxLowYYpDc9YT2zau
+hEGjMogAxeML2litJqH1EWcefd2+YYhUhTPoAxm+HJgJUUIuxBubrSZl1wKBgFr1
+RM8wCiVYLKZyt51k2Ul7iijJ+OAfmdUPe/jZ7RldJ4A154IkC1kTrP29XdmRnVc9
+8G2wfYO+0kCNpi+mBYZBskS74FMyGRYEl3P8yLZIsj39kzvHbUcj3KzYhn7QJBNq
+wPpuScR/tO3O7wq5UAs5FNKzSzn+EPiJvsPRV0OPAoGAA7DCsWuwGJcv867ox5ll
+rXWxb6CWrJPVDwlSJi4TIQuuuoPaAll5MwMvIZAwWqtMpqgSDzqYewMPTVwP/MYF
+IxueZv7Dhxzr4GoJ9EfLfN9IHj5EP8YQ6dKyY8P1YN8siV1bEVz7lbgtOxnPVdtW
+8n3lFktmZQII3/EbHpnVdws=
+-----END PRIVATE KEY-----'''
 
 if __name__ == '__main__':
     #import sys;sys.argv = ['', 'Test.test_get_a_broker']
