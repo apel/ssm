@@ -9,6 +9,7 @@ import os
 import tempfile
 import shutil
 from subprocess import call, Popen, PIPE
+import quopri
 
 from ssm.crypto import _from_file, \
     check_cert_key, \
@@ -107,7 +108,27 @@ class TestEncryptUtils(unittest.TestCase):
     def test_verify(self):
 
         signed_msg = sign(MSG, TEST_CERT_FILE, TEST_KEY_FILE)
-        signed_msg2 = sign(MSG2, TEST_CERT_FILE, TEST_KEY_FILE)
+
+        # This is a manual 'fudge' to make MS2 appear like a
+        # quoted-printable message when signed
+        # Encode MSG2 so it's 'quoted-printable'
+        quopri_msg = quopri.encodestring(MSG2)
+        # Add Content-Type and Content-Transfer-Encoding
+        # headers to message
+        header_quopri_msg = ('Content-Type: text/xml; charset=utf8\n'
+                             'Content-Transfer-Encoding: quoted-printable\n'
+                             '\n'
+                             '%s' % quopri_msg)
+
+        # We can't use crypto.sign as that assumes the use of the '-text' option
+        # which cause the message to be interpreted as plaintext
+        p1 = Popen(['openssl', 'smime', '-sign', '-inkey', TEST_KEY_FILE, '-signer', TEST_CERT_FILE],
+                   stdin=PIPE, stdout=PIPE, stderr=PIPE)
+
+        signed_msg2, error = p1.communicate(header_quopri_msg)
+
+        if (error != ''):
+            self.fail(error)
 
         retrieved_msg, retrieved_dn = verify(signed_msg, TEST_CA_DIR, False)
         
