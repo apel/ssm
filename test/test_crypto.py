@@ -51,7 +51,7 @@ class TestEncryptUtils(unittest.TestCase):
         with open(TEST_CERT_FILE, 'r') as test_cert:
             cert_string = test_cert.read()
 
-        hash_name, unused_error = p1.communicate(cert_string)
+        hash_name, _unused_error = p1.communicate(cert_string)
 
         self.ca_certpath = os.path.join(TEST_CA_DIR, hash_name.strip() + '.0')
         with open(self.ca_certpath, 'w') as ca_cert:
