@@ -127,7 +127,7 @@ class TestEncryptUtils(unittest.TestCase):
 
         signed_msg2, error = p1.communicate(header_quopri_msg)
 
-        if (error != ''):
+        if error != '':
             self.fail(error)
 
         retrieved_msg, retrieved_dn = verify(signed_msg, TEST_CA_DIR, False)
