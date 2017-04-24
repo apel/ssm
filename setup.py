@@ -14,6 +14,7 @@ from ssm import __version__
 
 def main():
     """Called when run as script, e.g. 'python setup.py install'."""
+    # Create temporary files with deployment names
     if 'install' in sys.argv:
         copyfile('bin/receiver.py', 'bin/ssmreceive')
         copyfile('bin/sender.py', 'bin/ssmsend')
@@ -29,13 +30,14 @@ def main():
         if not path.exists('/var/spool/apel'):
             makedirs('/var/spool/apel')
 
+    # conf_files will later be copied to conf_dir
     conf_dir = '/etc/apel/'
     conf_files = ['conf/logging.cfg',
                   'conf/receiver.cfg',
                   'conf/sender.cfg',
                   'conf/dns']
 
-    # For 'python setup.py install | test' to 
+    # For 'python setup.py install | test' to
     # work (on Linux SL6), 'python-daemon'
     # must be installed or included
     # in install_required | tests_require
@@ -77,6 +79,7 @@ def main():
           # the test requirements
           tests_require=['unittest2', 'mock'])
 
+    # Remove temporary files with deployment names
     if 'install' in sys.argv:
         remove('bin/ssmreceive')
         remove('bin/ssmsend')
