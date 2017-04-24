@@ -6,13 +6,10 @@ Created on 7 Dec 2011
 import unittest
 import logging
 import os
-import tempfile
-import shutil
 from subprocess import call, Popen, PIPE
 import quopri
 
-from ssm.crypto import _from_file, \
-    check_cert_key, \
+from ssm.crypto import check_cert_key, \
     get_certificate_subject, \
     get_signer_cert, \
     sign, \
