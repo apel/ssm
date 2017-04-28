@@ -62,40 +62,96 @@ def main():
         sys.exit(1)
     
     log = logging.getLogger('ssmsend')
-    
+
+    # Set defaults for MQ-BROKER only variables
+    use_ssl = None
+    # Set defaults for AMS only variables
+    token = None
+    project = None
+
     log.info(LOG_BREAK)
     log.info('Starting sending SSM version %s.%s.%s.', *__version__)
-    # If we can't get a broker to connect to, we have to give up.
+
+    # Determine the protocol and destination type of the SSM to configure.
     try:
-        bdii_url = cp.get('broker','bdii')
-        log.info('Retrieving broker details from %s ...', bdii_url)
-        bg = StompBrokerGetter(bdii_url)
-        use_ssl = cp.getboolean('broker', 'use_ssl')
-        if use_ssl:
-            service = STOMP_SSL_SERVICE
-        else:
-            service = STOMP_SERVICE
-        brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker','network'))
-        log.info('Found %s brokers.', len(brokers))
-    except ConfigParser.NoOptionError, e:
+        destination_type = cp.get('SSM Type', 'destination type')
+        protocol = cp.get('SSM Type', 'protocol')
+
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        # if newer configuration settings 'protocol' and 'destination type'
+        # are not set, use 'STOMP' and 'MQ-BROKER' for
+        # backwards compatability.
+        log.debug('No options supplied for destination_type and/or protocol.')
+        destination_type = 'MQ-BROKER'
+        protocol = 'STOMP'
+
+    log.info('Setting up SSM with Dest Type: %s, Protocol : %s'
+             % (destination_type, protocol))
+
+    if destination_type == 'MQ-BROKER':
+        # If we can't get a broker to connect to, we have to give up.
         try:
-            host = cp.get('broker', 'host')
-            port = cp.get('broker', 'port')
-            brokers = [(host, int(port))]
-        except ConfigParser.NoOptionError:
-            log.error('Options incorrectly supplied for either single broker or \
-                    broker network.  Please check configuration')
+            bdii_url = cp.get('broker', 'bdii')
+            log.info('Retrieving broker details from %s ...', bdii_url)
+            bg = StompBrokerGetter(bdii_url)
+            use_ssl = cp.getboolean('broker', 'use_ssl')
+            if use_ssl:
+                service = STOMP_SSL_SERVICE
+            else:
+                service = STOMP_SERVICE
+            brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker',
+                                                                    'network'))
+            log.info('Found %s brokers.', len(brokers))
+        except ConfigParser.NoOptionError, e:
+            try:
+                host = cp.get('broker', 'host')
+                port = cp.get('broker', 'port')
+                brokers = [(host, int(port))]
+            except ConfigParser.NoOptionError:
+                log.error('Options incorrectly supplied for either single '
+                          'broker or broker network. '
+                          'Please check configuration')
+                log.error('System will exit.')
+                log.info(LOG_BREAK)
+                print 'SSM failed to start.  See log file for details.'
+                sys.exit(1)
+        except ldap.LDAPError, e:
+            log.error('Could not connect to LDAP server: %s', e)
             log.error('System will exit.')
             log.info(LOG_BREAK)
             print 'SSM failed to start.  See log file for details.'
             sys.exit(1)
-    except ldap.LDAPError, e:
-        log.error('Could not connect to LDAP server: %s', e)
-        log.error('System will exit.')
-        log.info(LOG_BREAK)
-        print 'SSM failed to start.  See log file for details.'
-        sys.exit(1)
-        
+
+    elif destination_type == 'AMS':
+        # Then we are setting up an SSM to connect to a AMS.
+        try:
+            # We only need a hostname, not a port
+            host = cp.get('broker', 'host')
+            # Use brokers variable so subsequent code is not dependant on
+            # the exact destination type.
+            brokers = [host]
+
+        except ConfigParser.NoOptionError:
+            log.error('The host must be specified when connecting to AMS, '
+                      'please check your configuration')
+            log.error('System will exit.')
+            log.info(LOG_BREAK)
+            print 'SSM failed to start.  See log file for details.'
+            sys.exit(1)
+
+        # Attempt to configure AMS specific variables.
+        try:
+            token = cp.get('messaging', 'token')
+            project = cp.get('messaging', 'project')
+
+        except (ConfigParser.Error, ValueError, IOError), err:
+            # A token and project are needed to successfully send to an
+            # AMS instance, so log and then exit on an error.
+            log.error('Error configuring AMS values: %s', err)
+            log.error('SSM will exit.')
+            print 'SSM failed to start.  See log file for details.'
+            sys.exit(1)
+
     if len(brokers) == 0:
         log.error('No brokers available.')
         log.error('System will exit.')
@@ -130,16 +186,20 @@ def main():
             path_type = 'dirq'
 
         sender = Ssm2(brokers, 
-                   cp.get('messaging','path'),
-                   path_type=path_type,
-                   cert=cp.get('certificates','certificate'),
-                   key=cp.get('certificates','key'),
-                   dest=cp.get('messaging','destination'),
-                   use_ssl=cp.getboolean('broker','use_ssl'),
-                   capath=cp.get('certificates', 'capath'),
-                   enc_cert=server_cert,
-                   verify_enc_cert=verify_server_cert)
-        
+                      cp.get('messaging', 'path'),
+                      path_type=path_type,
+                      cert=cp.get('certificates', 'certificate'),
+                      key=cp.get('certificates', 'key'),
+                      dest=cp.get('messaging', 'destination'),
+                      use_ssl=use_ssl,
+                      capath=cp.get('certificates', 'capath'),
+                      enc_cert=server_cert,
+                      verify_enc_cert=verify_server_cert,
+                      dest_type=destination_type,
+                      protocol=protocol,
+                      project=project,
+                      password=token)
+
         if sender.has_msgs():
             sender.handle_connect()
             sender.send_all()
