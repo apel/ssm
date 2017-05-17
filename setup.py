@@ -1,5 +1,12 @@
 """A setup script for APEL SSM.
 
+This script installs the APEL SSM library, sender and reciever. This
+should be similar to installing the RPM apel-ssm, although there
+may be some differences. A known difference is the RPM installs pyc
+and pyo files, whereas this script does not.
+
+Usage: 'python setup.py install'
+
 Requires setuptools.
 """
 
