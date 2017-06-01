@@ -65,43 +65,60 @@ def main():
     
     log.info(LOG_BREAK)
     log.info('Starting sending SSM version %s.%s.%s.', *__version__)
-    # If we can't get a broker to connect to, we have to give up.
+
     try:
-        bdii_url = cp.get('broker','bdii')
-        log.info('Retrieving broker details from %s ...', bdii_url)
-        bg = StompBrokerGetter(bdii_url)
-        use_ssl = cp.getboolean('broker', 'use_ssl')
-        if use_ssl:
-            service = STOMP_SSL_SERVICE
-        else:
-            service = STOMP_SERVICE
-        brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker','network'))
-        log.info('Found %s brokers.', len(brokers))
+        protocol = cp.get('messaging', 'protocol')
+        if protocol == '':
+            protocol = False
     except ConfigParser.NoOptionError, e:
+        protocol = False
+
+    if protocol == "STOMP":
+        # If we can't get a broker to connect to, we have to give up.
         try:
-            host = cp.get('broker', 'host')
-            port = cp.get('broker', 'port')
-            brokers = [(host, int(port))]
-        except ConfigParser.NoOptionError:
-            log.error('Options incorrectly supplied for either single broker or \
-                    broker network.  Please check configuration')
+            bdii_url = cp.get('broker','bdii')
+            log.info('Retrieving broker details from %s ...', bdii_url)
+            bg = StompBrokerGetter(bdii_url)
+            use_ssl = cp.getboolean('broker', 'use_ssl')
+            if use_ssl:
+                service = STOMP_SSL_SERVICE
+            else:
+                service = STOMP_SERVICE
+            brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker','network'))
+            log.info('Found %s brokers.', len(brokers))
+        except ConfigParser.NoOptionError, e:
+            try:
+                host = cp.get('broker', 'host')
+                port = cp.get('broker', 'port')
+                brokers = [(host, int(port))]
+            except ConfigParser.NoOptionError:
+                log.error('Options incorrectly supplied for either single broker or \
+                           broker network.  Please check configuration')
+                log.error('System will exit.')
+                log.info(LOG_BREAK)
+                print 'SSM failed to start.  See log file for details.'
+                sys.exit(1)
+        except ldap.LDAPError, e:
+            log.error('Could not connect to LDAP server: %s', e)
             log.error('System will exit.')
             log.info(LOG_BREAK)
             print 'SSM failed to start.  See log file for details.'
             sys.exit(1)
-    except ldap.LDAPError, e:
-        log.error('Could not connect to LDAP server: %s', e)
-        log.error('System will exit.')
-        log.info(LOG_BREAK)
-        print 'SSM failed to start.  See log file for details.'
-        sys.exit(1)
         
-    if len(brokers) == 0:
-        log.error('No brokers available.')
-        log.error('System will exit.')
-        log.info(LOG_BREAK)
-        sys.exit(1)
-        
+        if len(brokers) == 0:
+            log.error('No brokers available.')
+            log.error('System will exit.')
+            log.info(LOG_BREAK)
+            sys.exit(1)
+
+    elif protocol == "REST":
+        brokers = None     
+
+    else:
+       log.error('Unsupported protocol defined: %s' % protocol)
+       print 'SSM failed to start.  See log file for details.'
+       sys.exit(1)   
+
     try:
         server_cert = None
         verify_server_cert = True
@@ -120,7 +137,7 @@ def main():
                 raise Ssm2Exception('No destination queue is configured.')
         except ConfigParser.NoOptionError, e:
             raise Ssm2Exception(e)
-    
+
         sender = Ssm2(brokers, 
                    cp.get('messaging','path'),
                    cert=cp.get('certificates','certificate'),
@@ -129,7 +146,8 @@ def main():
                    use_ssl=cp.getboolean('broker','use_ssl'),
                    capath=cp.get('certificates', 'capath'),
                    enc_cert=server_cert,
-                   verify_enc_cert=verify_server_cert)
+                   verify_enc_cert=verify_server_cert,
+                   protocol=protocol)
         
         if sender.has_msgs():
             sender.handle_connect()
@@ -144,7 +162,7 @@ def main():
     except Exception, e:
         print 'SSM failed to complete successfully.  See log file for details.'
         log.error('Unexpected exception in SSM: %s', e)
-        log.error('Exception type: %s', e.__class__)
+        log.exception('Exception type: %s', e.__class__)
 
     try:
         sender.close_connection()

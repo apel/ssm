@@ -1,1 +1,4 @@
 *.pyc
+apel_ssm.egg-info/
+build/
+dist/

@@ -26,9 +26,12 @@ except ImportError:
 
 from ssm import crypto
 from dirq.QueueSimple import QueueSimple
-from dirq.queue import Queue
+from dirq.queue import Queue, QueueError
 
+import httplib
 import stomp
+import urllib2
+
 # Exception changed name between stomppy versions
 try:
     from stomp.exception import ConnectFailedException
@@ -62,7 +65,7 @@ class Ssm2(stomp.ConnectionListener):
     
     def __init__(self, hosts_and_ports, qpath, cert, key, dest=None, listen=None, 
                  capath=None, check_crls=False, use_ssl=False, username=None, password=None, 
-                 enc_cert=None, verify_enc_cert=True, pidfile=None):
+                 enc_cert=None, verify_enc_cert=True, pidfile=None, protocol="STOMP"):
         '''
         Creates an SSM2 object.  If a listen value is supplied,
         this SSM2 will be a receiver.
@@ -88,7 +91,9 @@ class Ssm2(stomp.ConnectionListener):
         
         self._valid_dns = []
         self._pidfile = pidfile
-        
+       
+        self._protocol = protocol
+ 
         # create the filesystem queues for accepted and rejected messages
         if dest is not None and listen is None:
             self._outq = QueueSimple(qpath)
@@ -236,14 +241,118 @@ class Ssm2(stomp.ConnectionListener):
             log.info('Valid signer: %s', signer)
             
         return message, signer
-        
-    def _send_msg(self, message, msgid):
+
+    def _send_msg(self,message,msgid):
+        '''
+        Calls the appropriate method based
+        on the chosen protocol
+        '''
+        if self._protocol == "STOMP":
+            self._send_msg_stomp(message, msgid)
+        elif self._protocol == "REST":
+            self._send_msg_rest(message, msgid)
+        else:
+            raise Ssm2Exception('Unsupported protocol defined: %s' % protocol)
+
+    def _pull_msg_rest(self):
+        if self._protocol != "REST":
+            raise Ssm2Exception('Pull via REST called, '
+                                'but protocol not set to REST. '
+                                'Protocol: %s' % self._protocol)
+
+        try:
+            request = urllib2.Request(self._dest)
+            response = urllib2.urlopen(request)
+        except AttributeError, e:  # Most liekly called when self._dest = None
+            log.error('AttributeError = ' + str(e.message))
+            log.error('Could not fetch from %s', self._dest) 
+            raise Ssm2Exception('AttributeError, could not fetch from %s'
+                                % self._dest)
+        except ValueError, e:  # Most likely thrown if self._dest is not url
+            log.error('ValueError = ' + str(e.message))
+            log.error('Could not fetch from %s', self._dest)
+            raise Ssm2Exception('ValueError, could not fetch from "%s"'
+                                % self._dest)
+        except urllib2.HTTPError, e:  # Likely thrown if respnse is not 200
+            log.error('HTTPError = ' + str(e.code))
+            log.error('Could not fetch from %s', self._dest)
+            raise Ssm2Exception('HTTPError, could not fetch from %s'
+                                % self._dest)
+        except urllib2.URLError, e:  # Likely thrown if URL doesn't resolve
+            log.error('URLError = ' + str(e.reason))
+            log.error('Could not fetch from %s', self._dest)
+            raise Ssm2Exception('URLError, could not fetch from %s'
+                                % self._dest)
+        except httplib.HTTPException:  # Catches invalid HTTP responses:
+                                       # broken headers; invalid status codes;
+                                       # prematurely broken connections; etc.
+            log.error('HTTPException')
+            log.error('Could not fetch from %s', self._dest)
+            raise Ssm2Exception('HTTPRxception, could not fetch from %s'
+                                % self._dest)
+
+        try:
+            name = self._inq.add({'body': response.read(),
+                                  'signer': '',
+                                  'empaid': ''})
+        except QueueError as err:
+            log.error("Could not save message.\n%s", err)
+
+        log.info('Message saved from %s.', self._dest)
+
+    def _send_msg_rest(self,message,msgid):
+        '''
+        Send one message using REST.
+        '''
+        #self._conn.request("POST", "", "BOO", None)
+        log.info('Sending message via HTTP: %s', msgid)
+
+        request_headers = {"empa-id": msgid}
+        response_code = -1
+        attempts = 0
+        while response_code is not 202:
+            try:
+                attempts = attempts + 1
+                request = urllib2.Request(self._dest,
+                                          data=message,
+                                          headers=request_headers)
+
+                response = urllib2.urlopen(request)
+            except urllib2.HTTPError, e:
+                log.error('HTTPError = ' + str(e.code))
+                log.error('Message %s did not send to %s', msgid, self._dest)
+            except urllib2.URLError, e:
+                log.error('URLError = ' + str(e.reason))
+                log.error('Message %s did not send to %s', msgid, self._dest)
+            except httplib.HTTPException:
+                log.error('HTTPException')
+                log.error('Message %s did not send to %s', msgid, self._dest)
+
+            response_code = response.getcode()
+
+            if response_code is 202:
+                # send successful. break out of loop
+                log.info('Message %s received response %s.', msgid, response_code)
+                break
+            elif response_code is 401:  # unauthorized HTTP responses
+                log.error("401 response from %s", self._dest)
+                raise Ssm2Exception("401 response from %s" % (self._dest))
+            elif response_code is 403:  # forbidden HTTP responses
+                log.error("403 response from %s", self._dest)
+                raise Ssm2Exception("403 response from %s" % (self._dest))
+            elif attempts >= 3:
+                log.error("Attempted to send 3 times and failed.")
+                raise Ssm2Exception("Could not send message.")
+            else:
+                log.info("%s response from %s, trying again.", response_code, self._dest)
+
+    def _send_msg_stomp(self, message, msgid):
         '''
         Send one message using stomppy.  The message will be signed using 
         the host cert and key.  If an encryption certificate
         has been supplied, the message will also be encrypted.
         '''
-        log.info('Sending message: %s', msgid)
+        log.info('Sending message via STOMP: %s', msgid)
         headers = {'destination': self._dest, 'receipt': msgid,
                    'empa-id': msgid}
         
@@ -289,12 +398,13 @@ class Ssm2(stomp.ConnectionListener):
             text = self._outq.get(msgid)
             self._send_msg(text, msgid)
 
-            log.info('Waiting for broker to accept message.')
-            while self._last_msg is None:
-                if not self.connected:
-                    raise Ssm2Exception('Lost connection.')
+            if self._protocol == "STOMP":
+                log.info('Waiting for broker to accept message.')
+                while self._last_msg is None:
+                    if not self.connected:
+                        raise Ssm2Exception('Lost connection.')
 
-                time.sleep(0.1)
+                    time.sleep(0.1)
 
             self._last_msg = None
             self._outq.remove(msgid)
@@ -360,19 +470,20 @@ class Ssm2(stomp.ConnectionListener):
         If more than one is in the list self._network_brokers, try to 
         connect to each in turn until successful.
         '''
-        for host, port in self._brokers:
-            self._initialise_connection(host, port)
-            try:
-                self.start_connection()
-                break
-            except ConnectFailedException, e:
-                # ConnectFailedException doesn't provide a message.
-                log.warn('Failed to connect to %s:%s.', host, port)
-            except Ssm2Exception, e:
-                log.warn('Failed to connect to %s:%s: %s', host, port, e)
+        if self._protocol == "STOMP":
+            for host, port in self._brokers:
+                self._initialise_connection(host, port)
+                try:
+                    self.start_connection()
+                    break
+                except ConnectFailedException, e:
+                    # ConnectFailedException doesn't provide a message.
+                    log.warn('Failed to connect to %s:%s.', host, port)
+                except Ssm2Exception, e:
+                    log.warn('Failed to connect to %s:%s: %s', host, port, e)
 
-        if not self.connected:
-            raise Ssm2Exception('Attempts to start the SSM failed.  The system will exit.')
+            if not self.connected:
+                raise Ssm2Exception('Attempts to start the SSM failed.  The system will exit.')
 
     def handle_disconnect(self):
         '''
@@ -435,15 +546,16 @@ class Ssm2(stomp.ConnectionListener):
         in a separate thread, so it can outlive the main process 
         if it is not ended.
         '''
-        try:
-            self._conn.stop()  # Same as diconnect() but waits for thread exit
-        except (stomp.exception.NotConnectedException, socket.error):
-            self._conn = None
-        except AttributeError:
-            # AttributeError if self._connection is None already
-            pass
+        if self._protocol == "STOMP":
+            try:
+                self._conn.stop()  # Same as diconnect() but waits for thread exit
+            except (stomp.exception.NotConnectedException, socket.error):
+                self._conn = None
+            except AttributeError:
+                # AttributeError if self._connection is None already
+                pass
         
-        log.info('SSM connection ended.')
+            log.info('SSM connection ended.')
         
     def startup(self):
         '''
@@ -474,5 +586,3 @@ class Ssm2(stomp.ConnectionListener):
             except IOError, e:
                 log.warn('Failed to remove pidfile %s: %e', self._pidfile, e)
                 log.warn('SSM may not start again until it is removed.')
-        
-        
