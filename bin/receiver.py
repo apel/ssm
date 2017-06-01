@@ -84,7 +84,19 @@ def main():
         
     cp = ConfigParser.ConfigParser()
     cp.read(options.config)
-    
+
+    # These variables are only set by one type of SSM
+    # so set a sensible default here, possibly
+    # to be overridden later
+    # Set a default for STOMP only vars
+    brokers = None
+    use_ssl = None
+    # Set a deafault fot AMS only vars
+    token = None
+    project = None
+    # Shared vars are not set here, they must have
+    # sensible defaults set in the config parsing
+
     # Check for pidfile
     pidfile = cp.get('daemon', 'pidfile')
     if os.path.exists(pidfile):
@@ -110,38 +122,127 @@ def main():
     log.info(LOG_BREAK)
     log.info('Starting receiving SSM version %s.%s.%s.', *__version__)
 
-    # If we can't get a broker to connect to, we have to give up.
+    # Determine the type of SSM to configure (STOMP or REST (AMS))
     try:
-        bg = StompBrokerGetter(cp.get('broker','bdii'))
-        use_ssl = cp.getboolean('broker', 'use_ssl')
-        if use_ssl:
-            service = STOMP_SSL_SERVICE
-        else:
-            service = STOMP_SERVICE
-        brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker','network'))
-    except ConfigParser.NoOptionError, e:
+        destination_type = cp.get('SSM Type', 'destination type')
+        protocol = cp.get('SSM Type', 'protocol')
+
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        # if newer configuration settings 'protocol' and 'destination type'
+        # are not set, assume it's an old style STOMP BROKER for
+        # backwards compatability.
+        log.debug('No options supplied for destination_type and/or protocol.')
+        destination_type = 'STOMP-BROKER'
+        protocol = 'STOMP'
+
+    log.info('Setting up SSM with Dest Type: %s, Protocol : %s'
+             % (destination_type, protocol))
+
+    if destination_type == 'STOMP-BROKER':
+        # We are setting up an SSM to connect to an old style STOMP Broker
+        # If we can't get a broker to connect to, we have to give up.
         try:
-            host = cp.get('broker', 'host')
-            port = cp.get('broker', 'port')
-            brokers = [(host, int(port))]
-        except ConfigParser.NoOptionError:
-            log.error('Options incorrectly supplied for either single broker \
-                    or broker network.  Please check configuration')
+            bg = StompBrokerGetter(cp.get('broker', 'bdii'))
+            use_ssl = cp.getboolean('broker', 'use_ssl')
+            if use_ssl:
+                service = STOMP_SSL_SERVICE
+            else:
+                service = STOMP_SERVICE
+            brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker', 'network'))
+        except ConfigParser.NoOptionError, e:
+            try:
+                host = cp.get('broker', 'host')
+                port = cp.get('broker', 'port')
+                brokers = [(host, int(port))]
+            except ConfigParser.NoOptionError:
+                log.error('Options incorrectly supplied for either single broker \
+                          or broker network.  Please check configuration')
+                log.error('System will exit.')
+                log.info(LOG_BREAK)
+                sys.exit(1)
+        except ldap.SERVER_DOWN, e:
+            log.error('Could not connect to LDAP server: %s', e)
             log.error('System will exit.')
             log.info(LOG_BREAK)
             sys.exit(1)
-    except ldap.SERVER_DOWN, e:
-        log.error('Could not connect to LDAP server: %s', e)
-        log.error('System will exit.')
-        log.info(LOG_BREAK)
-        sys.exit(1)    
-    
-    if len(brokers) == 0:
-        log.error('No brokers available.')
-        log.error('System will exit.')
-        log.info(LOG_BREAK)
+
+        if len(brokers) == 0:
+            log.error('No brokers available.')
+            log.error('System will exit.')
+            log.info(LOG_BREAK)
+            sys.exit(1)
+    else:
+        # We are setting up an SSM to connect to a new stlye ARGO AMS
+        try:
+            token = cp.get('AMS', 'token')
+            project = cp.get('AMS', 'project')
+            subscription = cp.get('AMS', 'subscription')
+        except (ConfigParser.Error, ValueError, IOError), err:
+
+            log.error('Error configuring AMS values: %s' % str(err))
+            log.error('SSM will exit.')
+
+            print 'SSM failed to start.  See log file for details.'
+
+            sys.exit(1)
+
+    # Regardless of protocol, the SSM needs a destination
+    try:
+        destination = cp.get('messaging', 'destination')
+
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), e:
+        log.error('No destination is configured.')
+        log.error('SSM will exit.')
+        print 'SSM failed to start.  See log file for details.'
         sys.exit(1)
-        
+
+    # Regardless of protocol, the SSM needs a path to read messages
+    try:
+        path = cp.get('messaging', 'path')
+
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), e:
+        log.error('No message queue is configured.')
+        log.error('SSM will exit.')
+        print 'SSM failed to start.  See log file for details.'
+        sys.exit(1)
+
+    # Regardless of protocol, the SSM needs a certificate and a key
+    # for the crypto verification
+    try:
+        cert = cp.get('certificates', 'certificate')
+        key = cp.get('certificates', 'key')
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), error:
+        log.error('No certificate or key set in conf file')
+        log.error(error)
+        log.error('SSM will exit')
+
+        print 'SSM failed to start.  See log file for details.'
+
+        sys.exit(1)
+
+    # Regardless of protocol, the SSM might need a ca
+    try:
+        capath = cp.get('certificates', 'capath')
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), error:
+        log.warning('No capath set in cfg file.')
+
+    server_cert = None
+    verify_server_cert = True
+    try:
+        server_cert = cp.get('certificates', 'server_cert')
+        try:
+            verify_server_cert = cp.getboolean('certificates', 'verify_server_cert')
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+            pass
+
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        log.info('No server certificate supplied.  Will not encrypt messages.')
+
+    try:
+        check_crls = cp.getboolean('certificates', 'check_crls')
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        check_crls = True
+
     log.info('The SSM will run as a daemon.')
     
     # We need to preserve the file descriptor for any log files.
@@ -150,19 +251,27 @@ def main():
     dc = DaemonContext(files_preserve=log_files)
         
     try:
-        ssm = Ssm2(brokers, 
-                   cp.get('messaging','path'),
-                   cert=cp.get('certificates','certificate'),
-                   key=cp.get('certificates','key'),
-                   listen=cp.get('messaging','destination'),
-                   use_ssl=cp.getboolean('broker','use_ssl'),
-                   capath=cp.get('certificates', 'capath'),
-                   check_crls=cp.getboolean('certificates', 'check_crls'),
-                   pidfile=pidfile)
+        receiver = Ssm2(brokers,
+                        path,
+                        cert,
+                        key,
+                        dest=destination,
+                        use_ssl=use_ssl,
+                        capath=capath,
+                        enc_cert=server_cert,
+                        verify_enc_cert=verify_server_cert,
+                        dest_type=destination_type,
+                        protocol=protocol,
+                        project=project,
+                        subscription=subscription,
+                        password=token,
+                        listen=destination,
+                        check_crls=check_crls,
+                        pidfile=pidfile)
         
         log.info('Fetching valid DNs.')
         dns = get_dns(options.dn_file)
-        ssm.set_dns(dns)
+        receiver.set_dns(dns)
         
     except Exception, e:
         log.fatal('Failed to initialise SSM: %s', e)
@@ -175,42 +284,44 @@ def main():
         # here - we need to call the open() and close() methods
         # manually.
         dc.open()
-        ssm.startup()
+        receiver.startup()
         i = 0
         # The message listening loop.
         while True:
 
             time.sleep(1)
+            if destination_type == 'ARGO-AMS':
+                receiver.pull_msg_rest()
 
             if i % REFRESH_DNS == 0:
                 log.info('Refreshing the valid DNs.')
                 dns = get_dns(options.dn_file)
-                ssm.set_dns(dns)
+                receiver.set_dns(dns)
 
-                try:
-                    log.info('Sending ping.')
-                    ssm.send_ping()
-                except NotConnectedException:
-                    log.error('Connection lost.')
-                    ssm.shutdown()
-                    dc.close()
-                    log.info("Waiting for 10 minutes before restarting...")
-                    time.sleep(10 * 60)
-                    log.info('Restarting SSM.')
-                    dc.open()
-                    ssm.startup()
-
+                if destination_type == 'STOMP-BROKER':
+                    try:
+                        log.info('Sending ping.')
+                        receiver.send_ping()
+                    except NotConnectedException:
+                        log.error('Connection lost.')
+                        receiver.shutdown()
+                        dc.close()
+                        log.info("Waiting for 10 minutes before restarting...")
+                        time.sleep(10 * 60)
+                        log.info('Restarting SSM.')
+                        dc.open()
+                        receiver.startup()
             i += 1
-
+    
     except SystemExit, e:
         log.info('Received the shutdown signal: %s', e)
-        ssm.shutdown()
+        receiver.shutdown()
         dc.close()
     except Exception, e:
         log.error('Unexpected exception: %s', e)
         log.error('Exception type: %s', e.__class__)
         log.error('The SSM will exit.')
-        ssm.shutdown()
+        receiver.shutdown()
         dc.close()
         
     log.info('Receiving SSM has shut down.')
