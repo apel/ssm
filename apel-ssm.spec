@@ -45,7 +45,7 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p %{buildroot}%{ssmconf}
 mkdir -p %{buildroot}%{python_sitelib}
 mkdir -p %{buildroot}%_bindir
-mkdir -p %{buildroot}/etc/logrotate.d
+mkdir -p %{buildroot}%{_sysconfdir}/logrotate.d
 mkdir -p %{buildroot}%{_initrddir}
 mkdir -p %{buildroot}%_defaultdocdir
 # Directories for messages, logs, PID files
@@ -61,7 +61,9 @@ cp -rp conf/sender.cfg %{buildroot}%{ssmconf}
 cp -rp conf/receiver.cfg %{buildroot}%{ssmconf}
 cp -rp conf/dns %{buildroot}%{ssmconf}
 cp -rp ssm %{buildroot}%{python_sitelib}
-cp -rp conf/ssm.logrotate %{buildroot}%_sysconfdir/logrotate.d/%{name}
+
+cp -rp scripts/apel-ssm.logrotate %{buildroot}%{_sysconfdir}/logrotate.d/apel-ssm
+
 # Readme
 cp -rp README.md %{buildroot}%_defaultdocdir/%{name}
 
@@ -82,7 +84,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %_bindir/ssmreceive
 %attr(755,root,root) %{_initrddir}/apel-ssm
 %{python_sitelib}/ssm
-# logrotate
 
 # Directories for messages, logs, PID files
 %dir %{_localstatedir}/spool/apel
@@ -92,7 +93,9 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{ssmconf}/sender.cfg
 %config(noreplace) %{ssmconf}/receiver.cfg
 %config(noreplace) %{ssmconf}/dns
-%config(noreplace) /etc/logrotate.d/%{name}
+
+# logrotate
+%config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
 
 %doc %_defaultdocdir/%{name}
 

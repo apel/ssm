@@ -25,7 +25,7 @@ def main():
     if 'install' in sys.argv:
         copyfile('bin/receiver.py', 'bin/ssmreceive')
         copyfile('bin/sender.py', 'bin/ssmsend')
-        copyfile('conf/ssm.logrotate', 'conf/apel-ssm')
+        copyfile('scripts/apel-ssm.logrotate', 'conf/apel-ssm')
         copyfile('README.md', 'apel-ssm')
 
         if not path.exists('/var/log/apel'):
