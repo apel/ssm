@@ -1,3 +1,4 @@
+# Logrotate config for apel-ssm
 /var/log/apel/receiver.log {
     notifempty
     daily
