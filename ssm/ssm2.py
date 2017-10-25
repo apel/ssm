@@ -344,35 +344,14 @@ class Ssm2(stomp.ConnectionListener):
                                   "wasn't found.")
             log.info('Connecting using SSL...')
 
-            try:
-                # Compatible with stomp.py >= 3.0.4
-                self._conn = stomp.Connection([(host, port)],
-                                              use_ssl=self._use_ssl,
-                                              user=self._user,
-                                              passcode=self._pwd,
-                                              ssl_key_file=self._key,
-                                              ssl_cert_file=self._cert,
-                                              ssl_version=ssl.PROTOCOL_SSLv23)
-            except TypeError:
-                # For stomp.py <= 3.0.3, override ssl.PROTOCOL_SSLv3 and then
-                # try to set up the connection again below.
-                ssl.PROTOCOL_SSLv3 = ssl.PROTOCOL_SSLv23
+        # _conn will use the default SSL version specified by stomp.py
+        self._conn = stomp.Connection([(host, port)],
+                                      use_ssl=self._use_ssl,
+                                      reconnect_attempts_max=1,
+                                      ssl_key_file=self._key,
+                                      ssl_cert_file=self._cert,
+                                      timeout=Ssm2.CONNECTION_TIMEOUT)
 
-        if self._conn is None:
-            # If _conn is None then either SSL wasn't requested or trying to
-            # set ssl_version failed.
-            self._conn = stomp.Connection([(host, port)],
-                                          use_ssl=self._use_ssl,
-                                          user=self._user,
-                                          passcode=self._pwd,
-                                          ssl_key_file=self._key,
-                                          ssl_cert_file=self._cert)
-
-        # You can set this in the constructor but only for stomppy version 3.
-        # This works for stomppy 3 but doesn't break stomppy 2.
-        self._conn.__reconnect_attempts_max = 1
-        self._conn.__timeout = Ssm2.CONNECTION_TIMEOUT
-        
         self._conn.set_listener('SSM', self)
         
     def handle_connect(self):
