@@ -291,8 +291,13 @@ class Ssm2(stomp.ConnectionListener):
                 to_send = crypto.encrypt(to_send, self._enc_cert)
         else:
             to_send = ''
-            
-        self._conn.send(to_send, headers=headers)
+
+        try:
+            # Try using the v4 method signiture
+            self._conn.send(self._dest, to_send, headers=headers)
+        except TypeError:
+            # If it fails, use the v3 metod signiture
+            self._conn.send(to_send, headers=headers)
 
     def send_ping(self):
         '''
