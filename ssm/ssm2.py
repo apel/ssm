@@ -458,7 +458,7 @@ class Ssm2(stomp.ConnectionListener):
         if it is not ended.
         '''
         try:
-            self._conn.stop()  # Same as diconnect() but waits for thread exit
+            self._conn.disconnect()
         except (stomp.exception.NotConnectedException, socket.error):
             self._conn = None
         except AttributeError:
