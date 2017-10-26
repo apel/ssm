@@ -133,12 +133,27 @@ class Ssm2(stomp.ConnectionListener):
     ##########################################################################
     # Methods called by stomppy
     ##########################################################################
-            
-    def on_send(self, headers, unused_body):
+
+    def on_send(self, frame, unused_body=None):
         '''
         Called by stomppy when a message is sent.
+
+        unused_body is only present for to have a backward compatible
+        method signiture when using stomp.py v3.1.X
         '''
-        log.debug('Sent message: %s', headers['empa-id'])
+        try:
+            # Try the stomp.py v4 way first
+            empaid = frame.headers['empa-id']
+        except KeyError:
+            # Then you are most likely using stomp.py v4.
+            # on_send is now triggered on non message frames
+            # (such as 'CONNECT' frames) and as such without an empa-id.
+            empaid = 'no empa-id'
+        except AttributeError:
+            # Then you are likely using stomp.py v3
+            empaid = frame['empa-id']
+
+        log.debug('Sent message: %s', empaid)
 
     def on_message(self, headers, body):
         '''
