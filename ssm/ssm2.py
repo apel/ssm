@@ -103,10 +103,9 @@ class Ssm2(stomp.ConnectionListener):
         if not crypto.check_cert_key(self._cert, self._key):
             raise Ssm2Exception('Cert and key don\'t match.')
 
-        # check the certificate has not expired
+        # Check that the certificate has not expired.
         if not crypto.verify_cert_date(self._cert):
-            raise Ssm2Exception('Certificate %s has expired, so cannot sign messages.'
-                                % self._cert)
+            raise Ssm2Exception('Certificate %s has expired.' % self._cert)
 
         # check the server certificate provided
         if enc_cert is not None:
