@@ -183,15 +183,14 @@ def main():
             time.sleep(1)
 
             if i % REFRESH_DNS == 0:
-                log.info('Refreshing the valid DNs.')
+                log.info('Refreshing valid DNs and then sending ping.')
                 dns = get_dns(options.dn_file)
                 ssm.set_dns(dns)
 
                 try:
-                    log.info('Sending ping.')
                     ssm.send_ping()
                 except NotConnectedException:
-                    log.error('Connection lost.')
+                    log.warn('Connection lost.')
                     ssm.shutdown()
                     dc.close()
                     log.info("Waiting for 10 minutes before restarting...")
