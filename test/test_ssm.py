@@ -4,77 +4,66 @@ Created on 7 Dec 2011
 @author: will
 '''
 
-import ssm.ssm2
-    
 import os
-import unittest
 import shutil
 import tempfile
-
+import unittest
 from subprocess import call
+
+from ssm.ssm2 import Ssm2, Ssm2Exception
 
 
 class TestSsm(unittest.TestCase):
     '''
     Class used for testing SSM.
     '''
-    
+
     def setUp(self):
-        '''
-        Set up a test SSM, and a test directory, and new valid cert.
-        '''
-
-        # Some of the functions require the hardcoded
-        # expired certificate and key to be files.
-        _, self._key_path = tempfile.mkstemp(prefix='key')
-        with open(self._key_path, 'w') as key_path:
-            key_path.write(TEST_KEY)
-
-        _, self._expired_cert_path = tempfile.mkstemp(prefix='cert')
-        with open(self._expired_cert_path, 'w') as expired_cert_path:
-            expired_cert_path.write(EXPIRED_CERT)
-
-        # Create a new cert using the hardcoded key
-        # The subj has been hardcoded so the generated certificate
-        # subject matches the subject of the hardcoded, expired,
-        # certificate at the bottom of this file
-        call(['openssl', 'req', '-x509', '-nodes', '-days', '1',
-              '-new', '-key', self._key_path,
-              '-out', TEST_CERT_FILE, '-subj',
-              '/C=UK/O=STFC/OU=SC/CN=Test Cert'])
-
+        """Set up a test directory and certificates."""
         self._tmp_dir = tempfile.mkdtemp(prefix='ssm')
 
-        # Store these variables as class variables so new SSMs can be
-        # instantiated in each test method. (We cant simply create the
-        # as SSM here as one of the two tests checks the instantiation
-        # fails as it is expected to with a expired certificate.)
-        self._valid_dn = '/test/dn'
-        self.valid_dn_file, self.valid_dn_path = tempfile.mkstemp(prefix='valid', dir=self._tmp_dir)
-        os.write(self.valid_dn_file, self._valid_dn)
+        # Some functions require the hardcoded expired certificate and
+        # key to be files.
+        key_fd, self._key_path = tempfile.mkstemp(prefix='key',
+                                                  dir=self._tmp_dir)
+        os.write(key_fd, TEST_KEY)
+        os.close(key_fd)
+
+        cert_fd, self._expired_cert_path = tempfile.mkstemp(prefix='cert',
+                                                            dir=self._tmp_dir)
+        os.write(cert_fd, EXPIRED_CERT)
+        os.close(cert_fd)
+
+        self.valid_dn_file, self.valid_dn_path = tempfile.mkstemp(
+            prefix='valid', dir=self._tmp_dir)
+        os.write(self.valid_dn_file, '/test/dn')
         os.close(self.valid_dn_file)
-        
-        self._hosts_and_ports = [('not.a.broker', 123)]
+
+        # Create a new certificate using the hardcoded key.
+        # The subject has been hardcoded so that the generated
+        # certificate subject matches the subject of the hardcoded,
+        # expired, certificate at the bottom of this file.
+        call(['openssl', 'req', '-x509', '-nodes', '-days', '1', '-new',
+              '-key', self._key_path, '-out', TEST_CERT_FILE,
+              '-subj', '/C=UK/O=STFC/OU=SC/CN=Test Cert'])
+
+        self._brokers = [('not.a.broker', 123)]
         self._capath = '/not/a/path'
         self._check_crls = False
         self._pidfile = self._tmp_dir + '/pidfile'
-        
+
         self._listen = '/topic/test'
-        
         self._dest = '/topic/test'
-        
-        self._msgdir =  tempfile.mkdtemp(prefix='msgq')
-        
+
+        self._msgdir = tempfile.mkdtemp(prefix='msgq')
+
     def tearDown(self):
-        '''Remove test directories and files.'''
+        """Remove test directory and all contents."""
         try:
             shutil.rmtree(self._msgdir)
             shutil.rmtree(self._tmp_dir)
-            os.remove(TEST_CERT_FILE)
-            os.remove(self._key_path)
-            os.remove(self._expired_cert_path)
         except OSError, e:
-            print 'Error removing temporary directory/file'
+            print 'Error removing temporary directory %s' % self._tmp_dir
             print e
         
     def test_on_message(self):
@@ -83,9 +72,8 @@ class TestSsm(unittest.TestCase):
         to write a comprehensive test.  Instead, I will start with where there
         might be problems.
         '''
-        test_ssm = ssm.ssm2.Ssm2(self._hosts_and_ports, self._msgdir,
-                                 TEST_CERT_FILE, self._key_path,
-                                 dest=self._dest, listen=self._listen)
+        test_ssm = Ssm2(self._brokers, self._msgdir, TEST_CERT_FILE,
+                        self._key_path, dest=self._dest, listen=self._listen)
         # SSM crashed when headers were missing.  It should just ignore the
         # message.
         test_ssm.on_message({}, '')
@@ -99,35 +87,28 @@ class TestSsm(unittest.TestCase):
         os.chmod(self._msgdir, 0777)
 
     def test_init_expired_cert(self):
-        """Test exception is thrown creating an SSM with an expired cert."""
+        """Test right exception is thrown creating an SSM with expired cert."""
+        expected_error = ('Certificate %s has expired.'
+                          % self._expired_cert_path)
         try:
             # Indirectly test crypto.verify_cert_date
-            test_ssm = ssm.ssm2.Ssm2(self._hosts_and_ports, self._msgdir,
-                                     self._expired_cert_path, self._key_path,
-                                     listen=self._listen)
-
-        except ssm.ssm2.Ssm2Exception, error:
-            expected_error = ('Certificate %s has expired, '
-                              'so cannot sign messages.'
-                              % self._expired_cert_path)
-
-            if str(error) == expected_error:
-                # then this test has worked exactly as expected.
-                return
+            Ssm2(self._brokers, self._msgdir, self._expired_cert_path,
+                 self._key_path, listen=self._listen)
+        except Ssm2Exception as error:
+            if str(error) != expected_error:
+                self.fail('Raised: "%s" Expected: "%s"' % (error,
+                                                           expected_error))
             else:
-                # otherwise this test may or may not have
-                # failed, but something has gone wrong
-                raise error
+                return
 
-        # if the test gets here, then the test has
-        # failed as no exception was thrown
-        self.fail('A SSM was created with an expired certificate!')
+        # If the test gets here, then it has failed as no exception was thrown.
+        self.fail('An SSM instance was created with an expired certificate!')
+
 
 TEST_CERT_FILE = '/tmp/test.crt'
 
-# As we want the expired cert to match the key used,
-# we can't generate them on the fly.
-# The cert below has the subject
+# As we want the expired certifcate to match the key used, we can't
+# generate them on the fly. The cert below has the subject:
 # '/C=UK/O=STFC/OU=SC/CN=Test Cert'
 EXPIRED_CERT = '''-----BEGIN CERTIFICATE-----
 MIIDTTCCAjWgAwIBAgIJAI/H+MkYrMbMMA0GCSqGSIb3DQEBBQUAMD0xCzAJBgNV
@@ -151,7 +132,7 @@ BwQaxGNoKpW2K5w4e6KK0d1SAvDnIcTUONt3nQZND9sH
 -----END CERTIFICATE-----'''
 
 # A key used to generate the above, expired, certificate and the
-# certificates generated by the test methods
+# certificates generated by the test methods.
 TEST_KEY = '''-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC3n//lZBP0LIUI
 9vnNAMPgDHeY3wTqDSUWPKbrmr5VqTdMjWSLF32WM3dgpagBywqSKYyo64jwnkon
@@ -182,5 +163,4 @@ IxueZv7Dhxzr4GoJ9EfLfN9IHj5EP8YQ6dKyY8P1YN8siV1bEVz7lbgtOxnPVdtW
 -----END PRIVATE KEY-----'''
 
 if __name__ == '__main__':
-    #import sys;sys.argv = ['', 'Test.test_get_a_broker']
     unittest.main()
