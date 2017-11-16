@@ -210,6 +210,27 @@ def decrypt(encrypted_text, certpath, keypath):
     return enc_txt
 
 
+def verify_cert_date(certpath):
+    """Return True if certifcate is 'in date', otherwise return False."""
+    if certpath is None:
+        raise CryptoException('Invalid None argument to verify_cert_date().')
+
+    args = ['openssl', 'x509', '-checkend', '-noout', '-in', certpath]
+
+    p1 = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+
+    message, error = p1.communicate(certpath)
+
+    # This should be unlikely to happen, but if it does log the error
+    # and do not verify the cert's expiraiton date.
+    if error != '':
+        log.error(error)
+        return False
+
+    # If the returncode is zero the certificate has not expired.
+    return p1.returncode == 0
+
+
 def verify_cert(certstring, capath, check_crls=True):
     '''
     Verify that the certificate is signed by a CA whose certificate is stored in

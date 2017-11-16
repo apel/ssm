@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.1.7
+Version:        2.2.0
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -15,6 +15,11 @@ URL:            https://wiki.egi.eu/wiki/APEL/SSM
 Source:         %{name}-%{version}-%{releasenumber}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
+
+# Build requirement for non fedora-packager systems (CentOS).
+%if ! (0%{?fedora} > 12 || 0%{?rhel} > 5)
+BuildRequires:  python-devel
+%endif
 
 Requires:       stomppy < 4.0.0, python-daemon, python-dirq, python-ldap
 Requires(pre):  shadow-utils
@@ -40,7 +45,7 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p %{buildroot}%{ssmconf}
 mkdir -p %{buildroot}%{python_sitelib}
 mkdir -p %{buildroot}%_bindir
-mkdir -p %{buildroot}/etc/logrotate.d
+mkdir -p %{buildroot}%{_sysconfdir}/logrotate.d
 mkdir -p %{buildroot}%{_initrddir}
 mkdir -p %{buildroot}%_defaultdocdir
 # Directories for messages, logs, PID files
@@ -56,7 +61,9 @@ cp -rp conf/sender.cfg %{buildroot}%{ssmconf}
 cp -rp conf/receiver.cfg %{buildroot}%{ssmconf}
 cp -rp conf/dns %{buildroot}%{ssmconf}
 cp -rp ssm %{buildroot}%{python_sitelib}
-cp -rp conf/ssm.logrotate %{buildroot}%_sysconfdir/logrotate.d/%{name}
+
+cp -rp scripts/apel-ssm.logrotate %{buildroot}%{_sysconfdir}/logrotate.d/apel-ssm
+
 # Readme
 cp -rp README.md %{buildroot}%_defaultdocdir/%{name}
 
@@ -77,7 +84,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %_bindir/ssmreceive
 %attr(755,root,root) %{_initrddir}/apel-ssm
 %{python_sitelib}/ssm
-# logrotate
 
 # Directories for messages, logs, PID files
 %dir %{_localstatedir}/spool/apel
@@ -87,11 +93,19 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{ssmconf}/sender.cfg
 %config(noreplace) %{ssmconf}/receiver.cfg
 %config(noreplace) %{ssmconf}/dns
-%config(noreplace) /etc/logrotate.d/%{name}
+
+# logrotate
+%config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
 
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Thu Nov 16 2017 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.2.0-1
+ - Added a check that certificates have not expired before starting SSM.
+ - SSL errors now propagated out properly and saved for received messages.
+ - Trimmed down the number of log messages generated for receivers.
+ - Added python-devel build requirement for non fedora-packager OSs (CentOS).
+
  * Tue Jan 12 2016 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.7-1
  - Added a delay when receiver is reconnecting to improve reliability.
 
