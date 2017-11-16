@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.1.7
+Version:        2.2.0
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -100,6 +100,12 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Thu Nov 16 2017 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.2.0-1
+ - Added a check that certificates have not expired before starting SSM.
+ - SSL errors now propagated out properly and saved for received messages.
+ - Trimmed down the number of log messages generated for receivers.
+ - Added python-devel build requirement for non fedora-packager OSs (CentOS).
+
  * Tue Jan 12 2016 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.1.7-1
  - Added a delay when receiver is reconnecting to improve reliability.
 
