@@ -232,11 +232,11 @@ class Ssm2(stomp.ConnectionListener):
         self._last_msg = headers['receipt-id']
 
     def on_receiver_loop_completed(self, _unused_headers, _unused_body):
-        '''
+        """
         Called by stompy when the receiver loop ends.
 
         This is usually trigger as part of a disconnect.
-        '''
+        """
         log.debug('on_receiver_loop_completed called.')
 
     ##########################################################################
