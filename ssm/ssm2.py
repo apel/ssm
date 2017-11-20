@@ -138,8 +138,8 @@ class Ssm2(stomp.ConnectionListener):
         '''
         Called by stomppy when a message is sent.
 
-        unused_body is only present for to have a backward compatible
-        method signiture when using stomp.py v3.1.X
+        unused_body is only present to have a backward compatible
+        method signature when using stomp.py v3.1.X
         '''
         try:
             # Try the stomp.py v4 way first
