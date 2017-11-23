@@ -56,7 +56,7 @@ def main():
           url='http://apel.github.io/',
           download_url='https://github.com/apel/ssm/releases',
           license='Apache License, Version 2.0',
-          install_requires=['stomp.py<=3.1.6', 'python-ldap', 'dirq'],
+          install_requires=['stomp.py', 'python-ldap', 'dirq'],
           extras_require={
               'python-daemon': ['python-daemon'],
           },
