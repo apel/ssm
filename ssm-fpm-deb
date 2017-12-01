@@ -49,6 +49,7 @@ fpm -s python -t deb \
 --python-install-bin /usr/bin \
 --python-install-lib $PYTHON_INSTALL_LIB \
 --no-auto-depends \
+--exclude *.pyc \
 $SOURCE_DIR/ssm-$VERSION/setup.py
 
 mv ./apel-ssm_${TAG}_all.deb $BUILD_DIR
