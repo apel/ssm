@@ -65,7 +65,7 @@ def main():
           data_files=[(conf_dir, conf_files),
                       ('/etc/logrotate.d', ['conf/apel-ssm']),
                       ('/etc/init.d', ['bin/apel-ssm']),
-                      ('/usr/share/doc', ['apel-ssm'])],
+                      ('/usr/share/doc/apel-ssm', ['apel-ssm'])],
           # zip_safe allows setuptools to install the project
           # as a zipfile, for maximum performance!
           # We have disabled this feature so installing via the setup
