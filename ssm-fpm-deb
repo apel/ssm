@@ -29,7 +29,7 @@ tar xvf $TAR_FILE -C $SOURCE_DIR
 rm -f $TAR_FILE
 
 fpm -s python -t deb \
--n ssm \
+-n apel-ssm \
 -v $VERSION \
 -m "Apel Administrators <apel-admins@stfc.ac.uk>" \
 --description "Secure Stomp Messenger (SSM)." \
