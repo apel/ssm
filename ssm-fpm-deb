@@ -41,6 +41,7 @@ fpm -s python -t deb \
 --iteration $ITERATION \
 -m "Apel Administrators <apel-admins@stfc.ac.uk>" \
 --description "Secure Stomp Messenger (SSM)." \
+--depends python \
 --deb-changelog CHANGELOG \
 --python-install-bin /usr/bin \
 --python-install-lib /usr/lib/python2.7/dist-packages \
