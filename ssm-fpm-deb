@@ -9,10 +9,16 @@
 
 set -eu
 
-VERSION=2.2.0-1
+TAG=2.2.0-1
+
 SOURCE_DIR=~/debbuild/source
 BUILD_DIR=~/debbuild/build
-TAR_FILE=${VERSION}.tar.gz
+
+# Split the tag into version and package number
+# so they can be passed to fpm separately.
+# This will work with RCs of the form X.Y.Z-0.A.rcA
+VERSION=`echo "$TAG" | cut -d - -f 1`
+ITERATION=`echo "$TAG" | cut -d - -f 2`
 
 # Create SSM and DEB dir (if not present)
 mkdir -p $SOURCE_DIR
@@ -23,6 +29,7 @@ rm -rf $SOURCE_DIR/*
 rm -rf $BUILD_DIR/*
 
 # Get and extract the source
+TAR_FILE=${TAG}.tar.gz
 TAR_URL=https://github.com/apel/ssm/archive/$TAR_FILE
 wget --no-check-certificate $TAR_URL -O $TAR_FILE
 tar xvf $TAR_FILE -C $SOURCE_DIR
@@ -31,6 +38,7 @@ rm -f $TAR_FILE
 fpm -s python -t deb \
 -n apel-ssm \
 -v $VERSION \
+--iteration $ITERATION \
 -m "Apel Administrators <apel-admins@stfc.ac.uk>" \
 --description "Secure Stomp Messenger (SSM)." \
 --deb-changelog CHANGELOG \
@@ -38,8 +46,8 @@ fpm -s python -t deb \
 --python-install-lib /usr/lib/python2.7/dist-packages \
 $SOURCE_DIR/ssm-$VERSION/setup.py
 
-mv ./apel-ssm_${VERSION}_all.deb $BUILD_DIR
+mv ./apel-ssm_${TAG}_all.deb $BUILD_DIR
 
 # Check the resultant deb for 'lint'
 echo "Possible Issues to Fix:"
-lintian $BUILD_DIR/apel-ssm_${VERSION}_all.deb
+lintian $BUILD_DIR/apel-ssm_${TAG}_all.deb
