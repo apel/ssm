@@ -14,6 +14,9 @@ TAG=2.2.0-1
 SOURCE_DIR=~/debbuild/source
 BUILD_DIR=~/debbuild/build
 
+# Where to install the python lib files
+PYTHON_INSTALL_LIB=/usr/lib/python2.7/dist-packages
+
 # Split the tag into version and package number
 # so they can be passed to fpm separately.
 # This will work with RCs of the form X.Y.Z-0.A.rcA
@@ -44,7 +47,7 @@ fpm -s python -t deb \
 --depends python \
 --deb-changelog CHANGELOG \
 --python-install-bin /usr/bin \
---python-install-lib /usr/lib/python2.7/dist-packages \
+--python-install-lib $PYTHON_INSTALL_LIB \
 $SOURCE_DIR/ssm-$VERSION/setup.py
 
 mv ./apel-ssm_${TAG}_all.deb $BUILD_DIR
