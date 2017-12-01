@@ -60,7 +60,7 @@ def main():
           extras_require={
               'python-daemon': ['python-daemon<2.2.0'],
           },
-          packages=find_packages(exclude=['bin']),
+          packages=find_packages(exclude=['bin', 'test']),
           scripts=['bin/ssmreceive', 'bin/ssmsend'],
           data_files=[(conf_dir, conf_files),
                       ('/etc/logrotate.d', ['conf/apel-ssm']),
