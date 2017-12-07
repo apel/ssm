@@ -5,6 +5,8 @@ should be similar to installing the RPM apel-ssm, although there
 may be some differences. A known difference is the RPM installs pyc
 and pyo files, whereas this script does not.
 
+This script will not install system specific init style files.
+
 Usage: 'python setup.py install'
 
 Requires setuptools.
@@ -64,7 +66,6 @@ def main():
           scripts=['bin/ssmreceive', 'bin/ssmsend'],
           data_files=[(conf_dir, conf_files),
                       ('/etc/logrotate.d', ['conf/apel-ssm']),
-                      ('/etc/init.d', ['bin/apel-ssm']),
                       ('/usr/share/doc/apel-ssm', ['apel-ssm'])],
           # zip_safe allows setuptools to install the project
           # as a zipfile, for maximum performance!
