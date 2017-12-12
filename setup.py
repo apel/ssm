@@ -30,15 +30,6 @@ def main():
         copyfile('scripts/apel-ssm.logrotate', 'conf/apel-ssm')
         copyfile('README.md', 'apel-ssm')
 
-        if not path.exists('/var/log/apel'):
-            makedirs('/var/log/apel')
-
-        if not path.exists('/var/run/apel'):
-            makedirs('/var/run/apel')
-
-        if not path.exists('/var/spool/apel'):
-            makedirs('/var/spool/apel')
-
     # conf_files will later be copied to conf_dir
     conf_dir = '/etc/apel/'
     conf_files = ['conf/receiver.cfg',
@@ -66,7 +57,11 @@ def main():
           scripts=['bin/ssmreceive', 'bin/ssmsend'],
           data_files=[(conf_dir, conf_files),
                       ('/etc/logrotate.d', ['conf/apel-ssm']),
-                      ('/usr/share/doc/apel-ssm', ['apel-ssm'])],
+                      ('/usr/share/doc/apel-ssm', ['apel-ssm']),
+                      # Create empty directories
+                      ('/var/log/apel', []),
+                      ('/var/run/apel', []),
+                      ('/var/spool/apel', [])],
           # zip_safe allows setuptools to install the project
           # as a zipfile, for maximum performance!
           # We have disabled this feature so installing via the setup
