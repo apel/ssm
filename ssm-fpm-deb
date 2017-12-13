@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Execute the following as root to install lintian
+# Execute the following as root to install lintian and fpm
 # apt-get install lintian
+# apt-get install ruby ruby-dev rubygems build-essential
+# gem install --no-ri --no-rdoc fpm
 
 # Then run this file, altering the version.
 # After building the package, this script will run it against lintian
