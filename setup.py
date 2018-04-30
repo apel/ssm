@@ -39,8 +39,7 @@ def main():
 
     # conf_files will later be copied to conf_dir
     conf_dir = '/etc/apel/'
-    conf_files = ['conf/logging.cfg',
-                  'conf/receiver.cfg',
+    conf_files = ['conf/receiver.cfg',
                   'conf/sender.cfg',
                   'conf/dns']
 
