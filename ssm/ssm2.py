@@ -120,10 +120,9 @@ class Ssm2(stomp.ConnectionListener):
                 )
             if verify_enc_cert:
                 if not crypto.verify_cert_path(self._enc_cert, self._capath, self._check_crls):
-                    raise Ssm2Exception('Failed to verify server certificate %s against CA path %s.' 
-                                         % (self._enc_cert, self._capath))
-            
-    
+                    raise Ssm2Exception('Failed to verify server certificate %s against CA path %s.'
+                                        % (self._enc_cert, self._capath))
+
     def set_dns(self, dn_list):
         '''
         Set the list of DNs which are allowed to sign incoming messages.
