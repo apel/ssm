@@ -112,6 +112,12 @@ class Ssm2(stomp.ConnectionListener):
             log.info('Messages will be encrypted using %s', enc_cert)
             if not os.path.isfile(self._enc_cert):
                 raise Ssm2Exception('Specified certificate file does not exist: %s.' % self._enc_cert)
+            # Check that the encyption certificate has not expired.
+            if not crypto.verify_cert_date(enc_cert):
+                raise Ssm2Exception(
+                    'Encryption certificate %s has expired. Please obtain the '
+                    'current one for the server you are sending to.' % enc_cert
+                )
             if verify_enc_cert:
                 if not crypto.verify_cert_path(self._enc_cert, self._capath, self._check_crls):
                     raise Ssm2Exception('Failed to verify server certificate %s against CA path %s.' 
