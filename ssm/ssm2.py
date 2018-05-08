@@ -116,7 +116,8 @@ class Ssm2(stomp.ConnectionListener):
             if not crypto.verify_cert_date(enc_cert):
                 raise Ssm2Exception(
                     'Encryption certificate %s has expired. Please obtain the '
-                    'current one for the server you are sending to.' % enc_cert
+                    'new one from the final server receiving your messages.' %
+                    enc_cert
                 )
             if verify_enc_cert:
                 if not crypto.verify_cert_path(self._enc_cert, self._capath, self._check_crls):
