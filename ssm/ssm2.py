@@ -25,6 +25,7 @@ except ImportError:
     ssl = None
 
 from ssm import crypto
+from ssm.message_directory import MessageDirectory
 from dirq.QueueSimple import QueueSimple
 from dirq.queue import Queue
 
@@ -91,7 +92,7 @@ class Ssm2(stomp.ConnectionListener):
             if path_type == 'dirq':
                 self._outq = QueueSimple(qpath)
             elif path_type == 'directory':
-                self._outq = None
+                self._outq = MessageDirectory(qpath)
             else:
                 raise Ssm2Exception('Unsupported path_type variable.')
 
