@@ -104,6 +104,16 @@ class TestSsm(unittest.TestCase):
         # If the test gets here, then it has failed as no exception was thrown.
         self.fail('An SSM instance was created with an expired certificate!')
 
+    def test_init_expired_server_cert(self):
+        """Check that exception is raised if server cert has expired."""
+        self.assertRaises(
+            Ssm2Exception, Ssm2, self._brokers, self._msgdir, TEST_CERT_FILE,
+            self._key_path, dest=self._dest, enc_cert=self._expired_cert_path,
+            verify_enc_cert=False
+        )
+        # verify_enc_cert is set to False as we don't want to risk raising an
+        # exception by failing cert verification.
+
 
 TEST_CERT_FILE = '/tmp/test.crt'
 
