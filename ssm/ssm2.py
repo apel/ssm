@@ -163,6 +163,11 @@ class Ssm2(stomp.ConnectionListener):
             if extracted_msg is None or err_msg is not None:
                 if signer is None:  # crypto failed
                     signer = 'Not available.'
+                elif extracted_msg is not None:
+                    # If there is a signer then it was rejected for not being
+                    # in the DNs list, so we can use the extracted msg, which
+                    # allows the msg to be reloaded if needed.
+                    body = extracted_msg
 
                 log.warn("Message rejected: %s", err_msg)
 
