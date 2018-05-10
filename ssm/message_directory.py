@@ -21,7 +21,7 @@ class MessageDirectory(object):
 
     def __init__(self, path):
         """Create a new directory structure for holding Accounting messages."""
-        raise NotImplementedError()
+        self.directory_path = path
 
     def add(self, data):
         """Add a new element to the queue and return its name."""
