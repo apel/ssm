@@ -69,14 +69,11 @@ class MessageDirectory(object):
 
     def purge(self):
         """
-        Purge the queue.
+        Do nothing, as there are no old/intermediate directories to purge.
 
-        - delete unused intermediate directories
-        - delete too old temporary directories
-        - unlock too old locked directories
-
+        Only included to preserve dirq interface.
         """
-        raise NotImplementedError()
+        LOG.debug("purge() called, but purge() does nothing.")
 
     def remove(self, name):
         """Remove the named message."""
