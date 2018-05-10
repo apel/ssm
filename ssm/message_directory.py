@@ -36,7 +36,7 @@ class MessageDirectory(object):
 
         Regardless of their state.
         """
-        raise NotImplementedError()
+        return len(self._get_messages())
 
     def get(self, name):
         """Get an element data from a locked element."""
