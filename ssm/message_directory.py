@@ -18,6 +18,7 @@ limitations under the License.
 
 import logging
 import os
+import uuid
 
 # logging configuration
 LOG = logging.getLogger(__name__)
@@ -31,8 +32,22 @@ class MessageDirectory(object):
         self.directory_path = path
 
     def add(self, data):
-        """Add a new element to the queue and return its name."""
-        raise NotImplementedError()
+        """Add the passed data to a new file and return it's name."""
+        # Use uuid4 to create a file name because uuid4 is
+        # sufficient to create an unique ID.
+        name = uuid.uuid4()
+
+        try:
+            # Open the file and write the provided data into the file.
+            with open("%s/%s" % (self.directory_path, name), 'w') as message:
+                message.write(data)
+        except OSError:
+            LOG.warning("Could not create file %s/%s",
+                        self.directory_path, name)
+
+        # Return the name of the created file as a string,
+        # to keep the dirq like interface.
+        return "%s" % name
 
     def count(self):
         """
