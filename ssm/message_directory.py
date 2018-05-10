@@ -100,3 +100,7 @@ class MessageDirectory(object):
 
         # If we get here, just return the arbitrarily ordered list.
         return file_name_list
+
+    def __iter__(self):
+        """Return an iterable of the files currently in the MessageDirectory."""
+        return self._get_messages(sort_by_mtime=True).__iter__()
