@@ -39,8 +39,10 @@ class MessageDirectory(object):
         return len(self._get_messages())
 
     def get(self, name):
-        """Get an element data from a locked element."""
-        raise NotImplementedError()
+        """Return the content of the named message."""
+        with open("%s/%s" % (self.directory_path, name)) as message:
+            content = message.read()
+        return content
 
     def lock(self, _name):
         """Return True to simulate a successful lock. Does nothing else."""
