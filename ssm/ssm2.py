@@ -155,12 +155,12 @@ class Ssm2(stomp.ConnectionListener):
             empaid = 'noid'
 
         log.info("Received message. ID = %s", empaid)
-        raw_msg, signer, err_msg = self._handle_msg(body)
+        extracted_msg, signer, err_msg = self._handle_msg(body)
 
         try:
             # If the message is empty or the error message is not empty
             # then reject the message.
-            if raw_msg is None or err_msg is not None:
+            if extracted_msg is None or err_msg is not None:
                 if signer is None:  # crypto failed
                     signer = 'Not available.'
 
@@ -173,7 +173,7 @@ class Ssm2(stomp.ConnectionListener):
                 log.info("Message saved to reject queue as %s", name)
 
             else:  # message verified ok
-                name = self._inq.add({'body': raw_msg,
+                name = self._inq.add({'body': extracted_msg,
                                       'signer': signer,
                                       'empaid': empaid})
                 log.info("Message saved to incoming queue as %s", name)
