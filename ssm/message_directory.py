@@ -42,9 +42,9 @@ class MessageDirectory(object):
         """Get an element data from a locked element."""
         raise NotImplementedError()
 
-    def lock(self, name):
-        """Lock an element."""
-        raise NotImplementedError()
+    def lock(self, _name):
+        """Return True to simulate a successful lock. Does nothing else."""
+        return True
 
     def purge(self):
         """
