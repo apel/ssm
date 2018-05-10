@@ -21,7 +21,7 @@ BuildArch:      noarch
 BuildRequires:  python-devel
 %endif
 
-Requires:       stomppy, python-daemon, python-dirq, python-ldap
+Requires:       stomppy >= 3.1.1, python-daemon, python-dirq, python-ldap
 Requires(pre):  shadow-utils
 
 %define ssmconf %_sysconfdir/apel
