@@ -183,7 +183,7 @@ class Ssm2(stomp.ConnectionListener):
                                       'empaid': empaid})
                 log.info("Message saved to incoming queue as %s", name)
 
-        except OSError, e:
+        except (IOError, OSError) as e:
             log.error('Failed to read or write file: %s', e)
         
     def on_error(self, unused_headers, body):
