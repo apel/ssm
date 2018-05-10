@@ -16,7 +16,11 @@ limitations under the License.
 @author: Greg Corbett
 """
 
+import logging
 import os
+
+# logging configuration
+LOG = logging.getLogger(__name__)
 
 
 class MessageDirectory(object):
@@ -60,8 +64,11 @@ class MessageDirectory(object):
         raise NotImplementedError()
 
     def remove(self, name):
-        """Remove locked element from the queue."""
-        raise NotImplementedError()
+        """Remove the named message."""
+        try:
+            os.unlink("%s/%s" % (self.directory_path, name))
+        except OSError:
+            LOG.warning("Could not remove %s, it may get resent.", name)
 
     def _get_messages(self, sort_by_mtime=False):
         """
