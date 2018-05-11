@@ -1,5 +1,10 @@
+"""Unit tests for bin/receiver.py."""
 from __future__ import print_function
 
+try:
+    from ConfigParser import NoSectionError
+except ImportError:
+    from configparser import NoSectionError
 import os
 import tempfile
 from textwrap import dedent
@@ -60,6 +65,14 @@ class getDNsTest(unittest.TestCase):
     def tearDown(self):
         os.remove(self.tf_path)
         self.patcher.stop()
+
+
+class mainTest(unittest.TestCase):
+    """Test cases for receiver.main."""
+
+    def test_main_no_config(self):
+        """Check that a sender can't be started without a config."""
+        self.assertRaises(NoSectionError, bin.receiver.main)
 
 
 if __name__ == '__main__':
