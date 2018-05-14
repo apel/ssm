@@ -23,9 +23,7 @@ before_script:
   - mkdir $TMPDIR
   - export PYTHONPATH=$PYTHONPATH:`pwd -P`
   - cd test
-  
-# The coveralls module on PyPI (1.1) doesn't report branch coverage to
-# Coveralls, but should in the next release (1.2)
+
 script:
   - coverage run --branch --source=ssm,bin -m unittest2 discover --buffer
 

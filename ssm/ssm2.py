@@ -112,12 +112,18 @@ class Ssm2(stomp.ConnectionListener):
             log.info('Messages will be encrypted using %s', enc_cert)
             if not os.path.isfile(self._enc_cert):
                 raise Ssm2Exception('Specified certificate file does not exist: %s.' % self._enc_cert)
+            # Check that the encyption certificate has not expired.
+            if not crypto.verify_cert_date(enc_cert):
+                raise Ssm2Exception(
+                    'Encryption certificate %s has expired. Please obtain the '
+                    'new one from the final server receiving your messages.' %
+                    enc_cert
+                )
             if verify_enc_cert:
                 if not crypto.verify_cert_path(self._enc_cert, self._capath, self._check_crls):
-                    raise Ssm2Exception('Failed to verify server certificate %s against CA path %s.' 
-                                         % (self._enc_cert, self._capath))
-            
-    
+                    raise Ssm2Exception('Failed to verify server certificate %s against CA path %s.'
+                                        % (self._enc_cert, self._capath))
+
     def set_dns(self, dn_list):
         '''
         Set the list of DNs which are allowed to sign incoming messages.
@@ -149,14 +155,19 @@ class Ssm2(stomp.ConnectionListener):
             empaid = 'noid'
 
         log.info("Received message. ID = %s", empaid)
-        raw_msg, signer, err_msg = self._handle_msg(body)
+        extracted_msg, signer, err_msg = self._handle_msg(body)
 
         try:
             # If the message is empty or the error message is not empty
             # then reject the message.
-            if raw_msg is None or err_msg is not None:
+            if extracted_msg is None or err_msg is not None:
                 if signer is None:  # crypto failed
                     signer = 'Not available.'
+                elif extracted_msg is not None:
+                    # If there is a signer then it was rejected for not being
+                    # in the DNs list, so we can use the extracted msg, which
+                    # allows the msg to be reloaded if needed.
+                    body = extracted_msg
 
                 log.warn("Message rejected: %s", err_msg)
 
@@ -167,12 +178,12 @@ class Ssm2(stomp.ConnectionListener):
                 log.info("Message saved to reject queue as %s", name)
 
             else:  # message verified ok
-                name = self._inq.add({'body': raw_msg,
+                name = self._inq.add({'body': extracted_msg,
                                       'signer': signer,
                                       'empaid': empaid})
                 log.info("Message saved to incoming queue as %s", name)
 
-        except OSError, e:
+        except (IOError, OSError) as e:
             log.error('Failed to read or write file: %s', e)
         
     def on_error(self, unused_headers, body):
