@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.2.0
+Version:        2.2.1
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -100,6 +100,12 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Mon May 14 2018 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.2.1-1
+ - Added a check that the server certificate used for encryption hasn't expired
+   so that a sending SSM won't start with an out of date server certificate.
+ - Improved error handling for received messages so that more useful debugging
+   information in obtained.
+
 * Thu Nov 16 2017 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.2.0-1
  - Added a check that certificates have not expired before starting SSM.
  - SSL errors now propagated out properly and saved for received messages.
