@@ -160,7 +160,10 @@ def verify(signed_text, capath, check_crl):
     
     # SMIME header and message body are separated by a blank line
     lines = message.strip().splitlines()
-    blankline = lines.index('')
+    try:
+        blankline = lines.index('')
+    except ValueError:
+        raise CryptoException('No blank line between message header and body')
     headers = '\n'.join(lines[:blankline])
     body = '\n'.join(lines[blankline + 1:])
     # two possible encodings
