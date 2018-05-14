@@ -86,6 +86,12 @@ class TestSsm(unittest.TestCase):
         test_ssm.on_message({'nothing': 'dummy'}, 'Not signed or encrypted.')
         os.chmod(self._msgdir, 0777)
 
+        # Check that message with ID of 'ping' doesn't raise an exception.
+        # Messages with this ID are handled differently to normal messages.
+        test_ssm.on_message({'empa-id': 'ping'}, 'body')
+        # Check that msg with ID and no real content doesn't raise exception.
+        test_ssm.on_message({'empa-id': '012345'}, 'body')
+
     def test_init_expired_cert(self):
         """Test right exception is thrown creating an SSM with expired cert."""
         expected_error = ('Certificate %s has expired.'
