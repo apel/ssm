@@ -39,7 +39,6 @@ except ImportError:
 import os
 import socket
 import time
-import uuid
 import logging
 
 # Set up logging 
@@ -447,11 +446,11 @@ class Ssm2(stomp.ConnectionListener):
             log.info('Will send messages to: %s', self._dest)
 
         if self._listen is not None:
-            # Giving each subscription an unique id allows a single connection
-            # to have multiple open subscriptions with a server.
-            # We use uuid4 because uuid4 is sufficient to create an unique ID.
+            # Use the current time to create a subscription id to avoid
+            # any potential id clashes
+            sub_id = str(time.time())
             self._conn.subscribe(destination=self._listen,
-                                 id=uuid.uuid4(),
+                                 id=sub_id,
                                  ack='auto')
 
             log.info('Subscribing to: %s', self._listen)
