@@ -446,7 +446,10 @@ class Ssm2(stomp.ConnectionListener):
             log.info('Will send messages to: %s', self._dest)
 
         if self._listen is not None:
-            self._conn.subscribe(destination=self._listen, ack='auto')
+            # Use a static ID for the subscription ID because we only ever have
+            # one subscription within a connection and ID is only considered
+            # to differentiate subscriptions within a connection.
+            self._conn.subscribe(destination=self._listen, id=1, ack='auto')
             log.info('Subscribing to: %s', self._listen)
 
         i = 0
