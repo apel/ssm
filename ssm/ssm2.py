@@ -376,7 +376,6 @@ class Ssm2(stomp.ConnectionListener):
         # _conn will use the default SSL version specified by stomp.py
         self._conn = stomp.Connection([(host, port)],
                                       use_ssl=self._use_ssl,
-                                      reconnect_attempts_max=1,
                                       ssl_key_file=self._key,
                                       ssl_cert_file=self._cert,
                                       timeout=Ssm2.CONNECTION_TIMEOUT)
