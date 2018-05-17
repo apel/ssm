@@ -375,6 +375,9 @@ class Ssm2(stomp.ConnectionListener):
                 raise ImportError("SSL connection requested but the ssl module "
                                   "wasn't found.")
             log.info('Connecting using SSL...')
+        else:
+            log.warning("SSL connection not requested, your messages may be "
+                        "intercepted.")
 
         # _conn will use the default SSL version specified by stomp.py
         self._conn = stomp.Connection([(host, port)],
