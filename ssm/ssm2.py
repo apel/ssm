@@ -124,8 +124,14 @@ class Ssm2(stomp.ConnectionListener):
                     raise Ssm2Exception('Failed to verify server certificate %s against CA path %s.'
                                         % (self._enc_cert, self._capath))
 
-        # Stop the underlying stomp.py module spamming the log
-        logging.getLogger("stomp.py").setLevel(logging.WARNING)
+        # If the overall SSM log level is info, we want to only
+        # see log entries from stomp.py at the warning level and above.
+        if logging.getLogger("ssm.ssm2").getEffectiveLevel() == logging.INFO:
+            logging.getLogger("stomp.py").setLevel(logging.WARNING)
+        # If the overall SSM log level is debug, we want to only
+        # see log entries from stomp.py at the info level and above.
+        elif logging.getLogger("ssm.ssm2").getEffectiveLevel() == logging.DEBUG:
+            logging.getLogger("stomp.py").setLevel(logging.INFO)
 
     def set_dns(self, dn_list):
         '''
