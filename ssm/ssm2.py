@@ -366,6 +366,7 @@ class Ssm2(stomp.ConnectionListener):
         Create the self._connection object with the appropriate properties,
         but don't try to start the connection.
         '''
+        log.info("Established connection to %s, port %i", host, port)
         if self._use_ssl:
             if ssl is None:
                 raise ImportError("SSL connection requested but the ssl module "
