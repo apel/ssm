@@ -29,12 +29,7 @@ from dirq.QueueSimple import QueueSimple
 from dirq.queue import Queue
 
 import stomp
-# Exception changed name between stomppy versions
-try:
-    from stomp.exception import ConnectFailedException
-except ImportError:
-    from stomp.exception import ReconnectFailedException \
-            as ConnectFailedException
+from stomp.exception import ConnectFailedException
 
 import os
 import socket
