@@ -41,9 +41,9 @@ class MessageDirectory(object):
             # Open the file and write the provided data into the file.
             with open("%s/%s" % (self.directory_path, name), 'w') as message:
                 message.write(data)
-        except OSError:
-            LOG.warning("Could not create file %s/%s",
-                        self.directory_path, name)
+        except (IOError, OSError) as error:
+            LOG.error("Could not create file %s/%s: %s",
+                      self.directory_path, name, error)
 
         # Return the name of the created file as a string,
         # to keep the dirq like interface.
@@ -79,8 +79,9 @@ class MessageDirectory(object):
         """Remove the named message."""
         try:
             os.unlink("%s/%s" % (self.directory_path, name))
-        except OSError:
+        except (IOError, OSError) as error:
             LOG.warning("Could not remove %s, it may get resent.", name)
+            LOG.debug(error)
 
     def _get_messages(self, sort_by_mtime=False):
         """
@@ -93,34 +94,44 @@ class MessageDirectory(object):
         original date of file creation due to a limitation
         of the underlying filesystem
         """
-        # Get a list of files under self.directory_path in an arbitrary order.
-        file_name_list = os.listdir(self.directory_path)
+        try:
+            # Get a list of files under self.directory_path
+            # in an arbitrary order.
+            file_name_list = os.listdir(self.directory_path)
 
-        if sort_by_mtime:
-            # Working space to hold the unsorted messages
-            # as file paths and mtimes.
-            unsorted_messages = []
-            # Working space to hold the sorted messages as file names.
-            sorted_messages = []
+            if sort_by_mtime:
+                # Working space to hold the unsorted messages
+                # as file paths and mtimes.
+                unsorted_messages = []
+                # Working space to hold the sorted messages as file names.
+                sorted_messages = []
 
-            # Work out the mtime of each file.
-            for file_name in file_name_list:
-                file_path = os.path.join(self.directory_path, file_name)
-                # Store the file path and the time the file was last modified.
-                unsorted_messages.append((file_name,
-                                          os.path.getmtime(file_path)))
+                # Work out the mtime of each file.
+                for file_name in file_name_list:
+                    file_path = os.path.join(self.directory_path, file_name)
+                    # Store the file path and the time
+                    # the file was last modified.
+                    unsorted_messages.append((file_name,
+                                              os.path.getmtime(file_path)))
 
-            # Sort the file paths by mtime and then only store the file name.
-            for (file_name, _mtime) in sorted(unsorted_messages,
-                                              key=lambda tup: tup[1]):
-                # Store the sorted file paths in a class element.
-                sorted_messages.append(file_name)
+                # Sort the file paths by mtime and
+                # then only store the file name.
+                for (file_name, _mtime) in sorted(unsorted_messages,
+                                                  key=lambda tup: tup[1]):
+                    # Store the sorted file paths in a class element.
+                    sorted_messages.append(file_name)
 
-            # Return the sorted list.
-            return sorted_messages
+                # Return the sorted list.
+                return sorted_messages
 
-        # If we get here, just return the arbitrarily ordered list.
-        return file_name_list
+            # If we get here, just return the arbitrarily ordered list.
+            return file_name_list
+
+        except (IOError, OSError) as error:
+            LOG.error(error)
+            # Return an empty file list.
+            return []
+
 
     def __iter__(self):
         """Return an iterable of the files currently in the MessageDirectory."""
