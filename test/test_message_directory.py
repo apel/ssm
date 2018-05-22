@@ -42,6 +42,44 @@ class TestMessageDirectory(unittest.TestCase):
         # Assert the saved content is equal to the original test content.
         self.assertEqual(saved_content, test_content)
 
+    def test_orderd_file_retrieval(self):
+        """
+        Test the messages are retrieved in the order they were last modified.
+
+        This test adds files to the MessageDirectory and then iterates over
+        the MessageDirectory to retrieve the file names. If the for loop does
+        not return them in the order they were last modfied, this test fails.
+
+
+        """
+        # In the event of a failure of underlying _get_messages sorting, it's
+        # possible the returned list of files could still be in the correct
+        # order by random chance.
+        # A 'large' list of test_content reduces this chance.
+        test_content_list = ["Lobster Thermidor", "Crevettes", "Mornay sauce",
+                             "Truffle Pate", "Brandy", "Fried egg", "Spam"]
+
+        # A list to hold file names by creation time.
+        file_names_by_creation_time = []
+
+        for test_content in test_content_list:
+            # Add the content to the MessageDirectory.
+            file_name = self.message_directory.add(test_content)
+            # Append the file name to the list of file names by create time.
+            file_names_by_creation_time.append(file_name)
+
+        # A list to hold file names by modification time.
+        file_names_by_modification_time = []
+        # Use a for loop (similar to how the SSM retrieves messages)
+        # to build up an ordered list of files.
+        for file_name in self.message_directory:
+            file_names_by_modification_time.append(file_name)
+
+        # As the files are not modified once added to the MessageDirectory,
+        # the two lists of file names should be equal.
+        self.assertEqual(file_names_by_modification_time,
+                         file_names_by_creation_time)
+
     def test_count(self):
         """
         Test the count method of the MessageDirectory class.
