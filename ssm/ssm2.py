@@ -26,8 +26,14 @@ except ImportError:
 
 from ssm import crypto
 from ssm.message_directory import MessageDirectory
-from dirq.QueueSimple import QueueSimple
-from dirq.queue import Queue
+
+try:
+    from dirq.QueueSimple import QueueSimple
+    from dirq.queue import Queue
+except ImportError:
+    # ImportError is raised later on if dirq is requested but not installed.
+    QueueSimple = None
+    Queue = None
 
 import stomp
 from stomp.exception import ConnectFailedException
@@ -90,7 +96,12 @@ class Ssm2(stomp.ConnectionListener):
         if dest is not None and listen is None:
             # Determine what sort of outgoing structure to make
             if path_type == 'dirq':
+                if QueueSimple is None:
+                    raise ImportError("dirq path_type requested but the dirq "
+                                      "module wasn't found.")
+
                 self._outq = QueueSimple(qpath)
+
             elif path_type == 'directory':
                 self._outq = MessageDirectory(qpath)
             else:
@@ -99,6 +110,13 @@ class Ssm2(stomp.ConnectionListener):
         elif listen is not None:
             inqpath = os.path.join(qpath, 'incoming')
             rejectqpath = os.path.join(qpath, 'reject')
+
+            # Receivers must use the dirq module, so make a quick sanity check
+            # that dirq is installed.
+            if Queue is None:
+                raise ImportError("Receiving SSMs must use dirq, but the dirq "
+                                  "module wasn't found.")
+
             self._inq = Queue(inqpath, schema=Ssm2.QSCHEMA)
             self._rejectq = Queue(rejectqpath, schema=Ssm2.REJECT_SCHEMA)
         else:
