@@ -24,6 +24,7 @@ from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm import __version__, set_up_logging, LOG_BREAK
 
 from stomp.exception import NotConnectedException
+from argo_ams_library import AmsConnectionException as NotConnectedException
 
 import time
 import logging.config
@@ -238,28 +239,31 @@ def main():
         i = 0
         # The message listening loop.
         while True:
+            try:
+                time.sleep(1)
+                if protocol == 'HTTPS':
+                    # We need to pull down messages as part of
+                    # this loop when using HTTPS.
+                    ssm.pull_msg_rest()
 
-            time.sleep(1)
-            if protocol == 'HTTPS':
-                ssm.pull_msg_rest()
+                if i % REFRESH_DNS == 0:
+                    log.info('Refreshing valid DNs and then sending ping.')
+                    dns = get_dns(options.dn_file)
+                    ssm.set_dns(dns)
 
-            if i % REFRESH_DNS == 0:
-                log.info('Refreshing valid DNs and then sending ping.')
-                dns = get_dns(options.dn_file)
-                ssm.set_dns(dns)
-
-                if protocol == 'STOMP':
-                    try:
+                    if protocol == 'STOMP':
                         ssm.send_ping()
-                    except NotConnectedException:
-                        log.warn('Connection lost.')
-                        ssm.shutdown()
-                        dc.close()
-                        log.info("Waiting for 10 minutes before restarting...")
-                        time.sleep(10 * 60)
-                        log.info('Restarting SSM.')
-                        dc.open()
-                        ssm.startup()
+
+            except NotConnectedException as error:
+                log.warn('Connection lost.')
+                log.debug(error)
+                ssm.shutdown()
+                dc.close()
+                log.info("Waiting for 10 minutes before restarting...")
+                time.sleep(10 * 60)
+                log.info('Restarting SSM.')
+                dc.open()
+                ssm.startup()
 
             i += 1
 
