@@ -390,7 +390,8 @@ class Ssm2(stomp.ConnectionListener):
             # get the message body
             body = msg.get_data()
 
-            log.info('Received message. ID = %s', empaid)
+            log.info('Received message. ID = %s, Argo ID = %s', empaid, msgid)
+
             extracted_msg, signer, err_msg = self._handle_msg(body)
 
             try:
@@ -477,6 +478,8 @@ class Ssm2(stomp.ConnectionListener):
                     if not self.connected:
                         raise Ssm2Exception('Lost connection.')
 
+                log_string = "Sent %s" % msgid
+
             elif self._protocol == "HTTPS" and self._dest_type == "AMS":
                 # Then we are sending to an Argo Messaging Service instance.
                 if text is not None:
@@ -492,9 +495,12 @@ class Ssm2(stomp.ConnectionListener):
 
                     # Attempt to the AMS Message.
                     try:
-                        self._ams.publish(self._dest, message)
+                        argo_response = self._ams.publish(self._dest, message)
                     except AmsException as error:
                         raise error
+
+                    argo_id = argo_response['messageIds'][0]
+                    log_string = "Sent %s, Argo ID: %s" % (msgid, argo_id)
 
             else:
                 # The SSM has been improperly configured
@@ -504,7 +510,7 @@ class Ssm2(stomp.ConnectionListener):
 
             time.sleep(0.1)
             # log that the message was sent
-            log.info("Sent %s", msgid)
+            log.info(log_string)
 
             self._last_msg = None
             self._outq.remove(msgid)
