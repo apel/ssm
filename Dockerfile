@@ -1,5 +1,5 @@
 FROM centos:7
-MAINTAINER APEL Administrator <apel-admins@stfc.ac.uk>
+MAINTAINER APEL Administrators <apel-admins@stfc.ac.uk>
 
 # Copy the SSM Git repository to /tmp/ssm
 COPY . /tmp/ssm
