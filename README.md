@@ -135,7 +135,7 @@ add your messages.
      -v /path/to/persistently/log:/var/log/apel \
      stfc/ssm
  ```
- * The line `-v /path/to/persistently/log:/var/log/apel \` is only required if you want to access the sender logs as a file. If `console: true` is set in your `sender.cfg`, the container will also log to stdout/stderr.
+ * The line `-v /path/to/persistently/log:/var/log/apel \` is only required if you want to access the sender log as a file. If `console: true` is set in your `sender.cfg`, the container will also log to stdout/stderr.
  
 ### Receiver (service)
   
@@ -157,7 +157,7 @@ add your messages.
      -v /path/to/persistently/log:/var/log/apel \
      stfc/ssm
  ```
-  * The line `-v /path/to/persistently/log:/var/log/apel \` is only required if you want to access the receiver logs as a file. If `console: true` is set in your `sender.cfg`, the container will also log to stdout/stderr.
+  * The line `-v /path/to/persistently/log:/var/log/apel \` is only required if you want to access the receiver log as a file. If `console: true` is set in your `receiver.cfg`, the container will also log to stdout/stderr.
 
 ### Receiver (manual)
 
