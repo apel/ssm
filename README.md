@@ -121,12 +121,43 @@ add your messages.
  * Run 'ssmsend'
  * SSM will pick up any messages and send them to the configured
    queue on the configured broker
-   
+
+### Sender (container)
+ * Download the example [configuration file](conf/sender.cfg)
+ * Edit the downloaded sender.cfg file to configure the queue and broker
+ * Run the following docker command to send
+ ```
+ docker run \
+     -d --entrypoint ssmsend \
+     -v /path/to/downloaded/config/sender.cfg:/etc/apel/sender.cfg \
+     -v /path/to/read/messages:/var/spool/apel/outgoing \
+     -v /etc/grid-security:/etc/grid-security \
+     -v /path/to/persistently/log:/var/log/apel \
+     stfc/ssm
+ ```
+ * The line `-v /path/to/persistently/log:/var/log/apel \` is only required if you want to access the sender log as a file. If `console: true` is set in your `sender.cfg`, the container will also log to stdout/stderr.
+ 
 ### Receiver (service)
   
  * Run `service apelssm start`
  * If this fails, check /var/log/apel/ssmreceive.log for details
  * To stop, run `service apelssm stop`
+
+### Receiver (container)
+ * Download the example [configuration file](conf/receiver.cfg)
+ * Edit the downloaded receiver.cfg file to configure the queue and broker
+ * Run the following docker command to launch containerized receiver process
+ ```
+ docker run \
+     -d --entrypoint ssmreceive \
+     -v /path/to/downloaded/config/sender.cfg:/etc/apel/sender.cfg \
+     -v /path/to/read/messages:/var/spool/apel/outgoing \
+     -v /path/to/dns/file:/etc/apel/dns \
+     -v /etc/grid-security:/etc/grid-security \
+     -v /path/to/persistently/log:/var/log/apel \
+     stfc/ssm
+ ```
+  * The line `-v /path/to/persistently/log:/var/log/apel \` is only required if you want to access the receiver log as a file. If `console: true` is set in your `receiver.cfg`, the container will also log to stdout/stderr.
 
 ### Receiver (manual)
 
