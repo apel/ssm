@@ -32,7 +32,8 @@ The python daemon library (N.B. only versions below 2.2.0 are currently supporte
 The python ldap library
 * `yum install python-ldap`
 
-The python dirq library
+Optionally, the python dirq library (N.B. this is only required if your messages
+are stored in a dirq structure)
 * `yum install python-dirq`
 
 You need a certificate and key in PEM format accessible to the SSM.
@@ -119,10 +120,11 @@ configuration will send messages to the test apel server.
 
 ## Adding Files
 
-There are two ways to add files to be sent:
+There are multiple manual and programmatic ways to add files to be sent: 
 
 ### Manual
 
+#### With the dirq module
 All file and directory names must use hex characters: `[0-9a-f]`.
 
  * Create a directory within /var/spool/apel/outgoing with a name
@@ -130,8 +132,14 @@ All file and directory names must use hex characters: `[0-9a-f]`.
  * Put files in this directory with names of FOURTEEN hex 
    e.g. `1234567890abcd`
 
+#### Without the dirq module
+Ensure `path_type: directory` is set in your `sender.cfg`.
+Then add messages as files to `/var/spool/apel/outgoing`,
+there are no restrictions on the file names used.
+
 ### Programmatic
 
+#### With the dirq module
 Use the python or perl dirq libraries:
  * python: http://pypi.python.org/pypi/dirq
  * perl: http://search.cpan.org/~lcons/Directory-Queue/
@@ -139,6 +147,11 @@ Use the python or perl dirq libraries:
 Create a QueueSimple object with path /var/spool/apel/outgoing/ and 
 add your messages.
 
+#### Without the dirq module
+Use the `MessageDirectory` class provided in `ssm.message_directory`.
+
+Create a `MessageDirectory` object with path `/var/spool/apel/outgoing/` and
+add your messages using the `add` method.
 
 ## Running the SSM
 
