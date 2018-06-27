@@ -22,7 +22,7 @@ The EPEL repository must be enabled.  This can be done by installing
 the RPM for your version of SL, which is available on this page:
 http://fedoraproject.org/wiki/EPEL
 
-The python stomp library (N.B. version 4 is currently not supported)
+The python stomp library (N.B. versions 3.1.1 and above are currently supported)
 * `yum install stomppy`
 
 The python daemon library
