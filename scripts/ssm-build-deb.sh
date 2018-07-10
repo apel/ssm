@@ -64,7 +64,7 @@ fpm -s pleaserun -t deb \
 --description "Secure Stomp Messenger (SSM) unit files." \
 --depends apel-ssm \
 --no-auto-depends \
-/usr/bin/ssmreceive \
+/usr/bin/ssmreceive
 
 mv ./apel-ssm_${TAG}_all.deb $BUILD_DIR
 mv ./apel-ssm-service_${TAG}_amd64.deb $BUILD_DIR
