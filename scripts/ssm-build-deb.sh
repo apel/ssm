@@ -6,8 +6,13 @@
 # gem install --no-ri --no-rdoc fpm
 
 # Then run this file, altering the version.
-# After building the package, this script will run it against lintian
-# to highlight potential issues to the builder.
+# This file will create two versions of the deb file:
+# - apel-ssm_<version>_all.deb contains all the files necessary to run a
+#   the SSM as a sender.
+# - apel-ssm-service_<version>_amd64.deb will install service files
+#   necessary to run the SSM as a receiver on amd64 style architectures.
+# After building apel-ssm_<version>_all.deb, this script will run it
+# against lintian to highlight potential issues to the builder.
 
 set -eu
 
