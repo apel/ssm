@@ -51,13 +51,13 @@ fpm -s python -t deb \
 --iteration $ITERATION \
 -m "Apel Administrators <apel-admins@stfc.ac.uk>" \
 --description "Secure Stomp Messenger (SSM)." \
+--no-auto-depends \
 --depends python2.7 \
 --depends python-pip \
 --depends python-ldap \
 --deb-changelog CHANGELOG \
 --python-install-bin /usr/bin \
 --python-install-lib $PYTHON_INSTALL_LIB \
---no-auto-depends \
 --exclude *.pyc \
 $SOURCE_DIR/ssm-$VERSION/setup.py
 
@@ -67,8 +67,8 @@ fpm -s pleaserun -t deb \
 --iteration $ITERATION \
 -m "Apel Administrators <apel-admins@stfc.ac.uk>" \
 --description "Secure Stomp Messenger (SSM) unit files." \
---depends apel-ssm \
 --no-auto-depends \
+--depends apel-ssm \
 /usr/bin/ssmreceive
 
 mv ./apel-ssm_${TAG}_all.deb $BUILD_DIR
