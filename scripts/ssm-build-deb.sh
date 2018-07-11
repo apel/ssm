@@ -55,6 +55,8 @@ fpm -s python -t deb \
 --depends python2.7 \
 --depends python-pip \
 --depends python-ldap \
+--depends libssl-dev \
+--depends libsasl2-dev \
 --deb-changelog CHANGELOG \
 --python-install-bin /usr/bin \
 --python-install-lib $PYTHON_INSTALL_LIB \
