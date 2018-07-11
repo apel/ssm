@@ -75,6 +75,28 @@ The RPM carries out a number of steps to run the SSM in a specific way.
 6. It creates the pidfile directory /var/run/apel/
 7. It installs a service script in /etc/init.d/
 
+## Installing the DEB
+
+### Installation
+Install APEL SSM.
+* `dpkg -i apel-ssm_<version>_all.deb`
+
+Install any missing system packages needed for the SSM.
+* `apt-get -f install`
+
+Install any missing python requirements that don't have system packages.
+* `pip install "stomp.py>=3.1.1" python-daemon python-ldap dirq`
+
+### What the DEB does
+
+The DEB carries out a number of steps to run the SSM in a specific way.
+
+1. It installs the core files in the python libraries directory
+2. It installs scripts in /usr/bin
+3. It installs configuration files in /etc/apel
+4. It creates the messages directory /var/spool/apel/
+5. It creates the log directory /var/log/apel/
+6. It creates the pidfile directory /var/run/apel/
 
 ## Configuring the SSM
 
