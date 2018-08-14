@@ -1,15 +1,16 @@
 #!/bin/bash
 
-# Execute the following as root to install lintian and fpm
+# Execute the following as root to install lintian and fpm:
 # apt-get install lintian
 # apt-get install ruby ruby-dev rubygems build-essential
 # gem install --no-ri --no-rdoc fpm
 
-# Then run this file, altering the version.
+# Then run this file, as any user, altering the
+# version number in the TAG variable.
 # This file will create two versions of the deb file:
 # - apel-ssm_<version>_all.deb contains all the files necessary to run a
 #   the SSM as a sender.
-# - apel-ssm-service_<version>_amd64.deb will install service files
+# - apel-ssm-service_<version>_amd64.deb will install service daemon files
 #   necessary to run the SSM as a receiver on amd64 style architectures.
 # After building apel-ssm_<version>_all.deb, this script will run it
 # against lintian to highlight potential issues to the builder.
@@ -26,7 +27,7 @@ PYTHON_INSTALL_LIB=/usr/lib/python2.7/dist-packages
 
 # Split the tag into version and package number
 # so they can be passed to fpm separately.
-# This will work with RCs of the form X.Y.Z-0.A.rcA
+# This will work with tags of the form <version_number>-<iteration>
 VERSION=`echo "$TAG" | cut -d - -f 1`
 ITERATION=`echo "$TAG" | cut -d - -f 2`
 
@@ -68,7 +69,7 @@ fpm -s pleaserun -t deb \
 -v $VERSION \
 --iteration $ITERATION \
 -m "Apel Administrators <apel-admins@stfc.ac.uk>" \
---description "Secure Stomp Messenger (SSM) unit files." \
+--description "Secure Stomp Messenger (SSM) Service Daemon files." \
 --no-auto-depends \
 --depends apel-ssm \
 /usr/bin/ssmreceive

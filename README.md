@@ -78,13 +78,13 @@ The RPM carries out a number of steps to run the SSM in a specific way.
 ## Installing the DEB
 
 ### Installation
-Install APEL SSM.
+Install APEL SSM:
 * `dpkg -i apel-ssm_<version>_all.deb`
 
-Install any missing system packages needed for the SSM.
+Install any missing system packages needed for the SSM:
 * `apt-get -f install`
 
-Install any missing python requirements that don't have system packages.
+Install any missing python requirements that don't have system packages:
 * `pip install "stomp.py>=3.1.1" python-daemon python-ldap dirq`
 
 ### What the DEB does
