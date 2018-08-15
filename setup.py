@@ -58,7 +58,7 @@ def main():
           license='Apache License, Version 2.0',
           install_requires=['stomp.py>=3.1.1', 'python-ldap', 'dirq'],
           extras_require={
-              'python-daemon': ['python-daemon'],
+              'python-daemon': ['python-daemon<2.2.0'],
           },
           packages=find_packages(exclude=['bin']),
           scripts=['bin/ssmreceive', 'bin/ssmsend'],
