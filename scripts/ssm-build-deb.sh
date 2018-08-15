@@ -28,8 +28,8 @@ PYTHON_INSTALL_LIB=/usr/lib/python2.7/dist-packages
 # Split the tag into version and package number
 # so they can be passed to fpm separately.
 # This will work with tags of the form <version_number>-<iteration>
-VERSION=`echo "$TAG" | cut -d - -f 1`
-ITERATION=`echo "$TAG" | cut -d - -f 2`
+VERSION=$(echo "$TAG" | cut -d - -f 1)
+ITERATION=$(echo "$TAG" | cut -d - -f 2)
 
 # Create SSM and DEB dir (if not present)
 mkdir -p $SOURCE_DIR
