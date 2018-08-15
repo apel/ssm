@@ -25,7 +25,7 @@ http://fedoraproject.org/wiki/EPEL
 The python stomp library (N.B. versions 3.1.1 and above are currently supported)
 * `yum install stomppy`
 
-The python daemon library
+The python daemon library (N.B. only versions below 2.2.0 are currently supported)
 * `yum install python-daemon`
 
 The python ldap library
