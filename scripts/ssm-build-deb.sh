@@ -11,7 +11,7 @@
 # - apel-ssm_<version>_all.deb contains all the files necessary to run a
 #   the SSM as a sender.
 # - apel-ssm-service_<version>_amd64.deb will install service daemon files
-#   necessary to run the SSM as a receiver on amd64 style architectures.
+#   necessary to run the SSM as a receiver as a service.
 # After building apel-ssm_<version>_all.deb, this script will run it
 # against lintian to highlight potential issues to the builder.
 
@@ -71,6 +71,7 @@ fpm -s pleaserun -t deb \
 --iteration $ITERATION \
 -m "Apel Administrators <apel-admins@stfc.ac.uk>" \
 --description "Secure Stomp Messenger (SSM) Service Daemon files." \
+--architecture all \
 --no-auto-depends \
 --depends apel-ssm \
 --package $BUILD_DIR \
