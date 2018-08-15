@@ -85,7 +85,10 @@ Install any missing system packages needed for the SSM:
 * `apt-get -f install`
 
 Install any missing python requirements that don't have system packages:
-* `pip install "stomp.py>=3.1.1" python-daemon python-ldap dirq`
+* `pip install "stomp.py>=3.1.1" dirq`
+
+If you wish to run the SSM as a receiver, you will also need to install the python-daemon system package:
+* `apt-get install python-daemon`
 
 ### What the DEB does
 
