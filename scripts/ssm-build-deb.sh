@@ -2,17 +2,17 @@
 
 # Execute the following as root to install lintian and fpm:
 # apt-get install lintian
-# apt-get install ruby ruby-dev rubygems build-essential
+# apt-get install ruby ruby-dev build-essential
 # gem install --no-ri --no-rdoc fpm
 
 # Then run this file, as any user, altering the
 # version number in the TAG variable.
 # This file will create two versions of the deb file:
-# - apel-ssm_<version>_all.deb contains all the files necessary to run a
+# - apel-ssm_<tag>_all.deb contains all the files necessary to run a
 #   the SSM as a sender.
-# - apel-ssm-service_<version>_amd64.deb will install service daemon files
+# - apel-ssm-service_<tag>_all.deb will install service daemon files
 #   necessary to run the SSM as a receiver as a service.
-# After building apel-ssm_<version>_all.deb, this script will run it
+# After building apel-ssm_<tag>_all.deb, this script will run it
 # against lintian to highlight potential issues to the builder.
 
 set -eu
@@ -58,12 +58,12 @@ fpm -s python -t deb \
 --depends python-ldap \
 --depends libssl-dev \
 --depends libsasl2-dev \
---deb-changelog CHANGELOG \
+--deb-changelog $SOURCE_DIR/ssm-$TAG/CHANGELOG \
 --python-install-bin /usr/bin \
 --python-install-lib $PYTHON_INSTALL_LIB \
 --exclude *.pyc \
 --package $BUILD_DIR \
-$SOURCE_DIR/ssm-$VERSION/setup.py
+$SOURCE_DIR/ssm-$TAG/setup.py
 
 fpm -s pleaserun -t deb \
 -n apel-ssm-service \
