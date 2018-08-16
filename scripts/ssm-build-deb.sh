@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# Execute the following as root to install lintian and fpm:
-# apt-get install lintian
-# apt-get install ruby ruby-dev build-essential
+# Execute the following as root to install lintian, pip, and fpm:
+# apt-get install lintian ruby ruby-dev build-essential python-pip
 # gem install --no-ri --no-rdoc fpm
 
 # Then run this file, as any user, altering the
