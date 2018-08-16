@@ -5,7 +5,7 @@
 
 Name:           apel-ssm
 Version:        2.3.0
-%define releasenumber 0.1.rc1
+%define releasenumber 0.2.rc2
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
 

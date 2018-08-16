@@ -10,7 +10,7 @@
 rpmdev-setuptree
 
 RPMDIR=/home/rpmb/rpmbuild
-VERSION=2.3.0-0.1.rc1
+VERSION=2.3.0-0.2.rc2
 SSMDIR=apel-ssm-$VERSION
 
 # Remove old sources and RPMS
