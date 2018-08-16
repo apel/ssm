@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.2.1
+Version:        2.3.0
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -21,7 +21,7 @@ BuildArch:      noarch
 BuildRequires:  python-devel
 %endif
 
-Requires:       stomppy < 4.0.0, python-daemon, python-dirq, python-ldap
+Requires:       stomppy >= 3.1.1, python-daemon < 2.2.0, python-dirq, python-ldap
 Requires(pre):  shadow-utils
 
 %define ssmconf %_sysconfdir/apel
@@ -100,6 +100,12 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Wed Aug 16 2018 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.3.0-1
+ - Added support for stomp.py versions from 3.1.6 onwards which allows for
+   builds on Ubuntu Trusty and should enable IPv6 support.
+ - Added script for creating Ubuntu (.deb) builds.
+ - Added script for creating Docker container builds.
+
 * Mon May 14 2018 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.2.1-1
  - Added a check that the server certificate used for encryption hasn't expired
    so that a sending SSM won't start with an out of date server certificate.

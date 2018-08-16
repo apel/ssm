@@ -2,8 +2,11 @@
 
 This script installs the APEL SSM library, sender and reciever. This
 should be similar to installing the RPM apel-ssm, although there
-may be some differences. A known difference is the RPM installs pyc
-and pyo files, whereas this script does not.
+may be some differences.
+
+Known differences are:
+- the RPM installs pyc and pyo files, whereas this script does not.
+- this script will not install system specific init style files.
 
 Usage: 'python setup.py install'
 
@@ -28,15 +31,6 @@ def main():
         copyfile('scripts/apel-ssm.logrotate', 'conf/apel-ssm')
         copyfile('README.md', 'apel-ssm')
 
-        if not path.exists('/var/log/apel'):
-            makedirs('/var/log/apel')
-
-        if not path.exists('/var/run/apel'):
-            makedirs('/var/run/apel')
-
-        if not path.exists('/var/spool/apel'):
-            makedirs('/var/spool/apel')
-
     # conf_files will later be copied to conf_dir
     conf_dir = '/etc/apel/'
     conf_files = ['conf/receiver.cfg',
@@ -56,16 +50,19 @@ def main():
           url='http://apel.github.io/',
           download_url='https://github.com/apel/ssm/releases',
           license='Apache License, Version 2.0',
-          install_requires=['stomp.py<=3.1.6', 'python-ldap', 'dirq'],
+          install_requires=['stomp.py>=3.1.1', 'python-ldap', 'dirq'],
           extras_require={
-              'python-daemon': ['python-daemon'],
+              'python-daemon': ['python-daemon<2.2.0'],
           },
-          packages=find_packages(exclude=['bin']),
+          packages=find_packages(exclude=['bin', 'test']),
           scripts=['bin/ssmreceive', 'bin/ssmsend'],
           data_files=[(conf_dir, conf_files),
                       ('/etc/logrotate.d', ['conf/apel-ssm']),
-                      ('/etc/init.d', ['bin/apel-ssm']),
-                      ('/usr/share/doc', ['apel-ssm'])],
+                      ('/usr/share/doc/apel-ssm', ['apel-ssm']),
+                      # Create empty directories
+                      ('/var/log/apel', []),
+                      ('/var/run/apel', []),
+                      ('/var/spool/apel', [])],
           # zip_safe allows setuptools to install the project
           # as a zipfile, for maximum performance!
           # We have disabled this feature so installing via the setup
