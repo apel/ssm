@@ -21,7 +21,7 @@ import os
 import uuid
 
 # logging configuration
-LOG = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class MessageDirectory(object):
@@ -43,7 +43,7 @@ class MessageDirectory(object):
             with open("%s/%s" % (self.directory_path, name), 'w') as message:
                 message.write(data)
         except (IOError, OSError) as error:
-            LOG.error("Could not create file %s/%s: %s",
+            log.error("Could not create file %s/%s: %s",
                       self.directory_path, name, error)
 
         # Return the name of the created file as a string,
@@ -74,15 +74,15 @@ class MessageDirectory(object):
 
         Only included to preserve dirq interface.
         """
-        LOG.debug("purge() called, but purge() does nothing.")
+        log.debug("purge() called, but purge() does nothing.")
 
     def remove(self, name):
         """Remove the named message."""
         try:
             os.unlink("%s/%s" % (self.directory_path, name))
         except (IOError, OSError) as error:
-            LOG.warning("Could not remove %s, it may get resent.", name)
-            LOG.debug(error)
+            log.warning("Could not remove %s, it may get resent.", name)
+            log.debug(error)
 
     def _get_messages(self, sort_by_mtime=False):
         """
@@ -129,7 +129,7 @@ class MessageDirectory(object):
             return file_name_list
 
         except (IOError, OSError) as error:
-            LOG.error(error)
+            log.error(error)
             # Return an empty file list.
             return []
 
