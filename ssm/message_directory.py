@@ -74,7 +74,7 @@ class MessageDirectory(object):
 
         Only included to preserve dirq interface.
         """
-        log.debug("purge() called, but purge() does nothing.")
+        log.debug("purge called, but purge does nothing for non-dirq sending.")
 
     def remove(self, name):
         """Remove the named message."""
