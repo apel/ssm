@@ -129,9 +129,9 @@ class TestMessageDirectory(unittest.TestCase):
         """Remove test directory and all contents."""
         try:
             shutil.rmtree(self.tmp_dir)
-        except OSError, error:
-            print 'Error removing temporary directory %s' % self.tmp_dir
-            print error
+        except OSError as error:
+            print('Error removing temporary directory %s' % self.tmp_dir)
+            print(error)
 
 
 if __name__ == "__main__":
