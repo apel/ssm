@@ -133,7 +133,6 @@ class MessageDirectory(object):
             # Return an empty file list.
             return []
 
-
     def __iter__(self):
-        """Return an iterable of the files currently in the MessageDirectory."""
+        """Return an iterable of files currently in the MessageDirectory."""
         return self._get_messages(sort_by_mtime=True).__iter__()
