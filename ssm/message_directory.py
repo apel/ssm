@@ -33,8 +33,9 @@ class MessageDirectory(object):
 
     def add(self, data):
         """Add the passed data to a new file and return it's name."""
-        # Use uuid4 to create a file name because uuid4 is
-        # sufficient to create an unique ID.
+        # Create a unique file name so APEL admins can pair sent and recieved
+        # messages easily (as the file name appears in the sender and receiver
+        # logs as the message ID).
         name = uuid.uuid4()
 
         try:
