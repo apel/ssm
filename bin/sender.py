@@ -66,7 +66,7 @@ def main():
     # Set defaults for MQ-BROKER only variables
     use_ssl = None
     # Set defaults for AMS only variables
-    token = None
+    token = ""
     project = None
 
     log.info(LOG_BREAK)
@@ -139,18 +139,24 @@ def main():
             print 'SSM failed to start.  See log file for details.'
             sys.exit(1)
 
-        # Attempt to configure AMS specific variables.
+        # Attempt to configure AMS project variable.
         try:
-            token = cp.get('messaging', 'token')
             project = cp.get('messaging', 'project')
 
         except (ConfigParser.Error, ValueError, IOError), err:
-            # A token and project are needed to successfully send to an
+            # A project is needed to successfully send to an
             # AMS instance, so log and then exit on an error.
             log.error('Error configuring AMS values: %s', err)
             log.error('SSM will exit.')
             print 'SSM failed to start.  See log file for details.'
             sys.exit(1)
+
+        try:
+            token = cp.get('messaging', 'token')
+        except (ConfigParser.Error, ValueError, IOError), err:
+            # A token is not necessarily needed, if the cert and key can be
+            # used by the underlying auth system to get a suitable token.
+            log.info('No AMS token provided, using cert/key pair instead.')
 
     if len(brokers) == 0:
         log.error('No brokers available.')

@@ -105,6 +105,8 @@ class Ssm2(stomp.ConnectionListener):
         if self._protocol == "HTTPS" and self._dest_type == "AMS":
             self._ams = ArgoMessagingService(endpoint=self._brokers[0],
                                              token=self._pwd,
+                                             cert=self._cert,
+                                             key=self._key,
                                              project=self._project)
 
         else:

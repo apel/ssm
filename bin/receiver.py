@@ -112,7 +112,7 @@ def main():
     use_ssl = None
     # Set defaults for AMS only variables
     project = None
-    token = None
+    token = ""
 
     log.info(LOG_BREAK)
     log.info('Starting receiving SSM version %s.%s.%s.', *__version__)
