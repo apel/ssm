@@ -17,17 +17,18 @@ cache: pip
 before_cache: rm -fv ~/.cache/pip/log/debug.log
 
 install:
+  # Base requirements for ssm
   - pip install -r requirements.txt
+  # Additional requirements for the unit and coverage tests
   - pip install -r requirements-test.txt
 
+# Commands to prepare environment for the test
 before_script:
   - export TMPDIR=$PWD/tmp
   - mkdir $TMPDIR
   - export PYTHONPATH=$PYTHONPATH:`pwd -P`
   - cd test
 
-script:
-  - coverage run --branch --source=ssm,bin -m unittest2 discover --buffer
+script: coverage run --branch --source=ssm,bin -m unittest2 discover --buffer
 
-after_success:
-  - coveralls
+after_success: coveralls
