@@ -388,7 +388,14 @@ class Ssm2(stomp.ConnectionListener):
             # Get the AMS message id
             msgid = msg.get_msgid()
             # Get the SSM dirq id
-            empaid = msg.get_attr().get('empaid')
+            try:
+                empaid = msg.get_attr().get('empaid')
+            except AttributeError:
+                # A message without an empaid could be received if it wasn't
+                # sent via the SSM, we need to pull down that message
+                # to prevent it blocking the message queue.
+                log.debug("Message %s has no empaid.", msgid)
+                empaid = "N/A"
             # get the message body
             body = msg.get_data()
 
