@@ -155,13 +155,14 @@ add your messages using the `add` method.
 
 ## Running the SSM
 
-###  Sender (sending via the EGI message brokers)
+### Sender (sending via the EGI message brokers)
 
  * Run 'ssmsend'
  * SSM will pick up any messages and send them to the configured
    queue on the configured broker
    
-###  Sender (sending via the ARGO Messaging Service (AMS))
+### Sender (sending via the ARGO Messaging Service (AMS))
+
  * Edit your sender configuration, usually under `/etc/apel/sender.cfg`, as per the [migration instructions](migrating_to_ams_broker.md#sender) with some minor differences:
    * There is no need to add the `[SSM Type]` section as it already exists. instead change the `destination type` and `protocol` to `AMS` and `HTTPS` respectively.
    * Uncomment `project` and set it to the appropriate project.
@@ -212,6 +213,7 @@ add your messages using the `add` method.
  * To stop, run ```'kill `cat /var/run/apel/ssm.pid`'```
  
 ### Receiver (receiving via the ARGO Messaging Service (AMS))
+
  * Edit your receiver configuration, usually under `/etc/apel/receiver.cfg`, as per the [migration instructions](migrating_to_ams_broker.md#receiver) with some minor differences:
    * There is no need to add the `[SSM Type]` section as it already exists. instead change the `destination type` and `protocol` to `AMS` and `HTTPS` respectively.
    * Uncomment `project` and set it to the appropriate project.

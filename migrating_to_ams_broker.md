@@ -7,8 +7,8 @@ Migration requires upgrading to SSM-X.X.X and adding new values to your configur
 The sender configuration is usually found under `/etc/apel/sender.cfg`. Follow the following steps to migrate.
 
 1. Comment out `bdii` and `network`
-2. Uncomment `host` and set it to `msg-devel.argo.grnet.gr`
-3. Add the following as a new section in your configuration.
+1. Uncomment `host` and set it to `msg-devel.argo.grnet.gr`
+1. Add the following as a new section in your configuration.
 ```
 # SSM protocol/destination type options
 [SSM Type]
@@ -17,17 +17,18 @@ destination type: AMS
 # Either 'STOMP' for EGI Message Brokers or 'HTTPS' for Argo Messaging Service
 protocol: HTTPS
 ```
-4. Add the following to the `[messaging]` section of your configuration
+1. Add the following to the `[messaging]` section of your configuration
 ```
 # Project to which SSM will pull messages from. Uncomment and populate for AMS sending
 project: EGI-ACCOUNTING
 ```
-5. To send to the APEL central server, change `destination` to one of the following depending on your type of accounting:
+1. To send to the APEL central server, change `destination` to one of the following depending on your type of accounting:
   * `gLite-APEL` for Grid Accounting
   * `eu.egi.cloud.accounting` for Cloud Accounting
   * `eu.egi.storage.accounting` for Storage Accounting
 
 The next time `ssmsend` runs it should be using the AMS. You can check this by looking in the logs a successful run, which will look like:
+
 ```
 2018-09-19 14:18:06,423 - ssmsend - INFO - ========================================
 2018-09-19 14:18:06,424 - ssmsend - INFO - Starting sending SSM version 2.2.1.
@@ -43,9 +44,10 @@ The next time `ssmsend` runs it should be using the AMS. You can check this by l
 ```
 
 ## Receiver
+
 1. Follow the steps 1 to 4 from above editing your receiver configuration, usually found under `/etc/apel/receiver.cfg`
-2. Change `destination` to be the subscription you are using to pull messages down.
-3. Add your token to the `[messaging]` section of your configuration.
+1. Change `destination` to be the subscription you are using to pull messages down.
+1. Add your token to the `[messaging]` section of your configuration.
 ```
 token: your_token_here
 ```
