@@ -75,11 +75,8 @@ class MessageDirectory(object):
 
     def remove(self, name):
         """Remove the named message."""
-        try:
-            os.unlink("%s/%s" % (self.directory_path, name))
-        except (IOError, OSError) as error:
-            log.warning("Could not remove %s, it may get resent.", name)
-            log.debug(error)
+        os.unlink("%s/%s" % (self.directory_path, name))
+
 
     def _get_messages(self, sort_by_mtime=False):
         """
