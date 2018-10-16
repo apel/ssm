@@ -18,7 +18,6 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from daemon import DaemonContext
 import logging
 import ldap
 import os
@@ -29,6 +28,13 @@ try:
     import ConfigParser
 except ImportError:
     import configparser as ConfigParser
+
+try:
+    from daemon import DaemonContext
+except ImportError:
+    # A error is logged and the receiver exits later if DaemonContext is
+    # requested but not installed.
+    DaemonContext = None
 
 from stomp.exception import NotConnectedException
 try:
@@ -259,6 +265,13 @@ def run_sender(protocol, brokers, project, token, cp, log):
 
 def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
     """Run Ssm2 as a receiver daemon."""
+    if DaemonContext is None:
+        log.error("Receiving SSMs must use python-daemon, but the "
+                  "python-daemon module wasn't found.")
+        log.error("System will exit.")
+        log.info(LOG_BREAK)
+        sys.exit(1)
+
     log.info('The SSM will run as a daemon.')
 
     # We need to preserve the file descriptor for any log files.
