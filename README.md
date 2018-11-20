@@ -40,15 +40,16 @@ The Python STOMP library (N.B. versions between 3.1.1 (inclusive) and 5.0.0
 
 The Python AMS library. This is only required if you want to use AMS. See here for details on obtaining an RPM: https://github.com/ARGOeu/argo-ams-library/
 
-The Python daemon library
-* `yum install python-daemon`
-
 The Python ldap library
 * `yum install python-ldap`
 
 Optionally, the Python dirq library (N.B. this is only required if your messages
 are stored in a dirq structure)
 * `yum install python-dirq`
+
+The Python daemon library (N.B. installing this library is only required when
+using the SSM as a receiver)
+* `yum install python-daemon`
 
 You need a certificate and key in PEM format accessible to the SSM.
 There are a number of ways to do this.  One is to make a copy of the
