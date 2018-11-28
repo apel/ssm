@@ -5,7 +5,7 @@
 
 Name:           apel-ssm
 Version:        2.3.0
-%define releasenumber 1
+%define releasenumber 2
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
 
@@ -100,6 +100,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Wed Nov 28 2018 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.3.0-2
+ - Updated build and test files only.
+
 * Wed Aug 16 2018 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.3.0-1
  - Added support for stomp.py versions from 3.1.6 onwards which allows for
    builds on Ubuntu Trusty and should enable IPv6 support.
