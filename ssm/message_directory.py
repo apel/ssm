@@ -35,13 +35,9 @@ class MessageDirectory(object):
         # logs as the message ID).
         name = uuid.uuid4()
 
-        try:
-            # Open the file and write the provided data into the file.
-            with open("%s/%s" % (self.directory_path, name), 'w') as message:
-                message.write(data)
-        except (IOError, OSError) as error:
-            log.error("Could not create file %s/%s: %s",
-                      self.directory_path, name, error)
+        # Open the file and write the provided data into the file.
+        with open("%s/%s" % (self.directory_path, name), 'w') as message:
+            message.write(data)
 
         # Return the name of the created file as a string,
         # to keep the dirq like interface.

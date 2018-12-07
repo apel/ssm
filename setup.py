@@ -53,7 +53,7 @@ def main():
           install_requires=['stomp.py>=3.1.1', 'python-ldap'],
           extras_require={
               'python-daemon': ['python-daemon<2.2.0'],
-              'dirq': ['dirq']
+              'dirq': ['dirq'],
           },
           packages=find_packages(exclude=['bin', 'test']),
           scripts=['bin/ssmreceive', 'bin/ssmsend'],
