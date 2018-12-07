@@ -122,7 +122,7 @@ def main():
             raise Ssm2Exception(e)
 
         # Determine what type of message store we are interacting with,
-        # i.e. a dirq QueueSimple object or a directory
+        # i.e. a dirq QueueSimple object or a plain MessageDirectory directory.
         try:
             path_type = cp.get('messaging', 'path_type')
         except ConfigParser.NoOptionError:

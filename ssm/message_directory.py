@@ -73,7 +73,6 @@ class MessageDirectory(object):
         """Remove the named message."""
         os.unlink("%s/%s" % (self.directory_path, name))
 
-
     def _get_messages(self, sort_by_mtime=False):
         """
         Get the messages stored in this MessageDirectory.

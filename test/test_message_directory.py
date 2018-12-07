@@ -15,6 +15,7 @@
 
 import shutil
 import tempfile
+import time
 import unittest
 
 from ssm.message_directory import MessageDirectory
@@ -27,8 +28,6 @@ class TestMessageDirectory(unittest.TestCase):
         """Create a MessageDirectory class on top of a temporary directory."""
         self.tmp_dir = tempfile.mkdtemp(prefix='message_directory')
         self.message_directory = MessageDirectory(self.tmp_dir)
-        # Assert no files exist in the underlying file system.
-        self.assertEqual(self.message_directory.count(), 0)
 
     def test_add_and_get(self):
         """
@@ -58,8 +57,6 @@ class TestMessageDirectory(unittest.TestCase):
         This test adds files to the MessageDirectory and then iterates over
         the MessageDirectory to retrieve the file names. If the for loop does
         not return them in the order they were last modfied, this test fails.
-
-
         """
         # In the event of a failure of underlying _get_messages sorting, it's
         # possible the returned list of files could still be in the correct
@@ -70,12 +67,15 @@ class TestMessageDirectory(unittest.TestCase):
 
         # A list to hold file names by creation time.
         file_names_by_creation_time = []
-
         for test_content in test_content_list:
             # Add the content to the MessageDirectory.
             file_name = self.message_directory.add(test_content)
             # Append the file name to the list of file names by create time.
             file_names_by_creation_time.append(file_name)
+            # Wait a small amount of time to allow differentiation of times.
+            time.sleep(0.02)
+
+        self.assertEqual(self.message_directory.count(), 7)
 
         # A list to hold file names by modification time.
         file_names_by_modification_time = []
@@ -96,11 +96,10 @@ class TestMessageDirectory(unittest.TestCase):
         This test adds two files to a MessageDirectory and then checks
         the output of the count() function is as expected.
         """
-        # Add some files to the MessageDirectory.
+        self.assertEqual(self.message_directory.count(), 0)
         self.message_directory.add("FOO")
+        self.assertEqual(self.message_directory.count(), 1)
         self.message_directory.add("BAR")
-
-        # Check the count method returns the correct value.
         self.assertEqual(self.message_directory.count(), 2)
 
     def test_lock(self):
@@ -127,8 +126,11 @@ class TestMessageDirectory(unittest.TestCase):
         This test adds a file, removes the file and then checks
         the number of files present.
         """
+        # Check the directory starts empty
+        self.assertEqual(self.message_directory.count(), 0)
         # Add some files to the MessageDirectory.
         file_name = self.message_directory.add("FOO")
+        self.assertEqual(self.message_directory.count(), 1)
         # Use the remove method to delete the recently added file.
         self.message_directory.remove(file_name)
         # Check the count method returns the expected value.
