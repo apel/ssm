@@ -358,19 +358,16 @@ class Ssm2(stomp.ConnectionListener):
             self._conn.send(to_send, headers=headers)
 
     def pull_msg_rest(self):
-        """Pull a message via HTTPS from self._dest."""
+        """Pull 1 message from the AMS and acknowledge it."""
         if self._protocol != Ssm2.AMS_MESSAGING:
             # Then this method should not be called,
             # raise an exception if it is.
             raise Ssm2Exception('pull_msg_rest called, '
                                 'but protocol not set to AMS. '
                                 'Protocol: %s' % self._protocol)
-        self._pull_msg_rest_ams()
 
-    def _pull_msg_rest_ams(self):
-        """Pull 1 message from the AMS and acknowledge it."""
         # This method is setup so that you could pull down and
-        # acknowledge more than one method at a time, but
+        # acknowledge more than one message at a time, but
         # currently there is no use case for it.
         messages_to_pull = 1
         # ack id's will be stored in this list and then acknowledged
