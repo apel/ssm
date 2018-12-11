@@ -63,7 +63,7 @@ def main():
     
     log = logging.getLogger('ssmsend')
 
-    # Set defaults for MQ-BROKER only variables
+    # Set defaults for STOMP only variables
     use_ssl = None
     # Set defaults for AMS only variables
     token = ""
@@ -74,21 +74,17 @@ def main():
 
     # Determine the protocol and destination type of the SSM to configure.
     try:
-        destination_type = cp.get('SSM Type', 'destination type')
-        protocol = cp.get('SSM Type', 'protocol')
+        protocol = cp.get('sender', 'protocol')
 
     except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
-        # if newer configuration settings 'protocol' and 'destination type'
-        # are not set, use 'STOMP' and 'MQ-BROKER' for
-        # backwards compatability.
-        log.debug('No options supplied for destination_type and/or protocol.')
-        destination_type = 'MQ-BROKER'
+        # If the newer configuration setting 'protocol' is not set, use 'STOMP'
+        # for backwards compatability.
+        log.debug("No option set for 'protocol'. Defaulting to 'STOMP'.")
         protocol = 'STOMP'
 
-    log.info('Setting up SSM with Dest Type: %s, Protocol : %s'
-             % (destination_type, protocol))
+    log.info('Setting up SSM with protocol: %s', protocol)
 
-    if destination_type == 'MQ-BROKER':
+    if protocol == 'STOMP':
         # If we can't get a broker to connect to, we have to give up.
         try:
             bdii_url = cp.get('broker', 'bdii')
@@ -122,7 +118,7 @@ def main():
             print 'SSM failed to start.  See log file for details.'
             sys.exit(1)
 
-    elif destination_type == 'AMS':
+    elif protocol == 'AMS':
         # Then we are setting up an SSM to connect to a AMS.
         try:
             # We only need a hostname, not a port
@@ -201,7 +197,6 @@ def main():
                       capath=cp.get('certificates', 'capath'),
                       enc_cert=server_cert,
                       verify_enc_cert=verify_server_cert,
-                      dest_type=destination_type,
                       protocol=protocol,
                       project=project,
                       password=token)

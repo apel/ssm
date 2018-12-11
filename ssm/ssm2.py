@@ -67,7 +67,7 @@ class Ssm2(stomp.ConnectionListener):
     def __init__(self, hosts_and_ports, qpath, cert, key, dest=None, listen=None,
                  capath=None, check_crls=False, use_ssl=False, username=None, password=None,
                  enc_cert=None, verify_enc_cert=True, pidfile=None, path_type='dirq',
-                 protocol="STOMP", dest_type='MQ-BROKER', project=None):
+                 protocol="STOMP", project=None):
         '''
         Creates an SSM2 object.  If a listen value is supplied,
         this SSM2 will be a receiver.
@@ -94,24 +94,18 @@ class Ssm2(stomp.ConnectionListener):
         self._valid_dns = []
         self._pidfile = pidfile
 
-        # Used to differentiate between STOMP and HTTPS methods
+        # Used to differentiate between STOMP and AMS methods
         self._protocol = protocol
-        # Used to differentiate between AMS and other REST endpoints
-        self._dest_type = dest_type
 
         # Used when interacting with an Argo Messaging Service
         self._project = project
 
-        if self._protocol == "HTTPS" and self._dest_type == "AMS":
+        if self._protocol == 'AMS':
             self._ams = ArgoMessagingService(endpoint=self._brokers[0],
                                              token=self._pwd,
                                              cert=self._cert,
                                              key=self._key,
                                              project=self._project)
-
-        else:
-            # Set _ams rather than leave it unset
-            self._ams = None
 
         # create the filesystem queues for accepted and rejected messages
         if dest is not None and listen is None:
@@ -361,18 +355,13 @@ class Ssm2(stomp.ConnectionListener):
 
     def pull_msg_rest(self):
         """Pull a message via HTTPS from self._dest."""
-        if self._protocol != 'HTTPS':
+        if self._protocol != 'AMS':
             # Then this method should not be called,
             # raise an exception if it is.
             raise Ssm2Exception('pull_msg_rest called, '
-                                'but protocol not set to HTTPS. '
+                                'but protocol not set to AMS. '
                                 'Protocol: %s' % self._protocol)
-
-        if self._dest_type == "AMS":
-            self._pull_msg_rest_ams()
-        else:
-            raise Ssm2Exception('Unsupported Destination Type.'
-                                'Type: %s' % self._dest_type)
+        self._pull_msg_rest_ams()
 
     def _pull_msg_rest_ams(self):
         """Pull 1 message from the AMS and acknowledge it."""
@@ -477,9 +466,8 @@ class Ssm2(stomp.ConnectionListener):
 
             text = self._outq.get(msgid)
 
-            if self._protocol == "STOMP" and self._dest_type == "MQ-BROKER":
-                # Then this is an MQ-BROKER and we are going
-                # to send using the STOMP protocol
+            if self._protocol == 'STOMP':
+                # Then we are sending to a STOMP message broker.
                 self._send_msg(text, msgid)
 
                 log.info('Waiting for broker to accept message.')
@@ -489,7 +477,7 @@ class Ssm2(stomp.ConnectionListener):
 
                 log_string = "Sent %s" % msgid
 
-            elif self._protocol == "HTTPS" and self._dest_type == "AMS":
+            elif self._protocol == 'AMS':
                 # Then we are sending to an Argo Messaging Service instance.
                 if text is not None:
                     # First we sign the message
@@ -513,9 +501,8 @@ class Ssm2(stomp.ConnectionListener):
 
             else:
                 # The SSM has been improperly configured
-                raise Ssm2Exception('Unknown configuration: %s and %s' %
-                                    self._protocol,
-                                    self._dest_type)
+                raise Ssm2Exception('Unknown messaging protocol: %s' %
+                                    self._protocol)
 
             time.sleep(0.1)
             # log that the message was sent
@@ -567,8 +554,8 @@ class Ssm2(stomp.ConnectionListener):
         If more than one is in the list self._network_brokers, try to
         connect to each in turn until successful.
         '''
-        if self._protocol == "HTTPS":
-            log.debug('handle_connect called for HTTPS SSM, doing nothing.')
+        if self._protocol == 'AMS':
+            log.debug('handle_connect called for AMS, doing nothing.')
             return
 
         for host, port in self._brokers:
@@ -590,8 +577,8 @@ class Ssm2(stomp.ConnectionListener):
         When disconnected, attempt to reconnect using the same method as used
         when starting up.
         '''
-        if self._protocol == "HTTPS":
-            log.debug('handle_disconnect called for HTTPS SSM, doing nothing.')
+        if self._protocol == 'AMS':
+            log.debug('handle_disconnect called for AMS, doing nothing.')
             return
 
         self.connected = False
@@ -621,8 +608,8 @@ class Ssm2(stomp.ConnectionListener):
         If the timeout is reached without receiving confirmation of
         connection, raise an exception.
         '''
-        if self._protocol == "HTTPS":
-            log.debug('start_connection called for HTTPS SSM, doing nothing.')
+        if self._protocol == 'AMS':
+            log.debug('start_connection called for AMS, doing nothing.')
             return
 
         if self._conn is None:
@@ -657,8 +644,8 @@ class Ssm2(stomp.ConnectionListener):
         in a separate thread, so it can outlive the main process
         if it is not ended.
         '''
-        if self._protocol == "HTTPS":
-            log.debug('close_connection called for HTTPS SSM, doing nothing.')
+        if self._protocol == 'AMS':
+            log.debug('close_connection called for AMS, doing nothing.')
             return
 
         try:

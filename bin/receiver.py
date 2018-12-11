@@ -108,32 +108,28 @@ def main():
     global log
     log = logging.getLogger('ssmreceive')
 
-    # Set defaults for MQ-BROKER only variables
+    # Set defaults for STOMP only variables
     use_ssl = None
     # Set defaults for AMS only variables
-    project = None
     token = ""
+    project = None
 
     log.info(LOG_BREAK)
     log.info('Starting receiving SSM version %s.%s.%s.', *__version__)
 
     # Determine the protocol and destination type of the SSM to configure.
     try:
-        destination_type = cp.get('SSM Type', 'destination type')
-        protocol = cp.get('SSM Type', 'protocol')
+        protocol = cp.get('receiver', 'protocol')
 
     except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
-        # if newer configuration settings 'protocol' and 'destination type'
-        # are not set, use 'STOMP' and 'MQ-BROKER' for
-        # backwards compatability.
-        log.debug('No options supplied for destination_type and/or protocol.')
-        destination_type = 'MQ-BROKER'
+        # If the newer configuration setting 'protocol' is not set, use 'STOMP'
+        # for backwards compatability.
+        log.debug("No option set for 'protocol'. Defaulting to 'STOMP'.")
         protocol = 'STOMP'
 
-    log.info('Setting up SSM with Dest Type: %s, Protocol : %s'
-             % (destination_type, protocol))
+    log.info('Setting up SSM with protocol: %s', protocol)
 
-    if destination_type == 'MQ-BROKER':
+    if protocol == 'STOMP':
         # If we can't get a broker to connect to, we have to give up.
         try:
             bg = StompBrokerGetter(cp.get('broker', 'bdii'))
@@ -162,7 +158,7 @@ def main():
             log.info(LOG_BREAK)
             sys.exit(1)
 
-    elif destination_type == 'AMS':
+    elif protocol == 'AMS':
         # Then we are setting up an SSM to connect to a AMS.
         try:
             # We only need a hostname, not a port
@@ -215,11 +211,10 @@ def main():
                    capath=cp.get('certificates', 'capath'),
                    check_crls=cp.getboolean('certificates', 'check_crls'),
                    pidfile=pidfile,
+                   protocol=protocol,
                    project=project,
-                   password=token,
-                   dest_type=destination_type,
-                   protocol=protocol)
-        
+                   password=token)
+
         log.info('Fetching valid DNs.')
         dns = get_dns(options.dn_file)
         ssm.set_dns(dns)
