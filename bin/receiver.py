@@ -124,12 +124,12 @@ def main():
     except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
         # If the newer configuration setting 'protocol' is not set, use 'STOMP'
         # for backwards compatability.
-        log.debug("No option set for 'protocol'. Defaulting to 'STOMP'.")
-        protocol = 'STOMP'
+        protocol = Ssm2.STOMP_MESSAGING
+        log.debug("No option set for 'protocol'. Defaulting to %s.", protocol)
 
     log.info('Setting up SSM with protocol: %s', protocol)
 
-    if protocol == 'STOMP':
+    if protocol == Ssm2.STOMP_MESSAGING:
         # If we can't get a broker to connect to, we have to give up.
         try:
             bg = StompBrokerGetter(cp.get('broker', 'bdii'))
@@ -158,7 +158,7 @@ def main():
             log.info(LOG_BREAK)
             sys.exit(1)
 
-    elif protocol == 'AMS':
+    elif protocol == Ssm2.AMS_MESSAGING:
         # Then we are setting up an SSM to connect to a AMS.
         try:
             # We only need a hostname, not a port
@@ -236,7 +236,7 @@ def main():
         while True:
             try:
                 time.sleep(1)
-                if protocol == 'HTTPS':
+                if protocol == Ssm2.AMS_MESSAGING:
                     # We need to pull down messages as part of
                     # this loop when using HTTPS.
                     ssm.pull_msg_rest()
@@ -246,7 +246,7 @@ def main():
                     dns = get_dns(options.dn_file)
                     ssm.set_dns(dns)
 
-                    if protocol == 'STOMP':
+                    if protocol == Ssm2.STOMP_MESSAGING:
                         ssm.send_ping()
 
             except NotConnectedException as error:
