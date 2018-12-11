@@ -71,7 +71,7 @@ class Ssm2(stomp.ConnectionListener):
     def __init__(self, hosts_and_ports, qpath, cert, key, dest=None, listen=None, 
                  capath=None, check_crls=False, use_ssl=False, username=None, password=None, 
                  enc_cert=None, verify_enc_cert=True, pidfile=None, path_type='dirq',
-                 protocol=STOMP_MESSAGING, project=None):
+                 protocol=STOMP_MESSAGING, project=None, token=''):
         '''
         Creates an SSM2 object.  If a listen value is supplied,
         this SSM2 will be a receiver.
@@ -103,10 +103,11 @@ class Ssm2(stomp.ConnectionListener):
 
         # Used when interacting with an Argo Messaging Service
         self._project = project
+        self._token = token
 
         if self._protocol == Ssm2.AMS_MESSAGING:
             self._ams = ArgoMessagingService(endpoint=self._brokers[0],
-                                             token=self._pwd,
+                                             token=self._token,
                                              cert=self._cert,
                                              key=self._key,
                                              project=self._project)

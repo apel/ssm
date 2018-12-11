@@ -66,7 +66,7 @@ def main():
     # Set defaults for STOMP only variables
     use_ssl = None
     # Set defaults for AMS only variables
-    token = ""
+    token = ''
     project = None
 
     log.info(LOG_BREAK)
@@ -199,7 +199,7 @@ def main():
                       verify_enc_cert=verify_server_cert,
                       protocol=protocol,
                       project=project,
-                      password=token)
+                      token=token)
 
         if sender.has_msgs():
             sender.handle_connect()

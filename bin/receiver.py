@@ -111,7 +111,7 @@ def main():
     # Set defaults for STOMP only variables
     use_ssl = None
     # Set defaults for AMS only variables
-    token = ""
+    token = ''
     project = None
 
     log.info(LOG_BREAK)
@@ -213,7 +213,7 @@ def main():
                    pidfile=pidfile,
                    protocol=protocol,
                    project=project,
-                   password=token)
+                   token=token)
 
         log.info('Fetching valid DNs.')
         dns = get_dns(options.dn_file)
