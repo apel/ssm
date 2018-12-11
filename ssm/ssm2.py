@@ -490,11 +490,7 @@ class Ssm2(stomp.ConnectionListener):
                     message = AmsMessage(data=to_send,
                                          attributes={'empaid': msgid}).dict()
 
-                    # Attempt to the AMS Message.
-                    try:
-                        argo_response = self._ams.publish(self._dest, message)
-                    except AmsException as error:
-                        raise error
+                    argo_response = self._ams.publish(self._dest, message)
 
                     argo_id = argo_response['messageIds'][0]
                     log_string = "Sent %s, Argo ID: %s" % (msgid, argo_id)
