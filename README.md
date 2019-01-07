@@ -120,7 +120,7 @@ configuration will send messages to the test apel server.
 
 ## Adding Files
 
-There are multiple manual and programmatic ways to add files to be sent: 
+There are multiple manual and programmatic ways to add files to be sent:
 
 ### Manual
 
