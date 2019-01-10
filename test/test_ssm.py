@@ -10,6 +10,7 @@ import tempfile
 import unittest
 from subprocess import call
 
+from ssm.message_directory import MessageDirectory
 from ssm.ssm2 import Ssm2, Ssm2Exception
 
 
@@ -120,6 +121,18 @@ class TestSsm(unittest.TestCase):
         # verify_enc_cert is set to False as we don't want to risk raising an
         # exception by failing cert verification.
 
+    def test_ssm_init_non_dirq(self):
+        """Test a SSM can be initialised with support for non-dirq sending."""
+        try:
+            ssm = Ssm2(self._brokers, self._msgdir, TEST_CERT_FILE,
+                       self._key_path, dest=self._dest, listen=None,
+                       path_type='directory')
+        except Ssm2Exception as error:
+            self.fail('An error occured trying to create an SSM using '
+                      'the non-dirq functionality: %s.' % error)
+
+        # Assert the outbound queue is of the expected type.
+        self.assertTrue(isinstance(ssm._outq, MessageDirectory))
 
 TEST_CERT_FILE = '/tmp/test.crt'
 

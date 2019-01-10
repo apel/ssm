@@ -25,8 +25,15 @@ except ImportError:
     ssl = None
 
 from ssm import crypto
-from dirq.QueueSimple import QueueSimple
-from dirq.queue import Queue
+from ssm.message_directory import MessageDirectory
+
+try:
+    from dirq.QueueSimple import QueueSimple
+    from dirq.queue import Queue
+except ImportError:
+    # ImportError is raised later on if dirq is requested but not installed.
+    QueueSimple = None
+    Queue = None
 
 import stomp
 from stomp.exception import ConnectFailedException
@@ -57,7 +64,8 @@ class Ssm2(stomp.ConnectionListener):
 
     def __init__(self, hosts_and_ports, qpath, cert, key, dest=None, listen=None,
                  capath=None, check_crls=False, use_ssl=False, username=None, password=None,
-                 enc_cert=None, verify_enc_cert=True, pidfile=None):
+                 enc_cert=None, verify_enc_cert=True, pidfile=None,
+                 path_type='dirq'):
         '''
         Creates an SSM2 object.  If a listen value is supplied,
         this SSM2 will be a receiver.
@@ -86,10 +94,29 @@ class Ssm2(stomp.ConnectionListener):
 
         # create the filesystem queues for accepted and rejected messages
         if dest is not None and listen is None:
-            self._outq = QueueSimple(qpath)
+            # Determine what sort of outgoing structure to make
+            if path_type == 'dirq':
+                if QueueSimple is None:
+                    raise ImportError("dirq path_type requested but the dirq "
+                                      "module wasn't found.")
+
+                self._outq = QueueSimple(qpath)
+
+            elif path_type == 'directory':
+                self._outq = MessageDirectory(qpath)
+            else:
+                raise Ssm2Exception('Unsupported path_type variable.')
+
         elif listen is not None:
             inqpath = os.path.join(qpath, 'incoming')
             rejectqpath = os.path.join(qpath, 'reject')
+
+            # Receivers must use the dirq module, so make a quick sanity check
+            # that dirq is installed.
+            if Queue is None:
+                raise ImportError("Receiving SSMs must use dirq, but the dirq "
+                                  "module wasn't found.")
+
             self._inq = Queue(inqpath, schema=Ssm2.QSCHEMA)
             self._rejectq = Queue(rejectqpath, schema=Ssm2.REJECT_SCHEMA)
         else:

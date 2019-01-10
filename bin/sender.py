@@ -120,9 +120,18 @@ def main():
                 raise Ssm2Exception('No destination queue is configured.')
         except ConfigParser.NoOptionError, e:
             raise Ssm2Exception(e)
-    
+
+        # Determine what type of message store we are interacting with,
+        # i.e. a dirq QueueSimple object or a plain MessageDirectory directory.
+        try:
+            path_type = cp.get('messaging', 'path_type')
+        except ConfigParser.NoOptionError:
+            log.info('No path type defined, assuming dirq.')
+            path_type = 'dirq'
+
         sender = Ssm2(brokers, 
                    cp.get('messaging','path'),
+                   path_type=path_type,
                    cert=cp.get('certificates','certificate'),
                    key=cp.get('certificates','key'),
                    dest=cp.get('messaging','destination'),
