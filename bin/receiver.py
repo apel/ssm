@@ -24,7 +24,7 @@ from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm import __version__, set_up_logging, LOG_BREAK
 
 from stomp.exception import NotConnectedException
-from argo_ams_library import AmsConnectionException as NotConnectedException
+from argo_ams_library import AmsConnectionException
 
 import time
 import logging.config
@@ -249,7 +249,7 @@ def main():
                     if protocol == Ssm2.STOMP_MESSAGING:
                         ssm.send_ping()
 
-            except NotConnectedException as error:
+            except (NotConnectedException, AmsConnectionException) as error:
                 log.warn('Connection lost.')
                 log.debug(error)
                 ssm.shutdown()
