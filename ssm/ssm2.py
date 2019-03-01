@@ -359,12 +359,12 @@ class Ssm2(stomp.ConnectionListener):
             # If it fails, use the v3 metod signiture
             self._conn.send(to_send, headers=headers)
 
-    def pull_msg_rest(self):
+    def pull_msg_ams(self):
         """Pull 1 message from the AMS and acknowledge it."""
         if self._protocol != Ssm2.AMS_MESSAGING:
             # Then this method should not be called,
             # raise an exception if it is.
-            raise Ssm2Exception('pull_msg_rest called, '
+            raise Ssm2Exception('pull_msg_ams called, '
                                 'but protocol not set to AMS. '
                                 'Protocol: %s' % self._protocol)
 

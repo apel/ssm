@@ -232,8 +232,8 @@ def main():
                 time.sleep(1)
                 if protocol == Ssm2.AMS_MESSAGING:
                     # We need to pull down messages as part of
-                    # this loop when using HTTPS.
-                    ssm.pull_msg_rest()
+                    # this loop when using AMS.
+                    ssm.pull_msg_ams()
 
                 if i % REFRESH_DNS == 0:
                     log.info('Refreshing valid DNs and then sending ping.')
