@@ -43,10 +43,11 @@ import socket
 import time
 import logging
 
-from argo_ams_library import ArgoMessagingService, AmsMessage, AmsException
+from argo_ams_library import ArgoMessagingService, AmsMessage
 
 # Set up logging
 log = logging.getLogger(__name__)
+
 
 class Ssm2Exception(Exception):
     '''
