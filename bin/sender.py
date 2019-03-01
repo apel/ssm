@@ -60,14 +60,8 @@ def main():
         print 'Error configuring logging: %s' % str(err)
         print 'The system will exit.'
         sys.exit(1)
-    
-    log = logging.getLogger('ssmsend')
 
-    # Set defaults for STOMP only variables
-    use_ssl = None
-    # Set defaults for AMS only variables
-    token = ''
-    project = None
+    log = logging.getLogger('ssmsend')
 
     log.info(LOG_BREAK)
     log.info('Starting sending SSM version %s.%s.%s.', *__version__)
@@ -153,6 +147,8 @@ def main():
             # A token is not necessarily needed, if the cert and key can be
             # used by the underlying auth system to get a suitable token.
             log.info('No AMS token provided, using cert/key pair instead.')
+            # Empty string used by AMS to define absence of token.
+            token = ''
 
     if len(brokers) == 0:
         log.error('No brokers available.')

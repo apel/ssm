@@ -104,15 +104,9 @@ def main():
         print 'Error configuring logging: %s' % str(err)
         print 'SSM will exit.'
         sys.exit(1)
-        
+
     global log
     log = logging.getLogger('ssmreceive')
-
-    # Set defaults for STOMP only variables
-    use_ssl = None
-    # Set defaults for AMS only variables
-    token = ''
-    project = None
 
     log.info(LOG_BREAK)
     log.info('Starting receiving SSM version %s.%s.%s.', *__version__)
@@ -181,7 +175,7 @@ def main():
             project = cp.get('messaging', 'project')
 
         except (ConfigParser.Error, ValueError, IOError), err:
-            # A token and project are needed to successfully send to an
+            # A token and project are needed to successfully receive from an
             # AMS instance, so log and then exit on an error.
             log.error('Error configuring AMS values: %s', err)
             log.error('SSM will exit.')
