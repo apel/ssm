@@ -253,12 +253,15 @@ class Ssm2(stomp.ConnectionListener):
         except (IOError, OSError) as e:
             log.error('Failed to read or write file: %s', e)
 
-    def on_error(self, unused_headers, body):
+    def on_error(self, headers, body):
         '''
         Called by stomppy when an error frame is received.
         '''
-        log.warn('Error message received: %s', body)
-        raise Ssm2Exception()
+        if 'No user for client certificate: ' in headers['message']:
+            log.error('The following certificate is not authorised: %s',
+                      headers['message'].split(':')[1])
+        else:
+            log.error('Error message received: %s', body)
 
     def on_connected(self, unused_headers, unused_body):
         '''
