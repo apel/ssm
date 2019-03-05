@@ -39,6 +39,9 @@ class Test(unittest.TestCase):
         except ValueError:
             pass
 
+        self.assertRaises(ValueError, brokers.parse_stomp_url,
+                          'stomp://invalid.port.number:abc')
+
         stomp_url = 'stomp://stomp.cern.ch:6262'
 
         try:
@@ -54,10 +57,7 @@ class Test(unittest.TestCase):
             self.fail('Could not parse a valid stomp+ssl URL: %s' % stomp_url)
 
     def test_fetch_brokers(self):
-        '''
-        Requires an internet connection to get information from the BDII.
-        Could fail if the BDII is down. This isn't very unit-test-like.
-        '''
+        """Check the handling of responses from a mocked BDII."""
         bdii = 'ldap://no-bdii.utopia.ch:2170'
         network = 'PROD'
 
@@ -77,6 +77,15 @@ class Test(unittest.TestCase):
 
         if '.' not in host:
             self.fail("Didn't get a hostname from fetch_brokers()")
+
+        # Check that no brokers are returned from the TEST-NWOB network.
+        test_network = 'TEST-NWOB'
+        # So that there are no external LDAP calls, mock out the LDAP seach.
+        with mock.patch('ldap.ldapobject.SimpleLDAPObject.search_s',
+                        side_effect=self._mocked_search):
+            test_bs = sbg.get_broker_hosts_and_ports(brokers.STOMP_SERVICE,
+                                                     test_network)
+        self.assertEqual(len(test_bs), 0, "Test brokers found in error.")
 
     def _mocked_search(*args, **kwargs):
         """Return values to mocked search call based on input."""
