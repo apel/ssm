@@ -539,6 +539,8 @@ class Ssm2(stomp.ConnectionListener):
             log.warning("SSL connection not requested, your messages may be "
                         "intercepted.")
 
+        log.info("Using stomp.py version: %s", stomp.__version__)
+
         # _conn will use the default SSL version specified by stomp.py
         self._conn = stomp.Connection([(host, port)],
                                       use_ssl=self._use_ssl,
