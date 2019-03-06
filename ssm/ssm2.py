@@ -622,15 +622,6 @@ class Ssm2(stomp.ConnectionListener):
 
         self._conn.start()
         self._conn.connect(wait=False)
-        if self._dest is not None:
-            log.info('Will send messages to: %s', self._dest)
-
-        if self._listen is not None:
-            # Use a static ID for the subscription ID because we only ever have
-            # one subscription within a connection and ID is only considered
-            # to differentiate subscriptions within a connection.
-            self._conn.subscribe(destination=self._listen, id=1, ack='auto')
-            log.info('Subscribing to: %s', self._listen)
 
         i = 0
         while not self.connected:
@@ -640,6 +631,16 @@ class Ssm2(stomp.ConnectionListener):
                 err += 'Check the connection details.'
                 raise Ssm2Exception(err)
             i += 1
+
+        if self._dest is not None:
+            log.info('Will send messages to: %s', self._dest)
+
+        if self._listen is not None:
+            # Use a static ID for the subscription ID because we only ever have
+            # one subscription within a connection and ID is only considered
+            # to differentiate subscriptions within a connection.
+            self._conn.subscribe(destination=self._listen, id=1, ack='auto')
+            log.info('Subscribing to: %s', self._listen)
 
     def close_connection(self):
         '''
