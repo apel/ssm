@@ -539,8 +539,6 @@ class Ssm2(stomp.ConnectionListener):
             log.warning("SSL connection not requested, your messages may be "
                         "intercepted.")
 
-        log.info("Using stomp.py version: %s", stomp.__version__)
-
         # _conn will use the default SSL version specified by stomp.py
         self._conn = stomp.Connection([(host, port)],
                                       use_ssl=self._use_ssl,
@@ -561,6 +559,8 @@ class Ssm2(stomp.ConnectionListener):
         if self._protocol == Ssm2.AMS_MESSAGING:
             log.debug('handle_connect called for AMS, doing nothing.')
             return
+
+        log.info("Using stomp.py version %s.%s.%s.", *stomp.__version__)
 
         for host, port in self._brokers:
             self._initialise_connection(host, port)
