@@ -621,8 +621,7 @@ class Ssm2(stomp.ConnectionListener):
                     connection object was initialised.')
 
         self._conn.start()
-        self._conn.connect(wait = True)
-
+        self._conn.connect(wait=False)
         if self._dest is not None:
             log.info('Will send messages to: %s', self._dest)
 
