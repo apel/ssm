@@ -4,30 +4,27 @@ Migration requires upgrading to SSM-X.X.X and adding new values to your configur
 
 ## Sender
 
-The sender configuration is usually found under `/etc/apel/sender.cfg`. Follow the following steps to migrate.
+The sender configuration is usually found under `/etc/apel/sender.cfg`. Follow the steps below to migrate.
 
-1. Comment out `bdii` and `network`
-1. Uncomment `host` and set it to `msg-devel.argo.grnet.gr`
-1. Add the following as a new section in your configuration.
+1. Comment out `bdii` and `network`.
+1. Uncomment `host` and set it to `msg-devel.argo.grnet.gr`.
+1. Add the following as a new section at the top of your configuration:
 ```
-# SSM protocol/destination type options
-[SSM Type]
-# Either 'MQ-BROKER' for EGI Message Brokers or 'AMS' for Argo Messaging Service
-destination type: AMS
-# Either 'STOMP' for EGI Message Brokers or 'HTTPS' for Argo Messaging Service
-protocol: HTTPS
+[sender]
+# Either 'STOMP' for STOMP message brokers or 'AMS' for Argo Messaging Service
+protocol: STOMP
 ```
-1. Add the following to the `[messaging]` section of your configuration
+1. Add the following to the `[messaging]` section of your configuration:
 ```
-# Project to which SSM will pull messages from. Uncomment and populate for AMS sending
-project: EGI-ACCOUNTING
+# If using AMS this is the project that SSM will connect to. Ignored for STOMP.
+ams_project: EGI-ACCOUNTING
 ```
-1. To send to the APEL central server, change `destination` to one of the following depending on your type of accounting:
+1. To send to the central APEL Accounting server, change `destination` to one of the following depending on your type of accounting:
   * `gLite-APEL` for Grid Accounting
   * `eu.egi.cloud.accounting` for Cloud Accounting
   * `eu.egi.storage.accounting` for Storage Accounting
 
-The next time `ssmsend` runs it should be using the AMS. You can check this by looking in the logs a successful run, which will look like:
+The next time `ssmsend` runs it should be using the AMS. You can check this by looking in the logs for a successful run, which should look like this:
 
 ```
 2018-09-19 14:18:06,423 - ssmsend - INFO - ========================================
@@ -45,9 +42,9 @@ The next time `ssmsend` runs it should be using the AMS. You can check this by l
 
 ## Receiver
 
-1. Follow the steps 1 to 4 from above editing your receiver configuration, usually found under `/etc/apel/receiver.cfg`
+1. Follow the steps 1 to 4 as per the [Sender documentation](#Sender) but editing your receiver configuration instead, usually found under `/etc/apel/receiver.cfg`, naming the sction `[receiver]` rather than `[sender]`.
 1. Change `destination` to be the subscription you are using to pull messages down.
-1. Add your token to the `[messaging]` section of your configuration.
+1. Add your token to the `[messaging]` section of your configuration:
 ```
 token: your_token_here
 ```
