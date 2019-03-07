@@ -111,7 +111,7 @@ def main():
     log.info(LOG_BREAK)
     log.info('Starting receiving SSM version %s.%s.%s.', *__version__)
 
-    # Determine the protocol and destination type of the SSM to configure.
+    # Determine the protocol for the SSM to use.
     try:
         protocol = cp.get('receiver', 'protocol')
 
