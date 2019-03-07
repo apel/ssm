@@ -163,7 +163,7 @@ add your messages using the `add` method.
    
 ### Sender (sending via the ARGO Messaging Service (AMS))
 
- * Edit your sender configuration, usually under `/etc/apel/sender.cfg`, as per the [migration instructions](migrating_to_ams_broker.md#sender) with some minor differences:
+ * Edit your sender configuration, usually under `/etc/apel/sender.cfg`, as per the [migration instructions](migrating_to_ams.md#sender) with some minor differences:
    * There is no need to add the `[sender]` section as it already exists. Instead change the `protocol` to `AMS`.
    * Set `ams_project` to the appropriate project.
  * Then run 'ssmsend'. SSM will pick up any messages and send them via the ARGO Messaging Service.
@@ -214,7 +214,7 @@ add your messages using the `add` method.
  
 ### Receiver (receiving via the ARGO Messaging Service (AMS))
 
- * Edit your receiver configuration, usually under `/etc/apel/receiver.cfg`, as per the [migration instructions](migrating_to_ams_broker.md#receiver) with some minor differences:
+ * Edit your receiver configuration, usually under `/etc/apel/receiver.cfg`, as per the [migration instructions](migrating_to_ams.md#receiver) with some minor differences:
    * There is no need to add the `[receiver]` section as it already exists. Instead change the `protocol` to `AMS`.
    * Set `ams_project` to the appropriate project.
  * Then run your receiver ([as a service](README.md#receiver-service), [as a container](README.md#receiver-container) or [manually](README.md#receiver-manual)) as above.
