@@ -172,7 +172,7 @@ def main():
         # Attempt to configure AMS specific variables.
         try:
             token = cp.get('messaging', 'token')
-            project = cp.get('messaging', 'project')
+            project = cp.get('messaging', 'ams_project')
 
         except (ConfigParser.Error, ValueError, IOError), err:
             # A token and project are needed to successfully receive from an

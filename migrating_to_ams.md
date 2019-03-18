@@ -12,7 +12,7 @@ The sender configuration is usually found under `/etc/apel/sender.cfg`. Follow t
 ```
 [sender]
 # Either 'STOMP' for STOMP message brokers or 'AMS' for Argo Messaging Service
-protocol: STOMP
+protocol: AMS
 ```
 1. Add the following to the `[messaging]` section of your configuration:
 ```

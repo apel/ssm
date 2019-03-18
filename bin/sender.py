@@ -131,7 +131,7 @@ def main():
 
         # Attempt to configure AMS project variable.
         try:
-            project = cp.get('messaging', 'project')
+            project = cp.get('messaging', 'ams_project')
 
         except (ConfigParser.Error, ValueError, IOError), err:
             # A project is needed to successfully send to an
