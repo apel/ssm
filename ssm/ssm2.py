@@ -253,12 +253,15 @@ class Ssm2(stomp.ConnectionListener):
         except (IOError, OSError) as e:
             log.error('Failed to read or write file: %s', e)
 
-    def on_error(self, unused_headers, body):
+    def on_error(self, headers, body):
         '''
         Called by stomppy when an error frame is received.
         '''
-        log.warn('Error message received: %s', body)
-        raise Ssm2Exception()
+        if 'No user for client certificate: ' in headers['message']:
+            log.error('The following certificate is not authorised: %s',
+                      headers['message'].split(':')[1])
+        else:
+            log.error('Error message received: %s', body)
 
     def on_connected(self, unused_headers, unused_body):
         '''
@@ -557,6 +560,8 @@ class Ssm2(stomp.ConnectionListener):
             log.debug('handle_connect called for AMS, doing nothing.')
             return
 
+        log.info("Using stomp.py version %s.%s.%s.", *stomp.__version__)
+
         for host, port in self._brokers:
             self._initialise_connection(host, port)
             try:
@@ -616,7 +621,16 @@ class Ssm2(stomp.ConnectionListener):
                     connection object was initialised.')
 
         self._conn.start()
-        self._conn.connect(wait = True)
+        self._conn.connect(wait=False)
+
+        i = 0
+        while not self.connected:
+            time.sleep(0.1)
+            if i > Ssm2.CONNECTION_TIMEOUT * 10:
+                err = 'Timed out while waiting for connection. '
+                err += 'Check the connection details.'
+                raise Ssm2Exception(err)
+            i += 1
 
         if self._dest is not None:
             log.info('Will send messages to: %s', self._dest)
@@ -627,15 +641,6 @@ class Ssm2(stomp.ConnectionListener):
             # to differentiate subscriptions within a connection.
             self._conn.subscribe(destination=self._listen, id=1, ack='auto')
             log.info('Subscribing to: %s', self._listen)
-
-        i = 0
-        while not self.connected:
-            time.sleep(0.1)
-            if i > Ssm2.CONNECTION_TIMEOUT * 10:
-                err = 'Timed out while waiting for connection. '
-                err += 'Check the connection details.'
-                raise Ssm2Exception(err)
-            i += 1
 
     def close_connection(self):
         '''
