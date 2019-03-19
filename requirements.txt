@@ -5,3 +5,7 @@ python-daemon<2.2.0
 python-ldap
 # Dependencies for optional dirq based sending
 dirq
+
+# Dependencies for experimental AMS functionality
+
+argo-ams-library
