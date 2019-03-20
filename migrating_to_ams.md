@@ -1,6 +1,6 @@
 # Migrating from using EGI ActiveMQ Message Brokers to using EGI ARGO Messaging Service
 
-Migration requires upgrading to SSM-X.X.X and adding new values to your configuration.
+Migration requires upgrading SSM to at least version 2.4.0 and adding new values to your configuration.
 
 ## Sender
 
@@ -28,7 +28,7 @@ The next time `ssmsend` runs it should be using the AMS. You can check this by l
 
 ```
 2018-09-19 14:18:06,423 - ssmsend - INFO - ========================================
-2018-09-19 14:18:06,424 - ssmsend - INFO - Starting sending SSM version 2.2.1.
+2018-09-19 14:18:06,424 - ssmsend - INFO - Starting sending SSM version 2.4.0.
 2018-09-19 14:18:06,424 - ssmsend - INFO - Setting up SSM with Dest Type: AMS, Protocol : HTTPS
 2018-09-19 14:18:06,424 - ssmsend - INFO - No AMS token provided, using cert/key pair instead.
 2018-09-19 14:18:06,424 - ssmsend - INFO - No server certificate supplied.  Will not encrypt messages.
