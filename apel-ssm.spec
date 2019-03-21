@@ -100,6 +100,14 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Fri Mar 22 2019 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.4.0-1
+ - Added support for sending and receiving messages using the ARGO Messaging
+   Service (AMS).
+ - Added option to send messages from a directory without needing to conform to
+   the file naming convention that the dirq module requires.
+ - Fixed SSM hanging if certificate is not authorised with the broker. Now it
+   will try other brokers if available and then correctly shut down.
+
 * Wed Nov 28 2018 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.3.0-2
  - Updated build and test files only.
 
