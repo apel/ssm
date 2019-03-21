@@ -6,9 +6,9 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/34aa04f3583afce2ceb2/maintainability)](https://codeclimate.com/github/apel/ssm/maintainability)
 
 Secure Stomp Messenger (SSM) is designed to simply send messages
-using the STOMP protocol.  Messages are signed and may be encrypted
-during transit.  Persistent queues should be used to guarantee
-delivery.
+using the STOMP protocol or via the ARGO Messaging Service (AMS).
+Messages are signed and may be encrypted during transit.
+Persistent queues should be used to guarantee delivery.
 
 SSM is written in python.  Packages are available for SL5 and SL6.
 
@@ -25,6 +25,8 @@ http://fedoraproject.org/wiki/EPEL
 
 The python stomp library (N.B. versions 3.1.1 and above are currently supported)
 * `yum install stomppy`
+
+The Python AMS library. See here for details on obtaining an RPM: https://github.com/ARGOeu/argo-ams-library/
 
 The python daemon library (N.B. only versions below 2.2.0 are currently supported)
 * `yum install python-daemon`
