@@ -67,7 +67,7 @@ class TestSsm(unittest.TestCase):
         except OSError, e:
             print 'Error removing temporary directory %s' % self._tmp_dir
             print e
-        
+
     def test_on_message(self):
         '''
         This is quite a complicated method, so it would take a long time
@@ -96,8 +96,8 @@ class TestSsm(unittest.TestCase):
 
     def test_init_expired_cert(self):
         """Test right exception is thrown creating an SSM with expired cert."""
-        expected_error = ('Certificate %s has expired.'
-                          % self._expired_cert_path)
+        expected_error = ('Certificate %s has expired or will expire '
+                          'within a day.' % self._expired_cert_path)
         try:
             # Indirectly test crypto.verify_cert_date
             Ssm2(self._brokers, self._msgdir, self._expired_cert_path,
@@ -134,6 +134,7 @@ class TestSsm(unittest.TestCase):
 
         # Assert the outbound queue is of the expected type.
         self.assertTrue(isinstance(ssm._outq, MessageDirectory))
+
 
 TEST_CERT_FILE = '/tmp/test.crt'
 
