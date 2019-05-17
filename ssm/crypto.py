@@ -214,11 +214,16 @@ def decrypt(encrypted_text, certpath, keypath):
 
 
 def verify_cert_date(certpath):
-    """Return True if certifcate is 'in date', otherwise return False."""
+    """Check that certificate hasn't expired and won't expire within 24 hours.
+
+    Return True if certifcate is 'in date', otherwise return False.
+    """
     if certpath is None:
         raise CryptoException('Invalid None argument to verify_cert_date().')
 
-    args = ['openssl', 'x509', '-checkend', '-noout', '-in', certpath]
+    # Check if the certificate expires within the next 86400 seconds and exit
+    # non-zero if yes, it will expire, or zero if not.
+    args = ['openssl', 'x509', '-checkend', '86400', '-noout', '-in', certpath]
 
     p1 = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
