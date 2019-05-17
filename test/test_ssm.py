@@ -44,7 +44,8 @@ class TestSsm(unittest.TestCase):
         # The subject has been hardcoded so that the generated
         # certificate subject matches the subject of the hardcoded,
         # expired, certificate at the bottom of this file.
-        call(['openssl', 'req', '-x509', '-nodes', '-days', '1', '-new',
+        # 2 days used so that verify_cert_date doesn't think it expires soon.
+        call(['openssl', 'req', '-x509', '-nodes', '-days', '2', '-new',
               '-key', self._key_path, '-out', TEST_CERT_FILE,
               '-subj', '/C=UK/O=STFC/OU=SC/CN=Test Cert'])
 
