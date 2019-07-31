@@ -180,6 +180,9 @@ def verify(signed_text, capath, check_crl):
         log.debug(error)
     else:
         log.warn(error)
+        raise CryptoException(
+            "Failed to verify the signed message, see the log for details."
+        )
 
     subj = get_certificate_subject(signer)
     return body, subj
@@ -329,4 +332,3 @@ def get_signer_cert(signed_text):
         log.error(error)
 
     return certstring
-
