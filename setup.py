@@ -13,7 +13,7 @@ Usage: 'python setup.py install'
 Requires setuptools.
 """
 
-from os import remove, path, makedirs
+from os import remove
 from shutil import copyfile
 import sys
 
@@ -50,9 +50,12 @@ def main():
           url='http://apel.github.io/',
           download_url='https://github.com/apel/ssm/releases',
           license='Apache License, Version 2.0',
-          install_requires=['stomp.py>=3.1.1', 'python-ldap', 'dirq'],
+          install_requires=[
+              'stomp.py>=3.1.1', 'python-ldap', 'argo-ams-library',
+          ],
           extras_require={
               'python-daemon': ['python-daemon<2.2.0'],
+              'dirq': ['dirq'],
           },
           packages=find_packages(exclude=['bin', 'test']),
           scripts=['bin/ssmreceive', 'bin/ssmsend'],
@@ -90,6 +93,7 @@ def main():
         remove('bin/ssmsend')
         remove('conf/apel-ssm')
         remove('apel-ssm')
+
 
 if __name__ == "__main__":
     main()

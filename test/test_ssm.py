@@ -10,6 +10,7 @@ import tempfile
 import unittest
 from subprocess import call
 
+from ssm.message_directory import MessageDirectory
 from ssm.ssm2 import Ssm2, Ssm2Exception
 
 
@@ -43,7 +44,8 @@ class TestSsm(unittest.TestCase):
         # The subject has been hardcoded so that the generated
         # certificate subject matches the subject of the hardcoded,
         # expired, certificate at the bottom of this file.
-        call(['openssl', 'req', '-x509', '-nodes', '-days', '1', '-new',
+        # 2 days used so that verify_cert_date doesn't think it expires soon.
+        call(['openssl', 'req', '-x509', '-nodes', '-days', '2', '-new',
               '-key', self._key_path, '-out', TEST_CERT_FILE,
               '-subj', '/C=UK/O=STFC/OU=SC/CN=Test Cert'])
 
@@ -65,7 +67,7 @@ class TestSsm(unittest.TestCase):
         except OSError, e:
             print 'Error removing temporary directory %s' % self._tmp_dir
             print e
-        
+
     def test_on_message(self):
         '''
         This is quite a complicated method, so it would take a long time
@@ -94,8 +96,8 @@ class TestSsm(unittest.TestCase):
 
     def test_init_expired_cert(self):
         """Test right exception is thrown creating an SSM with expired cert."""
-        expected_error = ('Certificate %s has expired.'
-                          % self._expired_cert_path)
+        expected_error = ('Certificate %s has expired or will expire '
+                          'within a day.' % self._expired_cert_path)
         try:
             # Indirectly test crypto.verify_cert_date
             Ssm2(self._brokers, self._msgdir, self._expired_cert_path,
@@ -119,6 +121,19 @@ class TestSsm(unittest.TestCase):
         )
         # verify_enc_cert is set to False as we don't want to risk raising an
         # exception by failing cert verification.
+
+    def test_ssm_init_non_dirq(self):
+        """Test a SSM can be initialised with support for non-dirq sending."""
+        try:
+            ssm = Ssm2(self._brokers, self._msgdir, TEST_CERT_FILE,
+                       self._key_path, dest=self._dest, listen=None,
+                       path_type='directory')
+        except Ssm2Exception as error:
+            self.fail('An error occured trying to create an SSM using '
+                      'the non-dirq functionality: %s.' % error)
+
+        # Assert the outbound queue is of the expected type.
+        self.assertTrue(isinstance(ssm._outq, MessageDirectory))
 
 
 TEST_CERT_FILE = '/tmp/test.crt'

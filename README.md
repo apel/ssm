@@ -1,18 +1,19 @@
-# Secure Stomp Messenger
+# Secure STOMP Messenger
 
 [![Build Status](https://travis-ci.org/apel/ssm.svg?branch=dev)](https://travis-ci.org/apel/ssm)
 [![Coverage Status](https://coveralls.io/repos/github/apel/ssm/badge.svg?branch=dev)](https://coveralls.io/github/apel/ssm?branch=dev)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/cc3e808664ee41638938aa5c660a88ae)](https://www.codacy.com/app/apel/ssm)
 [![Maintainability](https://api.codeclimate.com/v1/badges/34aa04f3583afce2ceb2/maintainability)](https://codeclimate.com/github/apel/ssm/maintainability)
 
-Secure Stomp Messenger (SSM) is designed to simply send messages
-using the STOMP protocol.  Messages are signed and may be encrypted
-during transit.  Persistent queues should be used to guarantee
-delivery.
+Secure STOMP Messenger (SSM) is designed to simply send messages
+using the [STOMP protocol](http://stomp.github.io/) or via the ARGO Messaging Service (AMS).
+Messages are signed and may be encrypted during transit.
+Persistent queues should be used to guarantee delivery.
 
-SSM is written in python.  Packages are available for SL5 and SL6.
+SSM is written in Python. Packages are available for RHEL 6 and 7, and
+ Ubuntu Trusty.
 
-For more about SSM, see the [EGI wiki](https://wiki.egi.eu/wiki/APEL/SSM).
+For more information about SSM, see the [EGI wiki](https://wiki.egi.eu/wiki/APEL/SSM).
 
 
 ## Installing the RPM
@@ -23,16 +24,19 @@ The EPEL repository must be enabled.  This can be done by installing
 the RPM for your version of SL, which is available on this page:
 http://fedoraproject.org/wiki/EPEL
 
-The python stomp library (N.B. versions 3.1.1 and above are currently supported)
+The Python STOMP library (N.B. versions 3.1.1 and above are currently supported)
 * `yum install stomppy`
 
-The python daemon library (N.B. only versions below 2.2.0 are currently supported)
+The Python AMS library. See here for details on obtaining an RPM: https://github.com/ARGOeu/argo-ams-library/
+
+The Python daemon library (N.B. only versions below 2.2.0 are currently supported)
 * `yum install python-daemon`
 
-The python ldap library
+The Python ldap library
 * `yum install python-ldap`
 
-The python dirq library
+Optionally, the Python dirq library (N.B. this is only required if your messages
+are stored in a dirq structure)
 * `yum install python-dirq`
 
 You need a certificate and key in PEM format accessible to the SSM.
@@ -68,7 +72,7 @@ successfully.
 
 The RPM carries out a number of steps to run the SSM in a specific way.
 
-1. It installs the core files in the python libraries directory
+1. It installs the core files in the Python libraries directory
 2. It installs scripts in /usr/bin
 3. It installs configuration files in /etc/apel
 4. It creates the messages directory /var/spool/apel/
@@ -85,7 +89,7 @@ Install APEL SSM:
 Install any missing system packages needed for the SSM:
 * `apt-get -f install`
 
-Install any missing python requirements that don't have system packages:
+Install any missing Python requirements that don't have system packages:
 * `pip install "stomp.py>=3.1.1" dirq`
 
 If you wish to run the SSM as a receiver, you will also need to install the python-daemon system package:
@@ -95,7 +99,7 @@ If you wish to run the SSM as a receiver, you will also need to install the pyth
 
 The DEB carries out a number of steps to run the SSM in a specific way.
 
-1. It installs the core files in the python libraries directory
+1. It installs the core files in the Python libraries directory
 2. It installs scripts in /usr/bin
 3. It installs configuration files in /etc/apel
 4. It creates the messages directory /var/spool/apel/
@@ -114,15 +118,16 @@ Ensure that the apel user running the SSM has access to the following:
 * `chown apel:apel /var/run/apel`
 
 The configuration files are in /etc/apel/.  The default
-configuration will send messages to the test apel server.
+configuration will send messages to the test APEL server.
 
 
 ## Adding Files
 
-There are two ways to add files to be sent:
+There are multiple manual and programmatic ways to add files to be sent:
 
 ### Manual
 
+#### With the dirq module
 All file and directory names must use hex characters: `[0-9a-f]`.
 
  * Create a directory within /var/spool/apel/outgoing with a name
@@ -130,27 +135,45 @@ All file and directory names must use hex characters: `[0-9a-f]`.
  * Put files in this directory with names of FOURTEEN hex 
    e.g. `1234567890abcd`
 
+#### Without the dirq module
+Ensure `path_type: directory` is set in your `sender.cfg`.
+Then add messages as files to `/var/spool/apel/outgoing`,
+there are no restrictions on the file names used.
+
 ### Programmatic
 
-Use the python or perl dirq libraries:
- * python: http://pypi.python.org/pypi/dirq
- * perl: http://search.cpan.org/~lcons/Directory-Queue/
+#### With the dirq module
+Use the Python or Perl dirq libraries:
+ * Python: http://pypi.python.org/pypi/dirq
+ * Perl: http://search.cpan.org/~lcons/Directory-Queue/
 
 Create a QueueSimple object with path /var/spool/apel/outgoing/ and 
 add your messages.
 
+#### Without the dirq module
+Use the `MessageDirectory` class provided in `ssm.message_directory`.
+
+Create a `MessageDirectory` object with path `/var/spool/apel/outgoing/` and
+add your messages using the `add` method.
 
 ## Running the SSM
 
-###  Sender
+### Sender (sending via the EGI message brokers)
 
  * Run 'ssmsend'
  * SSM will pick up any messages and send them to the configured
    queue on the configured broker
+   
+### Sender (sending via the ARGO Messaging Service (AMS))
 
+ * Edit your sender configuration, usually under `/etc/apel/sender.cfg`, as per the [migration instructions](migrating_to_ams.md#sender) with some minor differences:
+   * There is no need to add the `[sender]` section as it already exists. Instead change the `protocol` to `AMS`.
+   * Set `ams_project` to the appropriate project.
+ * Then run 'ssmsend'. SSM will pick up any messages and send them via the ARGO Messaging Service.
+ 
 ### Sender (container)
  * Download the example [configuration file](conf/sender.cfg)
- * Edit the downloaded sender.cfg file to configure the queue and broker
+ * Edit the downloaded `sender.cfg` file as above for sending either via the [EGI message brokers](README.md#sender-sending-via-the-egi-message-brokers) or the [ARGO Messaging Service](README.md#sender-sending-via-the-argo-messaging-service-ams).
  * Run the following docker command to send
  ```
  docker run \
@@ -191,6 +214,13 @@ add your messages.
  * SSM will receive any messages on the specified queue and
    write them to the filesystem
  * To stop, run ```'kill `cat /var/run/apel/ssm.pid`'```
+ 
+### Receiver (receiving via the ARGO Messaging Service (AMS))
+
+ * Edit your receiver configuration, usually under `/etc/apel/receiver.cfg`, as per the [migration instructions](migrating_to_ams.md#receiver) with some minor differences:
+   * There is no need to add the `[receiver]` section as it already exists. Instead change the `protocol` to `AMS`.
+   * Set `ams_project` to the appropriate project.
+ * Then run your receiver ([as a service](README.md#receiver-service), [as a container](README.md#receiver-container) or [manually](README.md#receiver-manual)) as above.
 
 ## Removing the RPM
 

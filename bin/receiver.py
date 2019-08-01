@@ -24,6 +24,7 @@ from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm import __version__, set_up_logging, LOG_BREAK
 
 from stomp.exception import NotConnectedException
+from argo_ams_library import AmsConnectionException
 
 import time
 import logging.config
@@ -103,39 +104,92 @@ def main():
         print 'Error configuring logging: %s' % str(err)
         print 'SSM will exit.'
         sys.exit(1)
-        
+
     global log
     log = logging.getLogger('ssmreceive')
-    
+
     log.info(LOG_BREAK)
     log.info('Starting receiving SSM version %s.%s.%s.', *__version__)
 
-    # If we can't get a broker to connect to, we have to give up.
+    # Determine the protocol for the SSM to use.
     try:
-        bg = StompBrokerGetter(cp.get('broker','bdii'))
-        use_ssl = cp.getboolean('broker', 'use_ssl')
-        if use_ssl:
-            service = STOMP_SSL_SERVICE
-        else:
-            service = STOMP_SERVICE
-        brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker','network'))
-    except ConfigParser.NoOptionError, e:
+        protocol = cp.get('receiver', 'protocol')
+
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        # If the newer configuration setting 'protocol' is not set, use 'STOMP'
+        # for backwards compatability.
+        protocol = Ssm2.STOMP_MESSAGING
+        log.debug("No option set for 'protocol'. Defaulting to %s.", protocol)
+
+    log.info('Setting up SSM with protocol: %s', protocol)
+
+    if protocol == Ssm2.STOMP_MESSAGING:
+        # Set defaults for AMS variables that Ssm2 constructor requires below.
+        project = None
+        token = ''
+
+        # If we can't get a broker to connect to, we have to give up.
         try:
-            host = cp.get('broker', 'host')
-            port = cp.get('broker', 'port')
-            brokers = [(host, int(port))]
-        except ConfigParser.NoOptionError:
-            log.error('Options incorrectly supplied for either single broker \
-                    or broker network.  Please check configuration')
+            bg = StompBrokerGetter(cp.get('broker', 'bdii'))
+            use_ssl = cp.getboolean('broker', 'use_ssl')
+            if use_ssl:
+                service = STOMP_SSL_SERVICE
+            else:
+                service = STOMP_SERVICE
+            brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker',
+                                                                    'network'))
+        except ConfigParser.NoOptionError, e:
+            try:
+                host = cp.get('broker', 'host')
+                port = cp.get('broker', 'port')
+                brokers = [(host, int(port))]
+            except ConfigParser.NoOptionError:
+                log.error('Options incorrectly supplied for either single '
+                          'broker or broker network. '
+                          'Please check configuration')
+                log.error('System will exit.')
+                log.info(LOG_BREAK)
+                sys.exit(1)
+        except ldap.SERVER_DOWN, e:
+            log.error('Could not connect to LDAP server: %s', e)
             log.error('System will exit.')
             log.info(LOG_BREAK)
             sys.exit(1)
-    except ldap.SERVER_DOWN, e:
-        log.error('Could not connect to LDAP server: %s', e)
-        log.error('System will exit.')
-        log.info(LOG_BREAK)
-        sys.exit(1)    
-    
+
+    elif protocol == Ssm2.AMS_MESSAGING:
+        # Then we are setting up an SSM to connect to a AMS.
+
+        # 'use_ssl' isn't checked when using AMS (SSL is always used), but it
+        # is needed for the call to the Ssm2 constructor below.
+        use_ssl = None
+        try:
+            # We only need a hostname, not a port
+            host = cp.get('broker', 'host')
+            # Use brokers variable so subsequent code is not dependant on
+            # the exact destination type.
+            brokers = [host]
+
+        except ConfigParser.NoOptionError:
+            log.error('The host must be specified when connecting to AMS, '
+                      'please check your configuration')
+            log.error('System will exit.')
+            log.info(LOG_BREAK)
+            print 'SSM failed to start.  See log file for details.'
+            sys.exit(1)
+
+        # Attempt to configure AMS specific variables.
+        try:
+            token = cp.get('messaging', 'token')
+            project = cp.get('messaging', 'ams_project')
+
+        except (ConfigParser.Error, ValueError, IOError), err:
+            # A token and project are needed to successfully receive from an
+            # AMS instance, so log and then exit on an error.
+            log.error('Error configuring AMS values: %s', err)
+            log.error('SSM will exit.')
+            print 'SSM failed to start.  See log file for details.'
+            sys.exit(1)
+
     if len(brokers) == 0:
         log.error('No brokers available.')
         log.error('System will exit.')
@@ -155,11 +209,14 @@ def main():
                    cert=cp.get('certificates','certificate'),
                    key=cp.get('certificates','key'),
                    listen=cp.get('messaging','destination'),
-                   use_ssl=cp.getboolean('broker','use_ssl'),
+                   use_ssl=use_ssl,
                    capath=cp.get('certificates', 'capath'),
                    check_crls=cp.getboolean('certificates', 'check_crls'),
-                   pidfile=pidfile)
-        
+                   pidfile=pidfile,
+                   protocol=protocol,
+                   project=project,
+                   token=token)
+
         log.info('Fetching valid DNs.')
         dns = get_dns(options.dn_file)
         ssm.set_dns(dns)
@@ -179,25 +236,31 @@ def main():
         i = 0
         # The message listening loop.
         while True:
+            try:
+                time.sleep(1)
+                if protocol == Ssm2.AMS_MESSAGING:
+                    # We need to pull down messages as part of
+                    # this loop when using AMS.
+                    ssm.pull_msg_ams()
 
-            time.sleep(1)
+                if i % REFRESH_DNS == 0:
+                    log.info('Refreshing valid DNs and then sending ping.')
+                    dns = get_dns(options.dn_file)
+                    ssm.set_dns(dns)
 
-            if i % REFRESH_DNS == 0:
-                log.info('Refreshing valid DNs and then sending ping.')
-                dns = get_dns(options.dn_file)
-                ssm.set_dns(dns)
+                    if protocol == Ssm2.STOMP_MESSAGING:
+                        ssm.send_ping()
 
-                try:
-                    ssm.send_ping()
-                except NotConnectedException:
-                    log.warn('Connection lost.')
-                    ssm.shutdown()
-                    dc.close()
-                    log.info("Waiting for 10 minutes before restarting...")
-                    time.sleep(10 * 60)
-                    log.info('Restarting SSM.')
-                    dc.open()
-                    ssm.startup()
+            except (NotConnectedException, AmsConnectionException) as error:
+                log.warn('Connection lost.')
+                log.debug(error)
+                ssm.shutdown()
+                dc.close()
+                log.info("Waiting for 10 minutes before restarting...")
+                time.sleep(10 * 60)
+                log.info('Restarting SSM.')
+                dc.open()
+                ssm.startup()
 
             i += 1
 
