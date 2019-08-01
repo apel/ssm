@@ -79,6 +79,10 @@ def main():
     log.info('Setting up SSM with protocol: %s', protocol)
 
     if protocol == Ssm2.STOMP_MESSAGING:
+        # Set defaults for AMS variables that Ssm2 constructor requires below.
+        project = None
+        token = ''
+
         # If we can't get a broker to connect to, we have to give up.
         try:
             bdii_url = cp.get('broker', 'bdii')

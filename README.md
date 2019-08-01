@@ -1,18 +1,19 @@
-# Secure Stomp Messenger
+# Secure STOMP Messenger
 
 [![Build Status](https://travis-ci.org/apel/ssm.svg?branch=dev)](https://travis-ci.org/apel/ssm)
 [![Coverage Status](https://coveralls.io/repos/github/apel/ssm/badge.svg?branch=dev)](https://coveralls.io/github/apel/ssm?branch=dev)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/cc3e808664ee41638938aa5c660a88ae)](https://www.codacy.com/app/apel/ssm)
 [![Maintainability](https://api.codeclimate.com/v1/badges/34aa04f3583afce2ceb2/maintainability)](https://codeclimate.com/github/apel/ssm/maintainability)
 
-Secure Stomp Messenger (SSM) is designed to simply send messages
-using the STOMP protocol.  Messages are signed and may be encrypted
-during transit.  Persistent queues should be used to guarantee
-delivery.
+Secure STOMP Messenger (SSM) is designed to simply send messages
+using the [STOMP protocol](http://stomp.github.io/) or via the ARGO Messaging Service (AMS).
+Messages are signed and may be encrypted during transit.
+Persistent queues should be used to guarantee delivery.
 
-SSM is written in python.  Packages are available for SL5 and SL6.
+SSM is written in Python. Packages are available for RHEL 6 and 7, and
+ Ubuntu Trusty.
 
-For more about SSM, see the [EGI wiki](https://wiki.egi.eu/wiki/APEL/SSM).
+For more information about SSM, see the [EGI wiki](https://wiki.egi.eu/wiki/APEL/SSM).
 
 
 ## Installing the RPM
@@ -23,16 +24,18 @@ The EPEL repository must be enabled.  This can be done by installing
 the RPM for your version of SL, which is available on this page:
 http://fedoraproject.org/wiki/EPEL
 
-The python stomp library (N.B. versions 3.1.1 and above are currently supported)
+The Python STOMP library (N.B. versions 3.1.1 and above are currently supported)
 * `yum install stomppy`
 
-The python daemon library (N.B. only versions below 2.2.0 are currently supported)
+The Python AMS library. See here for details on obtaining an RPM: https://github.com/ARGOeu/argo-ams-library/
+
+The Python daemon library (N.B. only versions below 2.2.0 are currently supported)
 * `yum install python-daemon`
 
-The python ldap library
+The Python ldap library
 * `yum install python-ldap`
 
-Optionally, the python dirq library (N.B. this is only required if your messages
+Optionally, the Python dirq library (N.B. this is only required if your messages
 are stored in a dirq structure)
 * `yum install python-dirq`
 
@@ -69,7 +72,7 @@ successfully.
 
 The RPM carries out a number of steps to run the SSM in a specific way.
 
-1. It installs the core files in the python libraries directory
+1. It installs the core files in the Python libraries directory
 2. It installs scripts in /usr/bin
 3. It installs configuration files in /etc/apel
 4. It creates the messages directory /var/spool/apel/
@@ -86,7 +89,7 @@ Install APEL SSM:
 Install any missing system packages needed for the SSM:
 * `apt-get -f install`
 
-Install any missing python requirements that don't have system packages:
+Install any missing Python requirements that don't have system packages:
 * `pip install "stomp.py>=3.1.1" dirq`
 
 If you wish to run the SSM as a receiver, you will also need to install the python-daemon system package:
@@ -96,7 +99,7 @@ If you wish to run the SSM as a receiver, you will also need to install the pyth
 
 The DEB carries out a number of steps to run the SSM in a specific way.
 
-1. It installs the core files in the python libraries directory
+1. It installs the core files in the Python libraries directory
 2. It installs scripts in /usr/bin
 3. It installs configuration files in /etc/apel
 4. It creates the messages directory /var/spool/apel/
@@ -115,7 +118,7 @@ Ensure that the apel user running the SSM has access to the following:
 * `chown apel:apel /var/run/apel`
 
 The configuration files are in /etc/apel/.  The default
-configuration will send messages to the test apel server.
+configuration will send messages to the test APEL server.
 
 
 ## Adding Files
@@ -140,9 +143,9 @@ there are no restrictions on the file names used.
 ### Programmatic
 
 #### With the dirq module
-Use the python or perl dirq libraries:
- * python: http://pypi.python.org/pypi/dirq
- * perl: http://search.cpan.org/~lcons/Directory-Queue/
+Use the Python or Perl dirq libraries:
+ * Python: http://pypi.python.org/pypi/dirq
+ * Perl: http://search.cpan.org/~lcons/Directory-Queue/
 
 Create a QueueSimple object with path /var/spool/apel/outgoing/ and 
 add your messages.
