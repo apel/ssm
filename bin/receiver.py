@@ -31,7 +31,7 @@ import logging.config
 import ldap
 import os
 import sys
-from optparse import OptionParser 
+from optparse import OptionParser
 from daemon import DaemonContext
 import ConfigParser
 
@@ -72,32 +72,32 @@ def main():
     '''
     ver = "SSM %s.%s.%s" % __version__
     op = OptionParser(description=__doc__, version=ver)
-    op.add_option('-c', '--config', help='location of config file', 
+    op.add_option('-c', '--config', help='location of config file',
                   default='/etc/apel/receiver.cfg')
-    op.add_option('-l', '--log_config', 
-                  help='location of logging config file (optional)', 
+    op.add_option('-l', '--log_config',
+                  help='location of logging config file (optional)',
                   default='/etc/apel/logging.cfg')
-    op.add_option('-d', '--dn_file', 
-                  help='location of the file containing valid DNs', 
+    op.add_option('-d', '--dn_file',
+                  help='location of the file containing valid DNs',
                   default='/etc/apel/dns')
-    
+
     (options, unused_args) = op.parse_args()
-        
+
     cp = ConfigParser.ConfigParser()
     cp.read(options.config)
-    
+
     # Check for pidfile
     pidfile = cp.get('daemon', 'pidfile')
     if os.path.exists(pidfile):
         print 'Cannot start SSM.  Pidfile %s already exists.' % pidfile
         sys.exit(1)
-    
+
     # set up logging
     try:
         if os.path.exists(options.log_config):
             logging.config.fileConfig(options.log_config)
         else:
-            set_up_logging(cp.get('logging', 'logfile'), 
+            set_up_logging(cp.get('logging', 'logfile'),
                            cp.get('logging', 'level'),
                            cp.getboolean('logging', 'console'))
     except (ConfigParser.Error, ValueError, IOError), err:
@@ -195,16 +195,16 @@ def main():
         log.error('System will exit.')
         log.info(LOG_BREAK)
         sys.exit(1)
-        
+
     log.info('The SSM will run as a daemon.')
-    
+
     # We need to preserve the file descriptor for any log files.
     rootlog = logging.getLogger()
     log_files = [x.stream for x in rootlog.handlers]
     dc = DaemonContext(files_preserve=log_files)
-        
+
     try:
-        ssm = Ssm2(brokers, 
+        ssm = Ssm2(brokers,
                    cp.get('messaging','path'),
                    cert=cp.get('certificates','certificate'),
                    key=cp.get('certificates','key'),
@@ -220,7 +220,7 @@ def main():
         log.info('Fetching valid DNs.')
         dns = get_dns(options.dn_file)
         ssm.set_dns(dns)
-        
+
     except Exception, e:
         log.fatal('Failed to initialise SSM: %s', e)
         log.info(LOG_BREAK)
@@ -274,10 +274,10 @@ def main():
         log.error('The SSM will exit.')
         ssm.shutdown()
         dc.close()
-        
+
     log.info('Receiving SSM has shut down.')
     log.info(LOG_BREAK)
-    
-    
+
+
 if __name__ == '__main__':
     main()

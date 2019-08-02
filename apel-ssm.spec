@@ -183,14 +183,14 @@ rm -rf $RPM_BUILD_ROOT
  - Verify any certificate supplied for encrypting messages
    against the CA path
  - Receiver can check CRLs on certificates
- 
+
  * Wed Feb 27 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.0.3-0
  - Add support for messages signed with quopri or base64
    content-transfer-encoding (for UNICORE).
 
  * Tue Feb 26 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.0.2-0
  - Fix SSL connection for receiver
- 
+
  * Fri Feb 8 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.0.1-0
  - Fix crash when receiver sends ping message
 
@@ -206,6 +206,6 @@ rm -rf $RPM_BUILD_ROOT
 
  * Thu Jan 03 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.2-0
  - Fixed connection freeze
- 
+
  * Fri Oct 02 2012 Will Rogers <will.rogers@stfc.ac.uk>  - 0.0.1-0
  - First tag

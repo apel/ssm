@@ -32,7 +32,7 @@ stop() {
         RETVAL=$?
         if [ $RETVAL -ne 0 ]; then
             failure;
-	else 
+	else
 	    success;
         fi;
     else
@@ -61,7 +61,7 @@ case "$1" in
             stop
             start
             ;;
-            
+
         reload)
             stop
             start
