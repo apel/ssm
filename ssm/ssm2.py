@@ -427,7 +427,7 @@ class Ssm2(stomp.ConnectionListener):
                 # ack ID to the list of those to be acknowledged.
                 ackids.append(msg_ack_id)
 
-            except OSError as error:
+            except (IOError, OSError) as error:
                 log.error('Failed to read or write file: %s', error)
 
         # pass list of extracted ackIds to AMS Service so that
