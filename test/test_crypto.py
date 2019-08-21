@@ -281,7 +281,12 @@ class TestEncryptUtils(unittest.TestCase):
         tampered_message = signed_message.replace(MSG, "Spam")
 
         # Verifying the orignal, un-tampered message should be fine.
-        verify(signed_message, TEST_CA_DIR, False)
+        verified_message, verified_signer = verify(
+            signed_message, TEST_CA_DIR, False
+        )
+        self.assertEqual(verified_message, MSG)
+        self.assertEqual(verified_signer, TEST_CERT_DN)
+
         # Verifying the tampered message should not be fine.
         self.assertRaises(
             CryptoException, verify, tampered_message, TEST_CA_DIR, False
