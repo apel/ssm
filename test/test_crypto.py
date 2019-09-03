@@ -275,6 +275,23 @@ class TestEncryptUtils(unittest.TestCase):
         except CryptoException:
             pass
 
+    def test_message_tampering(self):
+        """Test that a tampered message is not accepted as valid."""
+        signed_message = sign(MSG, TEST_CERT_FILE, TEST_KEY_FILE)
+        tampered_message = signed_message.replace(MSG, "Spam")
+
+        # Verifying the orignal, un-tampered message should be fine.
+        verified_message, verified_signer = verify(
+            signed_message, TEST_CA_DIR, False
+        )
+        self.assertEqual(verified_message, MSG)
+        self.assertEqual(verified_signer, TEST_CERT_DN)
+
+        # Verifying the tampered message should not be fine.
+        self.assertRaises(
+            CryptoException, verify, tampered_message, TEST_CA_DIR, False
+        )
+
 ################################################################
 # Test data below.
 ################################################################

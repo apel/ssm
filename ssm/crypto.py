@@ -179,7 +179,9 @@ def verify(signed_text, capath, check_crl):
     if "Verification successful" in error:
         log.debug(error)
     else:
-        log.warn(error)
+        raise CryptoException(
+            "Possible tampering. See OpenSSL error: %s" % error
+        )
 
     subj = get_certificate_subject(signer)
     return body, subj
@@ -329,4 +331,3 @@ def get_signer_cert(signed_text):
         log.error(error)
 
     return certstring
-
