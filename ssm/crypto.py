@@ -179,9 +179,8 @@ def verify(signed_text, capath, check_crl):
     if "Verification successful" in error:
         log.debug(error)
     else:
-        log.warn(error)
         raise CryptoException(
-            "Failed to verify the signed message."
+            "Possible tampering. See OpenSSL error: %s" % error
         )
 
     subj = get_certificate_subject(signer)
