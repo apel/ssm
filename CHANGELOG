@@ -1,5 +1,11 @@
 Changelog for ssm
 =================
+* Tue Sep 03 2019 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.4.1-1
+ - Fixed handling of OpenSSL errors so that messages that have been tampered
+   with are now rejected.
+ - Changed logging to remove excessive messages from a 3rd-party module used
+   when sending via AMS.
+
 * Thu Aug 01 2019 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.4.0-1
  - Added support for sending and receiving messages using the ARGO Messaging
    Service (AMS).
