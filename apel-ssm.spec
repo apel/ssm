@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.4.0
+Version:        2.4.1
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -100,6 +100,12 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Tue Sep 03 2019 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.4.1-1
+ - Fixed handling of OpenSSL errors so that messages that have been tampered
+   with are now rejected.
+ - Changed logging to remove excessive messages from a 3rd-party module used
+   when sending via AMS.
+
 * Thu Aug 01 2019 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.4.0-1
  - Added support for sending and receiving messages using the ARGO Messaging
    Service (AMS).
