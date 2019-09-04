@@ -1,5 +1,11 @@
 Changelog for ssm
 =================
+* Tue Sep 03 2019 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.4.1-1
+ - Fixed handling of OpenSSL errors so that messages that have been tampered
+   with are now rejected.
+ - Changed logging to remove excessive messages from a 3rd-party module used
+   when sending via AMS.
+
 * Thu Aug 01 2019 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.4.0-1
  - Added support for sending and receiving messages using the ARGO Messaging
    Service (AMS).
@@ -83,7 +89,7 @@ Changelog for ssm
  - Verify any certificate supplied for encrypting messages
    against the CA path
  - Receiver can check CRLs on certificates
- 
+
  * Wed Feb 27 2013 Will Rogers <will.rogers@stfc.ac.uk>  - 2.0.3-0
  - Add support for messages signed with quopri or base64
    content-transfer-encoding (for UNICORE).

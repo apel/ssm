@@ -132,7 +132,7 @@ All file and directory names must use hex characters: `[0-9a-f]`.
 
  * Create a directory within /var/spool/apel/outgoing with a name
    of EIGHT hex characters e.g. `12345678`
- * Put files in this directory with names of FOURTEEN hex 
+ * Put files in this directory with names of FOURTEEN hex
    e.g. `1234567890abcd`
 
 #### Without the dirq module
@@ -147,7 +147,7 @@ Use the Python or Perl dirq libraries:
  * Python: http://pypi.python.org/pypi/dirq
  * Perl: http://search.cpan.org/~lcons/Directory-Queue/
 
-Create a QueueSimple object with path /var/spool/apel/outgoing/ and 
+Create a QueueSimple object with path /var/spool/apel/outgoing/ and
 add your messages.
 
 #### Without the dirq module
@@ -163,14 +163,14 @@ add your messages using the `add` method.
  * Run 'ssmsend'
  * SSM will pick up any messages and send them to the configured
    queue on the configured broker
-   
+
 ### Sender (sending via the ARGO Messaging Service (AMS))
 
  * Edit your sender configuration, usually under `/etc/apel/sender.cfg`, as per the [migration instructions](migrating_to_ams.md#sender) with some minor differences:
    * There is no need to add the `[sender]` section as it already exists. Instead change the `protocol` to `AMS`.
    * Set `ams_project` to the appropriate project.
  * Then run 'ssmsend'. SSM will pick up any messages and send them via the ARGO Messaging Service.
- 
+
 ### Sender (container)
  * Download the example [configuration file](conf/sender.cfg)
  * Edit the downloaded `sender.cfg` file as above for sending either via the [EGI message brokers](README.md#sender-sending-via-the-egi-message-brokers) or the [ARGO Messaging Service](README.md#sender-sending-via-the-argo-messaging-service-ams).
@@ -185,9 +185,9 @@ add your messages using the `add` method.
      stfc/ssm
  ```
  * The line `-v /path/to/persistently/log:/var/log/apel \` is only required if you want to access the sender log as a file. If `console: true` is set in your `sender.cfg`, the container will also log to stdout/stderr.
- 
+
 ### Receiver (service)
-  
+
  * Run `service apelssm start`
  * If this fails, check /var/log/apel/ssmreceive.log for details
  * To stop, run `service apelssm stop`
@@ -214,7 +214,7 @@ add your messages using the `add` method.
  * SSM will receive any messages on the specified queue and
    write them to the filesystem
  * To stop, run ```'kill `cat /var/run/apel/ssm.pid`'```
- 
+
 ### Receiver (receiving via the ARGO Messaging Service (AMS))
 
  * Edit your receiver configuration, usually under `/etc/apel/receiver.cfg`, as per the [migration instructions](migrating_to_ams.md#receiver) with some minor differences:

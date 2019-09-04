@@ -19,7 +19,7 @@ start() {
     if [ $RETVAL -ne 0 ]; then
         failure;
     else
-	success;
+        success;
     fi;
     echo
     return $RETVAL
@@ -32,8 +32,8 @@ stop() {
         RETVAL=$?
         if [ $RETVAL -ne 0 ]; then
             failure;
-	else 
-	    success;
+        else
+            success;
         fi;
     else
         RETVAL=1
@@ -61,7 +61,7 @@ case "$1" in
             stop
             start
             ;;
-            
+
         reload)
             stop
             start

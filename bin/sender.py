@@ -38,22 +38,22 @@ def main():
     '''
     ver = "SSM %s.%s.%s" % __version__
     op = OptionParser(description=__doc__, version=ver)
-    op.add_option('-c', '--config', help='location of config file', 
+    op.add_option('-c', '--config', help='location of config file',
                           default='/etc/apel/sender.cfg')
-    op.add_option('-l', '--log_config', 
-                        help='location of logging config file (optional)', 
+    op.add_option('-l', '--log_config',
+                        help='location of logging config file (optional)',
                         default='/etc/apel/logging.cfg')
     (options, unused_args) = op.parse_args()
-    
+
     cp = ConfigParser.ConfigParser()
     cp.read(options.config)
-    
+
     # set up logging
     try:
         if os.path.exists(options.log_config):
             logging.config.fileConfig(options.log_config)
         else:
-            set_up_logging(cp.get('logging', 'logfile'), 
+            set_up_logging(cp.get('logging', 'logfile'),
                            cp.get('logging', 'level'),
                            cp.getboolean('logging', 'console'))
     except (ConfigParser.Error, ValueError, IOError), err:
@@ -163,7 +163,7 @@ def main():
         log.error('System will exit.')
         log.info(LOG_BREAK)
         sys.exit(1)
-        
+
     try:
         server_cert = None
         verify_server_cert = True
@@ -175,7 +175,7 @@ def main():
                 pass
         except ConfigParser.NoOptionError:
             log.info('No server certificate supplied.  Will not encrypt messages.')
-            
+
         try:
             destination = cp.get('messaging', 'destination')
             if destination == '':
@@ -191,7 +191,7 @@ def main():
             log.info('No path type defined, assuming dirq.')
             path_type = 'dirq'
 
-        sender = Ssm2(brokers, 
+        sender = Ssm2(brokers,
                       cp.get('messaging', 'path'),
                       path_type=path_type,
                       cert=cp.get('certificates', 'certificate'),
@@ -211,7 +211,7 @@ def main():
             log.info('SSM run has finished.')
         else:
             log.info('No messages found to send.')
-        
+
     except (Ssm2Exception, CryptoException), e:
         print 'SSM failed to complete successfully.  See log file for details.'
         log.error('SSM failed to complete successfully: %s', e)
@@ -228,7 +228,7 @@ def main():
 
     log.info('SSM has shut down.')
     log.info(LOG_BREAK)
-        
-    
+
+
 if __name__ == '__main__':
     main()

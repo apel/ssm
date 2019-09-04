@@ -12,14 +12,14 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-   
+
    @author: Will Rogers
 '''
 
 import logging
 import sys
 
-__version__ = (2, 4, 0)
+__version__ = (2, 4, 1)
 
 LOG_BREAK = '========================================'
 
@@ -32,18 +32,18 @@ def set_up_logging(logfile, level, console):
               'WARN': logging.WARN,
               'ERROR': logging.ERROR,
               'CRITICAL': logging.CRITICAL}
-        
+
     fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     formatter = logging.Formatter(fmt)
-    
+
     log = logging.getLogger()
     log.setLevel(levels[level])
-    
+
     if logfile is not None:
         fh = logging.FileHandler(logfile)
         fh.setFormatter(formatter)
         log.addHandler(fh)
-    
+
     if console:
         ch = logging.StreamHandler(sys.stdout)
         ch.setFormatter(formatter)
