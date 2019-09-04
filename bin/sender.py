@@ -57,8 +57,8 @@ def main():
                            cp.get('logging', 'level'),
                            cp.getboolean('logging', 'console'))
     except (ConfigParser.Error, ValueError, IOError), err:
-        print 'Error configuring logging: %s' % str(err)
-        print 'The system will exit.'
+        print('Error configuring logging: %s' % err)
+        print('The system will exit.')
         sys.exit(1)
 
     log = logging.getLogger('ssmsend')
@@ -107,13 +107,13 @@ def main():
                           'Please check configuration')
                 log.error('System will exit.')
                 log.info(LOG_BREAK)
-                print 'SSM failed to start.  See log file for details.'
+                print('SSM failed to start.  See log file for details.')
                 sys.exit(1)
         except ldap.LDAPError, e:
             log.error('Could not connect to LDAP server: %s', e)
             log.error('System will exit.')
             log.info(LOG_BREAK)
-            print 'SSM failed to start.  See log file for details.'
+            print('SSM failed to start.  See log file for details.')
             sys.exit(1)
 
     elif protocol == Ssm2.AMS_MESSAGING:
@@ -134,7 +134,7 @@ def main():
                       'please check your configuration')
             log.error('System will exit.')
             log.info(LOG_BREAK)
-            print 'SSM failed to start.  See log file for details.'
+            print('SSM failed to start.  See log file for details.')
             sys.exit(1)
 
         # Attempt to configure AMS project variable.
@@ -146,7 +146,7 @@ def main():
             # AMS instance, so log and then exit on an error.
             log.error('Error configuring AMS values: %s', err)
             log.error('SSM will exit.')
-            print 'SSM failed to start.  See log file for details.'
+            print('SSM failed to start.  See log file for details.')
             sys.exit(1)
 
         try:
@@ -213,10 +213,10 @@ def main():
             log.info('No messages found to send.')
 
     except (Ssm2Exception, CryptoException), e:
-        print 'SSM failed to complete successfully.  See log file for details.'
+        print('SSM failed to complete successfully.  See log file for details.')
         log.error('SSM failed to complete successfully: %s', e)
     except Exception, e:
-        print 'SSM failed to complete successfully.  See log file for details.'
+        print('SSM failed to complete successfully.  See log file for details.')
         log.error('Unexpected exception in SSM: %s', e)
         log.error('Exception type: %s', e.__class__)
 

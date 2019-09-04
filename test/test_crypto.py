@@ -138,13 +138,13 @@ class TestEncryptUtils(unittest.TestCase):
         retrieved_msg2, retrieved_dn2 = verify(signed_msg2, TEST_CA_DIR, False)
 
         if not retrieved_dn2 == TEST_CERT_DN:
-            print retrieved_dn2
-            print TEST_CERT_DN
+            print(retrieved_dn2)
+            print(TEST_CERT_DN)
             self.fail("The DN of the verified message didn't match the cert.")
 
         if not retrieved_msg2.strip() == MSG2:
-            print retrieved_msg2
-            print MSG2
+            print(retrieved_msg2)
+            print(MSG2)
             self.fail("The verified messge didn't match the original.")
 
         # Try empty string

@@ -89,7 +89,7 @@ def main():
     # Check for pidfile
     pidfile = cp.get('daemon', 'pidfile')
     if os.path.exists(pidfile):
-        print 'Cannot start SSM.  Pidfile %s already exists.' % pidfile
+        print('Cannot start SSM.  Pidfile %s already exists.' % pidfile)
         sys.exit(1)
 
     # set up logging
@@ -101,8 +101,8 @@ def main():
                            cp.get('logging', 'level'),
                            cp.getboolean('logging', 'console'))
     except (ConfigParser.Error, ValueError, IOError), err:
-        print 'Error configuring logging: %s' % str(err)
-        print 'SSM will exit.'
+        print('Error configuring logging: %s' % err)
+        print('SSM will exit.')
         sys.exit(1)
 
     global log
@@ -174,7 +174,7 @@ def main():
                       'please check your configuration')
             log.error('System will exit.')
             log.info(LOG_BREAK)
-            print 'SSM failed to start.  See log file for details.'
+            print('SSM failed to start.  See log file for details.')
             sys.exit(1)
 
         # Attempt to configure AMS specific variables.
@@ -187,7 +187,7 @@ def main():
             # AMS instance, so log and then exit on an error.
             log.error('Error configuring AMS values: %s', err)
             log.error('SSM will exit.')
-            print 'SSM failed to start.  See log file for details.'
+            print('SSM failed to start.  See log file for details.')
             sys.exit(1)
 
     if len(brokers) == 0:
