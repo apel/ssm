@@ -101,7 +101,7 @@ def main():
             set_up_logging(cp.get('logging', 'logfile'),
                            cp.get('logging', 'level'),
                            cp.getboolean('logging', 'console'))
-    except (ConfigParser.Error, ValueError, IOError), err:
+    except (ConfigParser.Error, ValueError, IOError) as err:
         print('Error configuring logging: %s' % err)
         print('SSM will exit.')
         sys.exit(1)
@@ -139,7 +139,7 @@ def main():
                 service = STOMP_SERVICE
             brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker',
                                                                     'network'))
-        except ConfigParser.NoOptionError, e:
+        except ConfigParser.NoOptionError as e:
             try:
                 host = cp.get('broker', 'host')
                 port = cp.get('broker', 'port')
@@ -151,7 +151,7 @@ def main():
                 log.error('System will exit.')
                 log.info(LOG_BREAK)
                 sys.exit(1)
-        except ldap.SERVER_DOWN, e:
+        except ldap.SERVER_DOWN as e:
             log.error('Could not connect to LDAP server: %s', e)
             log.error('System will exit.')
             log.info(LOG_BREAK)
@@ -183,7 +183,7 @@ def main():
             token = cp.get('messaging', 'token')
             project = cp.get('messaging', 'ams_project')
 
-        except (ConfigParser.Error, ValueError, IOError), err:
+        except (ConfigParser.Error, ValueError, IOError) as err:
             # A token and project are needed to successfully receive from an
             # AMS instance, so log and then exit on an error.
             log.error('Error configuring AMS values: %s', err)
@@ -222,7 +222,7 @@ def main():
         dns = get_dns(options.dn_file)
         ssm.set_dns(dns)
 
-    except Exception, e:
+    except Exception as e:
         log.fatal('Failed to initialise SSM: %s', e)
         log.info(LOG_BREAK)
         sys.exit(1)
@@ -265,11 +265,11 @@ def main():
 
             i += 1
 
-    except SystemExit, e:
+    except SystemExit as e:
         log.info('Received the shutdown signal: %s', e)
         ssm.shutdown()
         dc.close()
-    except Exception, e:
+    except Exception as e:
         log.error('Unexpected exception: %s', e)
         log.error('Exception type: %s', e.__class__)
         log.error('The SSM will exit.')

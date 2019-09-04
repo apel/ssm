@@ -322,7 +322,7 @@ class Ssm2(stomp.ConnectionListener):
         if 'application/pkcs7-mime' in text or 'application/x-pkcs7-mime' in text:
             try:
                 text = crypto.decrypt(text, self._cert, self._key)
-            except crypto.CryptoException, e:
+            except crypto.CryptoException as e:
                 error = 'Failed to decrypt message: %s' % e
                 log.error(error)
                 return None, None, error
@@ -330,7 +330,7 @@ class Ssm2(stomp.ConnectionListener):
         # always signed
         try:
             message, signer = crypto.verify(text, self._capath, self._check_crls)
-        except crypto.CryptoException, e:
+        except crypto.CryptoException as e:
             error = 'Failed to verify message: %s' % e
             log.error(error)
             return None, None, error
@@ -435,7 +435,7 @@ class Ssm2(stomp.ConnectionListener):
                 # ack ID to the list of those to be acknowledged.
                 ackids.append(msg_ack_id)
 
-            except OSError, error:
+            except OSError as error:
                 log.error('Failed to read or write file: %s', error)
 
         # pass list of extracted ackIds to AMS Service so that
@@ -523,7 +523,7 @@ class Ssm2(stomp.ConnectionListener):
         try:
             # Remove empty dirs and unlock msgs older than 5 min (default)
             self._outq.purge()
-        except OSError, e:
+        except OSError as e:
             log.warn('OSError raised while purging message queue: %s', e)
 
     ############################################################################
@@ -573,10 +573,10 @@ class Ssm2(stomp.ConnectionListener):
             try:
                 self.start_connection()
                 break
-            except ConnectFailedException, e:
+            except ConnectFailedException as e:
                 # ConnectFailedException doesn't provide a message.
                 log.warn('Failed to connect to %s:%s.', host, port)
-            except Ssm2Exception, e:
+            except Ssm2Exception as e:
                 log.warn('Failed to connect to %s:%s: %s', host, port, e)
 
         if not self.connected:
@@ -678,7 +678,7 @@ class Ssm2(stomp.ConnectionListener):
                 f.write(str(os.getpid()))
                 f.write('\n')
                 f.close()
-            except IOError, e:
+            except IOError as e:
                 log.warn('Failed to create pidfile %s: %s', self._pidfile, e)
 
         self.handle_connect()
@@ -694,6 +694,6 @@ class Ssm2(stomp.ConnectionListener):
                     os.remove(self._pidfile)
                 else:
                     log.warn('pidfile %s not found.', self._pidfile)
-            except IOError, e:
+            except IOError as e:
                 log.warn('Failed to remove pidfile %s: %e', self._pidfile, e)
                 log.warn('SSM may not start again until it is removed.')

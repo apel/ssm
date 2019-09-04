@@ -60,7 +60,7 @@ class TestSsm(unittest.TestCase):
         try:
             shutil.rmtree(self._msgdir)
             shutil.rmtree(self._tmp_dir)
-        except OSError, e:
+        except OSError as e:
             print('Error removing temporary directory %s' % self._tmp_dir)
             print(e)
 

@@ -58,7 +58,7 @@ def check_cert_key(certpath, keypath):
     try:
         cert = _from_file(certpath)
         key = _from_file(keypath)
-    except IOError, e:
+    except IOError as e:
         log.error('Could not find cert or key file: %s', e)
         return False
 
@@ -102,7 +102,7 @@ def sign(text, certpath, keypath):
 
         return signed_msg
 
-    except OSError, e:
+    except OSError as e:
         log.error('Failed to sign message: %s', e)
         raise CryptoException('Message signing failed.  Check cert and key permissions.')
 
