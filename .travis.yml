@@ -1,14 +1,12 @@
+os: linux
 language: python
 python:
   - "2.7"
   - "3.7"
-matrix:
+jobs:
   allow_failures:
     - python: "3.7"
   fast_finish: true
-
-# Pin Ubuntu to Trusty for the moment for Python 2.6 support
-dist: trusty
 
 # Cache the dependencies installed by pip
 cache: pip
