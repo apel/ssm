@@ -1,8 +1,4 @@
-'''
-Created on 7 Dec 2011
-
-@author: will
-'''
+from __future__ import print_function
 
 import os
 import shutil

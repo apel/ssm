@@ -18,6 +18,8 @@
 Class to interact with a BDII LDAP server to retrieve information about
 the stomp brokers specified in a network.
 '''
+from __future__ import print_function
+
 import ldap
 import logging
 

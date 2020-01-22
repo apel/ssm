@@ -15,6 +15,7 @@
 
    @author: Will Rogers
 '''
+from __future__ import print_function
 
 # It's possible for SSM to be used without SSL, and the ssl module isn't in the
 # standard library until 2.6, so this makes it safe for earlier Python versions.

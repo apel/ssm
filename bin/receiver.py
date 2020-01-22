@@ -18,6 +18,7 @@
 Script to run a receiving SSM.
 @author: Will Rogers
 '''
+from __future__ import print_function
 
 from ssm.brokers import StompBrokerGetter, STOMP_SERVICE, STOMP_SSL_SERVICE
 from ssm.ssm2 import Ssm2, Ssm2Exception

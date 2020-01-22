@@ -18,6 +18,7 @@
 Script to run a sending SSM.
 @author: Will Rogers
 '''
+from __future__ import print_function
 
 from ssm import __version__, set_up_logging, LOG_BREAK
 from ssm.ssm2 import Ssm2, Ssm2Exception

@@ -1,8 +1,5 @@
-'''
-Created on 7 Dec 2011
+from __future__ import print_function
 
-@author: will
-'''
 import unittest
 import logging
 import os

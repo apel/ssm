@@ -20,6 +20,7 @@
    found that none were mature enough to implement the SMIME crypto we had
    decided on.
 '''
+from __future__ import print_function
 
 from subprocess import Popen, PIPE
 import quopri
