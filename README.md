@@ -24,7 +24,8 @@ The EPEL repository must be enabled.  This can be done by installing
 the RPM for your version of SL, which is available on this page:
 http://fedoraproject.org/wiki/EPEL
 
-The Python STOMP library (N.B. versions 3.1.1 and above are currently supported)
+The Python STOMP library (N.B. versions between 3.1.1 (inclusive) and 5.0.0
+(exclusive) are currently supported)
 * `yum install stomppy`
 
 The Python AMS library. See here for details on obtaining an RPM: https://github.com/ARGOeu/argo-ams-library/
@@ -90,7 +91,7 @@ Install any missing system packages needed for the SSM:
 * `apt-get -f install`
 
 Install any missing Python requirements that don't have system packages:
-* `pip install "stomp.py>=3.1.1" dirq`
+* `pip install "stomp.py<5.0.0" dirq`
 
 If you wish to run the SSM as a receiver, you will also need to install the python-daemon system package:
 * `apt-get install python-daemon`
