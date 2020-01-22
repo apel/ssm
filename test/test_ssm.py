@@ -80,9 +80,9 @@ class TestSsm(unittest.TestCase):
 
         # Try changing permissions on the directory we're writing to.
         # The on_message function shouldn't throw an exception.
-        os.chmod(self._msgdir, 0400)
+        os.chmod(self._msgdir, 0o0400)
         test_ssm.on_message({'nothing': 'dummy'}, 'Not signed or encrypted.')
-        os.chmod(self._msgdir, 0777)
+        os.chmod(self._msgdir, 0o0777)
 
         # Check that message with ID of 'ping' doesn't raise an exception.
         # Messages with this ID are handled differently to normal messages.
