@@ -34,7 +34,11 @@ import os
 import sys
 from optparse import OptionParser
 from daemon import DaemonContext
-import ConfigParser
+
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 # How often (in seconds) to read the list of valid DNs.
 REFRESH_DNS = 600

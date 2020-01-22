@@ -30,7 +30,11 @@ import ldap
 import sys
 import os
 from optparse import OptionParser
-import ConfigParser
+
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 
 def main():
