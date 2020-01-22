@@ -40,7 +40,8 @@ class TestEncryptUtils(unittest.TestCase):
         # self-signed certificate as its own CA certificate, but with its
         # name as <hash-of-subject-DN>.0.
         p1 = Popen(['openssl', 'x509', '-subject_hash', '-noout'],
-                    stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                   stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                   universal_newlines=True)
 
         with open(TEST_CERT_FILE, 'r') as test_cert:
             cert_string = test_cert.read()
@@ -117,7 +118,8 @@ class TestEncryptUtils(unittest.TestCase):
         # We can't use crypto.sign as that assumes the use of the '-text' option
         # which cause the message to be interpreted as plaintext
         p1 = Popen(['openssl', 'smime', '-sign', '-inkey', TEST_KEY_FILE, '-signer', TEST_CERT_FILE],
-                   stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                   stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                   universal_newlines=True)
 
         signed_msg2, error = p1.communicate(header_quopri_msg)
 

@@ -67,7 +67,7 @@ def check_cert_key(certpath, keypath):
         return False
 
     p1 = Popen(['openssl', 'x509', '-noout', '-modulus'],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
+               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     modulus1, error = p1.communicate(cert)
 
     if error != '':
@@ -75,7 +75,7 @@ def check_cert_key(certpath, keypath):
         return False
 
     p2 = Popen(['openssl', 'rsa', '-noout', '-modulus'],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
+               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     modulus2, error = p2.communicate(key)
 
     if error != '':
@@ -93,7 +93,8 @@ def sign(text, certpath, keypath):
     '''
     try:
         p1 = Popen(['openssl', 'smime', '-sign', '-inkey', keypath, '-signer', certpath, '-text'],
-                   stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                   stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                   universal_newlines=True)
 
         signed_msg, error = p1.communicate(text)
 
@@ -119,7 +120,7 @@ def encrypt(text, certpath, cipher='aes128'):
     cipher = '-' + cipher
     # encrypt
     p1 = Popen(['openssl', 'smime', '-encrypt', cipher, certpath],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
+               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
     enc_txt, error = p1.communicate(text)
 
@@ -155,7 +156,7 @@ def verify(signed_text, capath, check_crl):
     # is verified above; this check would also check that the certificate
     # is allowed to sign with SMIME, which host certificates sometimes aren't.
     p1 = Popen(['openssl', 'smime', '-verify', '-CApath', capath, '-noverify'],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
+               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
     message, error = p1.communicate(signed_text)
 
@@ -206,7 +207,7 @@ def decrypt(encrypted_text, certpath, keypath):
 
     p1 = Popen(['openssl', 'smime', '-decrypt',
                 '-recip', certpath, '-inkey', keypath],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
+               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
     enc_txt, error = p1.communicate(encrypted_text)
 
@@ -228,7 +229,8 @@ def verify_cert_date(certpath):
     # non-zero if yes, it will expire, or zero if not.
     args = ['openssl', 'x509', '-checkend', '86400', '-noout', '-in', certpath]
 
-    p1 = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    p1 = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+               universal_newlines=True)
 
     message, error = p1.communicate(certpath)
 
@@ -260,7 +262,8 @@ def verify_cert(certstring, capath, check_crls=True):
     if check_crls:
         args.append('-crl_check_all')
 
-    p1 = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    p1 = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+               universal_newlines=True)
 
     message, error = p1.communicate(certstring)
 
@@ -298,7 +301,7 @@ def get_certificate_subject(certstring):
     Return the certificate subject's DN, in legacy openssl format.
     '''
     p1 = Popen(['openssl', 'x509', '-noout', '-subject'],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
+               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
     subject, error = p1.communicate(certstring)
 
