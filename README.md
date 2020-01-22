@@ -29,7 +29,7 @@ The Python STOMP library (N.B. versions 3.1.1 and above are currently supported)
 
 The Python AMS library. See here for details on obtaining an RPM: https://github.com/ARGOeu/argo-ams-library/
 
-The Python daemon library (N.B. only versions below 2.2.0 are currently supported)
+The Python daemon library
 * `yum install python-daemon`
 
 The Python ldap library

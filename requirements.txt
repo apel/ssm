@@ -1,7 +1,7 @@
 # Base requirements for ssm
 
 stomp.py>=3.1.1
-python-daemon<2.2.0
+python-daemon
 python-ldap
 # Dependencies for optional dirq based sending
 dirq

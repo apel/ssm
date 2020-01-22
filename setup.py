@@ -54,7 +54,7 @@ def main():
               'stomp.py>=3.1.1', 'python-ldap', 'argo-ams-library',
           ],
           extras_require={
-              'python-daemon': ['python-daemon<2.2.0'],
+              'python-daemon': ['python-daemon'],
               'dirq': ['dirq'],
           },
           packages=find_packages(exclude=['bin', 'test']),
