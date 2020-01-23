@@ -23,18 +23,21 @@ class TestSsm(unittest.TestCase):
         # key to be files.
         key_fd, self._key_path = tempfile.mkstemp(prefix='key',
                                                   dir=self._tmp_dir)
-        os.write(key_fd, TEST_KEY)
         os.close(key_fd)
+        with open(self._key_path, 'w') as key:
+            key.write(TEST_KEY)
 
         cert_fd, self._expired_cert_path = tempfile.mkstemp(prefix='cert',
                                                             dir=self._tmp_dir)
-        os.write(cert_fd, EXPIRED_CERT)
         os.close(cert_fd)
+        with open(self._expired_cert_path, 'w') as cert:
+            cert.write(EXPIRED_CERT)
 
-        self.valid_dn_file, self.valid_dn_path = tempfile.mkstemp(
+        valid_dn_file, self.valid_dn_path = tempfile.mkstemp(
             prefix='valid', dir=self._tmp_dir)
-        os.write(self.valid_dn_file, '/test/dn')
-        os.close(self.valid_dn_file)
+        os.close(valid_dn_file)
+        with open(self.valid_dn_path, 'w') as dn:
+            dn.write('/test/dn')
 
         # Create a new certificate using the hardcoded key.
         # The subject has been hardcoded so that the generated
