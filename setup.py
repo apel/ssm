@@ -51,10 +51,10 @@ def main():
           download_url='https://github.com/apel/ssm/releases',
           license='Apache License, Version 2.0',
           install_requires=[
-              'stomp.py>=3.1.1', 'python-ldap', 'argo-ams-library',
+              'stomp.py<5.0.0', 'python-ldap', 'argo-ams-library',
           ],
           extras_require={
-              'python-daemon': ['python-daemon<2.2.0'],
+              'python-daemon': ['python-daemon'],
               'dirq': ['dirq'],
           },
           packages=find_packages(exclude=['bin', 'test']),
