@@ -44,6 +44,7 @@ except ImportError:
 REFRESH_DNS = 600
 log = None
 
+
 def get_dns(dn_file):
     '''
     Retrieve a list of DNs from a file.

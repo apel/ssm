@@ -85,10 +85,10 @@ class TestEncryptUtils(unittest.TestCase):
         '''
         signed = sign(MSG, TEST_CERT_FILE, TEST_KEY_FILE)
 
-        if not 'MIME-Version' in signed:
+        if 'MIME-Version' not in signed:
             self.fail("Didn't get MIME message when signing.")
 
-        if not MSG in signed:
+        if MSG not in signed:
             self.fail('The plaintext should be included in the signed message.')
 
         # Indirect testing, using the verify_message() method
@@ -215,7 +215,7 @@ class TestEncryptUtils(unittest.TestCase):
         '''
         encrypted = encrypt(MSG, TEST_CERT_FILE)
 
-        if not 'MIME-Version' in encrypted:
+        if 'MIME-Version' not in encrypted:
             self.fail('Encrypted message is not MIME')
 
         # Indirect testing, using the decrypt_message function.
