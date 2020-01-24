@@ -314,22 +314,22 @@ def get_certificate_subject(certstring):
 
 
 def get_signer_cert(signed_text):
-    '''
-    Read the signer's certificate from the signed specified message, and return the
-    certificate string.
-    '''
+    """Read the signer's certificate from the signed specified message."""
     # This ensures that openssl knows that the string is finished.
     # It makes no difference if the signed message is correct, but
     # prevents it from hanging in the case of an empty string.
     signed_text += '\n\n'
 
-    p1 = Popen(['openssl', 'smime', '-pk7out'],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    p2 = Popen(['openssl', 'pkcs7', '-print_certs'],
-               stdin=p1.stdout, stdout=PIPE, stderr=PIPE)
+    p1 = Popen(['openssl', 'smime', '-pk7out'], stdin=PIPE, stdout=PIPE,
+               stderr=PIPE, universal_newlines=True)
+    pkcs7, error = p1.communicate(signed_text)
 
-    p1.stdin.write(signed_text)
-    certstring, error = p2.communicate()
+    if (error != ''):
+        log.error(error)
+
+    p2 = Popen(['openssl', 'pkcs7', '-print_certs'], stdin=PIPE, stdout=PIPE,
+               stderr=PIPE, universal_newlines=True)
+    certstring, error = p2.communicate(pkcs7)
 
     if (error != ''):
         log.error(error)
