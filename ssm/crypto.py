@@ -175,6 +175,11 @@ def verify(signed_text, capath, check_crl):
         body = base64.decodestring(body)
     # otherwise, plain text
 
+    # In Python 3, decodestring() returns bytes so decode to a string while
+    # Python 2 compatability is still required.
+    if not isinstance(body, str):
+        body = body.decode()
+
     # 'openssl smime' returns "Verification successful" to standard error. We
     # don't want to log this as an error each time, but we do want to see if
     # there's a genuine error.

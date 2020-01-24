@@ -106,8 +106,15 @@ class TestEncryptUtils(unittest.TestCase):
 
         # This is a manual 'fudge' to make MS2 appear like a
         # quoted-printable message when signed
-        # Encode MSG2 so it's 'quoted-printable'
-        quopri_msg = quopri.encodestring(MSG2)
+        # Encode MSG2 so it's 'quoted-printable', after encoding it to ensure
+        # it's a bytes object for Python 3. Latter is a no-op in Python 2.
+        quopri_msg = quopri.encodestring(MSG2.encode())
+
+        # In Python 3, encodestring() returns bytes so decode to a string while
+        # Python 2 compatability is still required.
+        if not isinstance(quopri_msg, str):
+            quopri_msg = quopri_msg.decode()
+
         # Add Content-Type and Content-Transfer-Encoding
         # headers to message
         header_quopri_msg = ('Content-Type: text/xml; charset=utf8\n'
