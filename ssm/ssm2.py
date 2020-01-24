@@ -17,14 +17,6 @@
 '''
 from __future__ import print_function
 
-# It's possible for SSM to be used without SSL, and the ssl module isn't in the
-# standard library until 2.6, so this makes it safe for earlier Python versions.
-try:
-    import ssl
-except ImportError:
-    # ImportError is raised later on if SSL is actually requested.
-    ssl = None
-
 from ssm import crypto
 from ssm.message_directory import MessageDirectory
 
@@ -537,9 +529,6 @@ class Ssm2(stomp.ConnectionListener):
         '''
         log.info("Established connection to %s, port %i", host, port)
         if self._use_ssl:
-            if ssl is None:
-                raise ImportError("SSL connection requested but the ssl module "
-                                  "wasn't found.")
             log.info('Connecting using SSL...')
         else:
             log.warning("SSL connection not requested, your messages may be "
