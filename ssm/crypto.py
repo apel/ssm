@@ -319,7 +319,7 @@ def get_certificate_subject(certstring):
 
 
 def get_signer_cert(signed_text):
-    """Read the signer's certificate from the signed specified message."""
+    """Return the signer's certificate from the signed specified message."""
     # This ensures that openssl knows that the string is finished.
     # It makes no difference if the signed message is correct, but
     # prevents it from hanging in the case of an empty string.
