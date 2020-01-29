@@ -18,6 +18,8 @@
 Class to interact with a BDII LDAP server to retrieve information about
 the stomp brokers specified in a network.
 '''
+from __future__ import print_function
+
 import ldap
 import logging
 
@@ -140,12 +142,12 @@ if __name__ == '__main__':
     def print_brokers(text, service, network):
         brokers = BG.get_broker_hosts_and_ports(service, network)
         # Print section heading
-        print '==', text, '=='
+        print('==', text, '==')
         # Print brokers in form 'host:port'
         for broker in brokers:
-            print '%s:%i' % (broker[0], broker[1])
+            print('%s:%i' % (broker[0], broker[1]))
         # Leave space between sections
-        print
+        print()
 
     print_brokers('SSL production brokers', STOMP_SSL_SERVICE, 'PROD')
     print_brokers('Production brokers', STOMP_SERVICE, 'PROD')

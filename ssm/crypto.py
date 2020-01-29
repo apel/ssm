@@ -20,6 +20,7 @@
    found that none were mature enough to implement the SMIME crypto we had
    decided on.
 '''
+from __future__ import print_function
 
 from subprocess import Popen, PIPE
 import quopri
@@ -57,7 +58,7 @@ def check_cert_key(certpath, keypath):
     try:
         cert = _from_file(certpath)
         key = _from_file(keypath)
-    except IOError, e:
+    except IOError as e:
         log.error('Could not find cert or key file: %s', e)
         return False
 
@@ -66,7 +67,7 @@ def check_cert_key(certpath, keypath):
         return False
 
     p1 = Popen(['openssl', 'x509', '-noout', '-modulus'],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
+               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     modulus1, error = p1.communicate(cert)
 
     if error != '':
@@ -74,7 +75,7 @@ def check_cert_key(certpath, keypath):
         return False
 
     p2 = Popen(['openssl', 'rsa', '-noout', '-modulus'],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
+               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     modulus2, error = p2.communicate(key)
 
     if error != '':
@@ -92,7 +93,8 @@ def sign(text, certpath, keypath):
     '''
     try:
         p1 = Popen(['openssl', 'smime', '-sign', '-inkey', keypath, '-signer', certpath, '-text'],
-                   stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                   stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                   universal_newlines=True)
 
         signed_msg, error = p1.communicate(text)
 
@@ -101,7 +103,7 @@ def sign(text, certpath, keypath):
 
         return signed_msg
 
-    except OSError, e:
+    except OSError as e:
         log.error('Failed to sign message: %s', e)
         raise CryptoException('Message signing failed.  Check cert and key permissions.')
 
@@ -118,7 +120,7 @@ def encrypt(text, certpath, cipher='aes128'):
     cipher = '-' + cipher
     # encrypt
     p1 = Popen(['openssl', 'smime', '-encrypt', cipher, certpath],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
+               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
     enc_txt, error = p1.communicate(text)
 
@@ -154,7 +156,7 @@ def verify(signed_text, capath, check_crl):
     # is verified above; this check would also check that the certificate
     # is allowed to sign with SMIME, which host certificates sometimes aren't.
     p1 = Popen(['openssl', 'smime', '-verify', '-CApath', capath, '-noverify'],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
+               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
     message, error = p1.communicate(signed_text)
 
@@ -172,6 +174,11 @@ def verify(signed_text, capath, check_crl):
     elif 'base64' in headers:
         body = base64.decodestring(body)
     # otherwise, plain text
+
+    # In Python 3, decodestring() returns bytes so decode to a string while
+    # Python 2 compatability is still required.
+    if not isinstance(body, str):
+        body = body.decode()
 
     # 'openssl smime' returns "Verification successful" to standard error. We
     # don't want to log this as an error each time, but we do want to see if
@@ -205,7 +212,7 @@ def decrypt(encrypted_text, certpath, keypath):
 
     p1 = Popen(['openssl', 'smime', '-decrypt',
                 '-recip', certpath, '-inkey', keypath],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
+               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
     enc_txt, error = p1.communicate(encrypted_text)
 
@@ -227,7 +234,8 @@ def verify_cert_date(certpath):
     # non-zero if yes, it will expire, or zero if not.
     args = ['openssl', 'x509', '-checkend', '86400', '-noout', '-in', certpath]
 
-    p1 = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    p1 = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+               universal_newlines=True)
 
     message, error = p1.communicate(certpath)
 
@@ -259,7 +267,8 @@ def verify_cert(certstring, capath, check_crls=True):
     if check_crls:
         args.append('-crl_check_all')
 
-    p1 = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    p1 = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+               universal_newlines=True)
 
     message, error = p1.communicate(certstring)
 
@@ -297,7 +306,7 @@ def get_certificate_subject(certstring):
     Return the certificate subject's DN, in legacy openssl format.
     '''
     p1 = Popen(['openssl', 'x509', '-noout', '-subject'],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
+               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
     subject, error = p1.communicate(certstring)
 
@@ -310,22 +319,22 @@ def get_certificate_subject(certstring):
 
 
 def get_signer_cert(signed_text):
-    '''
-    Read the signer's certificate from the signed specified message, and return the
-    certificate string.
-    '''
+    """Return the signer's certificate from the signed specified message."""
     # This ensures that openssl knows that the string is finished.
     # It makes no difference if the signed message is correct, but
     # prevents it from hanging in the case of an empty string.
     signed_text += '\n\n'
 
-    p1 = Popen(['openssl', 'smime', '-pk7out'],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    p2 = Popen(['openssl', 'pkcs7', '-print_certs'],
-               stdin=p1.stdout, stdout=PIPE, stderr=PIPE)
+    p1 = Popen(['openssl', 'smime', '-pk7out'], stdin=PIPE, stdout=PIPE,
+               stderr=PIPE, universal_newlines=True)
+    pkcs7, error = p1.communicate(signed_text)
 
-    p1.stdin.write(signed_text)
-    certstring, error = p2.communicate()
+    if (error != ''):
+        log.error(error)
+
+    p2 = Popen(['openssl', 'pkcs7', '-print_certs'], stdin=PIPE, stdout=PIPE,
+               stderr=PIPE, universal_newlines=True)
+    certstring, error = p2.communicate(pkcs7)
 
     if (error != ''):
         log.error(error)
