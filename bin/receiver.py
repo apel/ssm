@@ -94,7 +94,7 @@ def main():
 
     (options, unused_args) = op.parse_args()
 
-    cp = ConfigParser.ConfigParser()
+    cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
     cp.read(options.config)
 
     # Check for pidfile

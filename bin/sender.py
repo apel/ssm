@@ -50,7 +50,7 @@ def main():
                         default='/etc/apel/logging.cfg')
     (options, unused_args) = op.parse_args()
 
-    cp = ConfigParser.ConfigParser()
+    cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
     cp.read(options.config)
 
     # set up logging
