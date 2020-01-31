@@ -139,14 +139,15 @@ def main():
         project = None
         token = ''
 
+        use_ssl = cp.getboolean('broker', 'use_ssl')
+        if use_ssl:
+            service = STOMP_SSL_SERVICE
+        else:
+            service = STOMP_SERVICE
+
         # If we can't get a broker to connect to, we have to give up.
         try:
             bg = StompBrokerGetter(cp.get('broker', 'bdii'))
-            use_ssl = cp.getboolean('broker', 'use_ssl')
-            if use_ssl:
-                service = STOMP_SSL_SERVICE
-            else:
-                service = STOMP_SERVICE
             brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker',
                                                                     'network'))
         except ConfigParser.NoOptionError as e:

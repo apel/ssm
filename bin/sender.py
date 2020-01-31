@@ -88,16 +88,17 @@ def main():
         project = None
         token = ''
 
+        use_ssl = cp.getboolean('broker', 'use_ssl')
+        if use_ssl:
+            service = STOMP_SSL_SERVICE
+        else:
+            service = STOMP_SERVICE
+
         # If we can't get a broker to connect to, we have to give up.
         try:
             bdii_url = cp.get('broker', 'bdii')
             log.info('Retrieving broker details from %s ...', bdii_url)
             bg = StompBrokerGetter(bdii_url)
-            use_ssl = cp.getboolean('broker', 'use_ssl')
-            if use_ssl:
-                service = STOMP_SSL_SERVICE
-            else:
-                service = STOMP_SERVICE
             brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker',
                                                                     'network'))
             log.info('Found %s brokers.', len(brokers))
