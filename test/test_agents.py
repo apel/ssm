@@ -6,6 +6,7 @@ try:
 except ImportError:
     from configparser import NoSectionError
 import os
+import sys
 import tempfile
 from textwrap import dedent
 import unittest
@@ -69,6 +70,10 @@ class getDNsTest(unittest.TestCase):
 
 class mainTest(unittest.TestCase):
     """Test cases for receiver.main."""
+
+    def setUp(self):
+        # Clear arguments to avoid args from coverage.py being passed in.
+        sys.argv = []
 
     def test_main_no_config(self):
         """Check that a sender can't be started without a config."""
