@@ -1,6 +1,5 @@
 # Additional requirements for the unit and coverage tests
 
-unittest2
 coveralls<=1.2.0
 mock
 codecov
