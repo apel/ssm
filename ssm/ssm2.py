@@ -360,6 +360,27 @@ class Ssm2(stomp.ConnectionListener):
             # If it fails, use the v3 metod signiture
             self._conn.send(to_send, headers=headers)
 
+    def _send_msg_ams(self, text, msgid):
+        """Send one message using AMS, returning the AMS ID of the mesage.
+
+        The message will be signed using the host cert and key. If an
+        encryption certificate has been supplied, the message will also be
+        encrypted.
+        """
+        log.info('Sending message: %s', msgid)
+        if text is not None:
+            # First we sign the message
+            to_send = crypto.sign(text, self._cert, self._key)
+            # Possibly encrypt the message.
+            if self._enc_cert is not None:
+                to_send = crypto.encrypt(to_send, self._enc_cert)
+            # Then we need to wrap text up as an AMS Message.
+            message = AmsMessage(data=to_send,
+                                 attributes={'empaid': msgid}).dict()
+
+            argo_response = self._ams.publish(self._dest, message)
+            return argo_response['messageIds'][0]
+
     def pull_msg_ams(self):
         """Pull 1 message from the AMS and acknowledge it."""
         if self._protocol != Ssm2.AMS_MESSAGING:
@@ -483,21 +504,9 @@ class Ssm2(stomp.ConnectionListener):
 
             elif self._protocol == Ssm2.AMS_MESSAGING:
                 # Then we are sending to an Argo Messaging Service instance.
-                if text is not None:
-                    # First we sign the message
-                    to_send = crypto.sign(text, self._cert, self._key)
-                    # Possibly encrypt the message.
-                    if self._enc_cert is not None:
-                        to_send = crypto.encrypt(to_send, self._enc_cert)
+                argo_id = self._send_msg_ams(text, msgid)
 
-                    # Then we need to wrap text up as an AMS Message.
-                    message = AmsMessage(data=to_send,
-                                         attributes={'empaid': msgid}).dict()
-
-                    argo_response = self._ams.publish(self._dest, message)
-
-                    argo_id = argo_response['messageIds'][0]
-                    log_string = "Sent %s, Argo ID: %s" % (msgid, argo_id)
+                log_string = "Sent %s, Argo ID: %s" % (msgid, argo_id)
 
             else:
                 # The SSM has been improperly configured
