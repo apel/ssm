@@ -22,7 +22,7 @@ before_script:
   - export PYTHONPATH=$PYTHONPATH:`pwd -P`
   - cd test
 
-script: coverage run --branch --source=ssm,bin -m unittest2 discover --buffer
+script: coverage run --branch --source=ssm,bin -m unittest discover --buffer
 
 after_success:
   - coveralls
