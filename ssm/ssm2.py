@@ -485,6 +485,8 @@ class Ssm2(stomp.ConnectionListener):
                 while self._last_msg is None:
                     if not self.connected:
                         raise Ssm2Exception('Lost connection.')
+                    # Small sleep to avoid hammering the CPU
+                    time.sleep(0.01)
 
                 log_string = "Sent %s" % msgid
 
@@ -499,7 +501,6 @@ class Ssm2(stomp.ConnectionListener):
                 raise Ssm2Exception('Unknown messaging protocol: %s' %
                                     self._protocol)
 
-            time.sleep(0.1)
             # log that the message was sent
             log.info(log_string)
 
