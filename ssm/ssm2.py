@@ -36,7 +36,12 @@ import socket
 import time
 import logging
 
-from argo_ams_library import ArgoMessagingService, AmsMessage
+try:
+    from argo_ams_library import ArgoMessagingService, AmsMessage
+except ImportError:
+    # ImportError is raised later on if AMS is requested but lib not installed.
+    ArgoMessagingService = None
+    AmsMessage = None
 
 # Set up logging
 log = logging.getLogger(__name__)
@@ -100,6 +105,11 @@ class Ssm2(stomp.ConnectionListener):
         self._token = token
 
         if self._protocol == Ssm2.AMS_MESSAGING:
+            if ArgoMessagingService is None:
+                raise ImportError(
+                    "The Python package argo_ams_library must be installed to "
+                    "use AMS. Please install or use STOMP."
+                )
             self._ams = ArgoMessagingService(endpoint=self._brokers[0],
                                              token=self._token,
                                              cert=self._cert,

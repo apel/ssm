@@ -25,7 +25,12 @@ from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm import __version__, set_up_logging, LOG_BREAK
 
 from stomp.exception import NotConnectedException
-from argo_ams_library import AmsConnectionException
+try:
+    from argo_ams_library import AmsConnectionException
+except ImportError:
+    # ImportError is raised when Ssm2 initialised if AMS is requested but lib
+    # not installed.
+    AmsConnectionException = None
 
 import time
 import logging.config
