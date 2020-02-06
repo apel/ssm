@@ -21,7 +21,7 @@ BuildArch:      noarch
 BuildRequires:  python-devel
 %endif
 
-Requires:       stomppy < 5.0.0, python-daemon, python-ldap, argo-ams-library
+Requires:       stomppy < 5.0.0, python-daemon, python-ldap
 Requires(pre):  shadow-utils
 
 %define ssmconf %_sysconfdir/apel
