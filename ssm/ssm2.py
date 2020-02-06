@@ -220,36 +220,8 @@ class Ssm2(stomp.ConnectionListener):
             empaid = 'noid'
 
         log.info("Received message. ID = %s", empaid)
-        extracted_msg, signer, err_msg = self._handle_msg(body)
-
-        try:
-            # If the message is empty or the error message is not empty
-            # then reject the message.
-            if extracted_msg is None or err_msg is not None:
-                if signer is None:  # crypto failed
-                    signer = 'Not available.'
-                elif extracted_msg is not None:
-                    # If there is a signer then it was rejected for not being
-                    # in the DNs list, so we can use the extracted msg, which
-                    # allows the msg to be reloaded if needed.
-                    body = extracted_msg
-
-                log.warn("Message rejected: %s", err_msg)
-
-                name = self._rejectq.add({'body': body,
-                                          'signer': signer,
-                                          'empaid': empaid,
-                                          'error': err_msg})
-                log.info("Message saved to reject queue as %s", name)
-
-            else:  # message verified ok
-                name = self._inq.add({'body': extracted_msg,
-                                      'signer': signer,
-                                      'empaid': empaid})
-                log.info("Message saved to incoming queue as %s", name)
-
-        except (IOError, OSError) as e:
-            log.error('Failed to read or write file: %s', e)
+        # Save the message to either accept or reject queue.
+        self._save_msg_to_queue(body, empaid)
 
     def on_error(self, headers, body):
         '''
@@ -336,6 +308,38 @@ class Ssm2(stomp.ConnectionListener):
 
         return message, signer, None
 
+    def _save_msg_to_queue(self, body, empaid):
+        """Extract message contents and add to the accept or reject queue."""
+        extracted_msg, signer, err_msg = self._handle_msg(body)
+        try:
+            # If the message is empty or the error message is not empty
+            # then reject the message.
+            if extracted_msg is None or err_msg is not None:
+                if signer is None:  # crypto failed
+                    signer = 'Not available.'
+                elif extracted_msg is not None:
+                    # If there is a signer then it was rejected for not being
+                    # in the DNs list, so we can use the extracted msg, which
+                    # allows the msg to be reloaded if needed.
+                    body = extracted_msg
+
+                log.warn("Message rejected: %s", err_msg)
+
+                name = self._rejectq.add({'body': body,
+                                          'signer': signer,
+                                          'empaid': empaid,
+                                          'error': err_msg})
+                log.info("Message saved to reject queue as %s", name)
+
+            else:  # message verified ok
+                name = self._inq.add({'body': extracted_msg,
+                                      'signer': signer,
+                                      'empaid': empaid})
+                log.info("Message saved to incoming queue as %s", name)
+
+        except (IOError, OSError) as error:
+            log.error('Failed to read or write file: %s', error)
+
     def _send_msg(self, message, msgid):
         '''
         Send one message using stomppy.  The message will be signed using
@@ -414,42 +418,14 @@ class Ssm2(stomp.ConnectionListener):
             body = msg.get_data()
 
             log.info('Received message. ID = %s, Argo ID = %s', empaid, msgid)
+            # Save the message to either accept or reject queue.
+            self._save_msg_to_queue(body, empaid)
 
-            extracted_msg, signer, err_msg = self._handle_msg(body)
-
-            try:
-                # If the message is empty or the error message is not empty
-                # then reject the message.
-                if extracted_msg is None or err_msg is not None:
-                    if signer is None:  # crypto failed
-                        signer = 'Not available.'
-                    elif extracted_msg is not None:
-                        # If there is a signer then it was rejected for not
-                        # being in the DNs list, so we can use the
-                        # extracted msg, which allows the msg to be
-                        # reloaded if needed.
-                        body = extracted_msg
-
-                    log.warn("Message rejected: %s", err_msg)
-
-                    name = self._rejectq.add({'body': body,
-                                              'signer': signer,
-                                              'empaid': empaid,
-                                              'error': err_msg})
-                    log.info("Message saved to reject queue as %s", name)
-
-                else:  # message verified ok
-                    name = self._inq.add({'body': extracted_msg,
-                                          'signer': signer,
-                                          'empaid': empaid})
-                    log.info("Message saved to incoming queue as %s", name)
-
-                # If we get here, we have saved the message, so add the
-                # ack ID to the list of those to be acknowledged.
-                ackids.append(msg_ack_id)
-
-            except OSError as error:
-                log.error('Failed to read or write file: %s', error)
+            # The message has either been saved or there's been a problem with
+            # writing it out, but either way we add the ack ID to the list
+            # of those to be acknowledged so that we don't get stuck reading
+            # the same message.
+            ackids.append(msg_ack_id)
 
         # pass list of extracted ackIds to AMS Service so that
         # it can move the offset for the next subscription pull
