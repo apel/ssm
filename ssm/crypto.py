@@ -63,24 +63,23 @@ def check_cert_key(certpath, keypath):
     if cert == key:
         return False
 
-    p1 = Popen(['openssl', 'x509', '-noout', '-modulus'],
+    p1 = Popen(['openssl', 'x509', '-pubkey', '-noout'],
                stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
-    modulus1, error = p1.communicate(cert)
+    pubkey1, error = p1.communicate(cert)
 
     if error != '':
         log.error(error)
         return False
 
-    p2 = Popen(['openssl', 'rsa', '-noout', '-modulus'],
+    p2 = Popen(['openssl', 'pkey', '-pubout'],
                stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
-    modulus2, error = p2.communicate(key)
+    pubkey2, error = p2.communicate(key)
 
     if error != '':
         log.error(error)
         return False
 
-    return modulus1.strip() == modulus2.strip()
-
+    return pubkey1.strip() == pubkey2.strip()
 
 def sign(text, certpath, keypath):
     """Sign the message using the certificate and key in the files specified.
