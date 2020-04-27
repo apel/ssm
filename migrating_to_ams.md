@@ -17,7 +17,7 @@ protocol: AMS
 1. Add the following to the `[messaging]` section of your configuration:
 ```
 # If using AMS this is the project that SSM will connect to. Ignored for STOMP.
-ams_project: EGI-ACCOUNTING
+ams_project: accounting
 ```
 1. To send to the central APEL Accounting server, change `destination` to one of the following depending on your type of accounting:
   * `gLite-APEL` for Grid Accounting
