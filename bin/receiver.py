@@ -249,13 +249,13 @@ def main():
         # The message listening loop.
         while True:
             try:
-                time.sleep(1)
+                time.sleep(0.1)
                 if protocol == Ssm2.AMS_MESSAGING:
                     # We need to pull down messages as part of
                     # this loop when using AMS.
                     ssm.pull_msg_ams()
 
-                if i % REFRESH_DNS == 0:
+                if i % (REFRESH_DNS * 10) == 0:
                     log.info('Refreshing valid DNs and then sending ping.')
                     dns = get_dns(options.dn_file)
                     ssm.set_dns(dns)
