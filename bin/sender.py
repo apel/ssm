@@ -18,6 +18,7 @@
 Script to run a sending SSM.
 @author: Will Rogers
 '''
+from __future__ import print_function
 
 from ssm import __version__, set_up_logging, LOG_BREAK
 from ssm.ssm2 import Ssm2, Ssm2Exception
@@ -29,7 +30,11 @@ import ldap
 import sys
 import os
 from optparse import OptionParser
-import ConfigParser
+
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 
 def main():
@@ -45,7 +50,7 @@ def main():
                         default='/etc/apel/logging.cfg')
     (options, unused_args) = op.parse_args()
 
-    cp = ConfigParser.ConfigParser()
+    cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
     cp.read(options.config)
 
     # set up logging
@@ -56,9 +61,9 @@ def main():
             set_up_logging(cp.get('logging', 'logfile'),
                            cp.get('logging', 'level'),
                            cp.getboolean('logging', 'console'))
-    except (ConfigParser.Error, ValueError, IOError), err:
-        print 'Error configuring logging: %s' % str(err)
-        print 'The system will exit.'
+    except (ConfigParser.Error, ValueError, IOError) as err:
+        print('Error configuring logging: %s' % err)
+        print('The system will exit.')
         sys.exit(1)
 
     log = logging.getLogger('ssmsend')
@@ -83,20 +88,21 @@ def main():
         project = None
         token = ''
 
+        use_ssl = cp.getboolean('broker', 'use_ssl')
+        if use_ssl:
+            service = STOMP_SSL_SERVICE
+        else:
+            service = STOMP_SERVICE
+
         # If we can't get a broker to connect to, we have to give up.
         try:
             bdii_url = cp.get('broker', 'bdii')
             log.info('Retrieving broker details from %s ...', bdii_url)
             bg = StompBrokerGetter(bdii_url)
-            use_ssl = cp.getboolean('broker', 'use_ssl')
-            if use_ssl:
-                service = STOMP_SSL_SERVICE
-            else:
-                service = STOMP_SERVICE
             brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker',
                                                                     'network'))
             log.info('Found %s brokers.', len(brokers))
-        except ConfigParser.NoOptionError, e:
+        except ConfigParser.NoOptionError as e:
             try:
                 host = cp.get('broker', 'host')
                 port = cp.get('broker', 'port')
@@ -107,13 +113,13 @@ def main():
                           'Please check configuration')
                 log.error('System will exit.')
                 log.info(LOG_BREAK)
-                print 'SSM failed to start.  See log file for details.'
+                print('SSM failed to start.  See log file for details.')
                 sys.exit(1)
-        except ldap.LDAPError, e:
+        except ldap.LDAPError as e:
             log.error('Could not connect to LDAP server: %s', e)
             log.error('System will exit.')
             log.info(LOG_BREAK)
-            print 'SSM failed to start.  See log file for details.'
+            print('SSM failed to start.  See log file for details.')
             sys.exit(1)
 
     elif protocol == Ssm2.AMS_MESSAGING:
@@ -134,24 +140,24 @@ def main():
                       'please check your configuration')
             log.error('System will exit.')
             log.info(LOG_BREAK)
-            print 'SSM failed to start.  See log file for details.'
+            print('SSM failed to start.  See log file for details.')
             sys.exit(1)
 
         # Attempt to configure AMS project variable.
         try:
             project = cp.get('messaging', 'ams_project')
 
-        except (ConfigParser.Error, ValueError, IOError), err:
+        except (ConfigParser.Error, ValueError, IOError) as err:
             # A project is needed to successfully send to an
             # AMS instance, so log and then exit on an error.
             log.error('Error configuring AMS values: %s', err)
             log.error('SSM will exit.')
-            print 'SSM failed to start.  See log file for details.'
+            print('SSM failed to start.  See log file for details.')
             sys.exit(1)
 
         try:
             token = cp.get('messaging', 'token')
-        except (ConfigParser.Error, ValueError, IOError), err:
+        except (ConfigParser.Error, ValueError, IOError) as err:
             # A token is not necessarily needed, if the cert and key can be
             # used by the underlying auth system to get a suitable token.
             log.info('No AMS token provided, using cert/key pair instead.')
@@ -180,7 +186,7 @@ def main():
             destination = cp.get('messaging', 'destination')
             if destination == '':
                 raise Ssm2Exception('No destination queue is configured.')
-        except ConfigParser.NoOptionError, e:
+        except ConfigParser.NoOptionError as e:
             raise Ssm2Exception(e)
 
         # Determine what type of message store we are interacting with,
@@ -212,11 +218,11 @@ def main():
         else:
             log.info('No messages found to send.')
 
-    except (Ssm2Exception, CryptoException), e:
-        print 'SSM failed to complete successfully.  See log file for details.'
+    except (Ssm2Exception, CryptoException) as e:
+        print('SSM failed to complete successfully.  See log file for details.')
         log.error('SSM failed to complete successfully: %s', e)
-    except Exception, e:
-        print 'SSM failed to complete successfully.  See log file for details.'
+    except Exception as e:
+        print('SSM failed to complete successfully.  See log file for details.')
         log.error('Unexpected exception in SSM: %s', e)
         log.error('Exception type: %s', e.__class__)
 

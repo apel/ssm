@@ -1,9 +1,5 @@
 # Additional requirements for the unit and coverage tests
 
-# Constraints on the requirements below
--c constraints.txt
-
-unittest2
 coveralls<=1.2.0
 mock
 codecov

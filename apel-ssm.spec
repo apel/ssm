@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.4.1
+Version:        3.0.0
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -21,7 +21,7 @@ BuildArch:      noarch
 BuildRequires:  python-devel
 %endif
 
-Requires:       stomppy >= 3.1.1, python-daemon < 2.2.0, python-ldap, argo-ams-library
+Requires:       stomppy < 5.0.0, python-daemon, python-ldap
 Requires(pre):  shadow-utils
 
 %define ssmconf %_sysconfdir/apel
@@ -100,6 +100,15 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Wed Sep 23 2020 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.0.0-1
+ - As part of the migration to Python 3, this release removes support for
+   Python 2.6.
+ - The argo-ams-library is now an optional module, depending on whether AMS is
+   used or not.
+ - Fixed how the use_ssl config option is retrieved to avoid "referenced before
+   assignment" errors leading to SSM failing to run.
+ - Changes made to messaging loops to avoid high CPU usage.
+
 * Tue Sep 03 2019 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.4.1-1
  - Fixed handling of OpenSSL errors so that messages that have been tampered
    with are now rejected.
@@ -118,7 +127,7 @@ rm -rf $RPM_BUILD_ROOT
 * Wed Nov 28 2018 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.3.0-2
  - Updated build and test files only.
 
-* Wed Aug 16 2018 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.3.0-1
+* Thu Aug 16 2018 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.3.0-1
  - Added support for stomp.py versions from 3.1.6 onwards which allows for
    builds on Ubuntu Trusty and should enable IPv6 support.
  - Added script for creating Ubuntu (.deb) builds.

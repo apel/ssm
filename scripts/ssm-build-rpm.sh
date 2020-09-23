@@ -10,7 +10,7 @@
 rpmdev-setuptree
 
 RPMDIR=/home/rpmb/rpmbuild
-VERSION=2.4.1-1
+VERSION=3.0.0-1
 SSMDIR=apel-ssm-$VERSION
 
 # Remove old sources and RPMS
@@ -34,3 +34,7 @@ rpmbuild -ba $RPMDIR/SPECS/apel-ssm.spec
 
 # Clean up (note there are both leading and trailing asterisks)
 rm -rf *ssm-$VERSION*
+
+# Check for errors in SPEC and built packages
+echo "Possible Issues to Fix:"
+rpmlint $RPMDIR

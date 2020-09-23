@@ -1,8 +1,4 @@
-'''
-Created on 7 Dec 2011
-
-@author: will
-'''
+from __future__ import print_function
 
 import os
 import shutil
@@ -27,18 +23,21 @@ class TestSsm(unittest.TestCase):
         # key to be files.
         key_fd, self._key_path = tempfile.mkstemp(prefix='key',
                                                   dir=self._tmp_dir)
-        os.write(key_fd, TEST_KEY)
         os.close(key_fd)
+        with open(self._key_path, 'w') as key:
+            key.write(TEST_KEY)
 
         cert_fd, self._expired_cert_path = tempfile.mkstemp(prefix='cert',
                                                             dir=self._tmp_dir)
-        os.write(cert_fd, EXPIRED_CERT)
         os.close(cert_fd)
+        with open(self._expired_cert_path, 'w') as cert:
+            cert.write(EXPIRED_CERT)
 
-        self.valid_dn_file, self.valid_dn_path = tempfile.mkstemp(
+        valid_dn_file, self.valid_dn_path = tempfile.mkstemp(
             prefix='valid', dir=self._tmp_dir)
-        os.write(self.valid_dn_file, '/test/dn')
-        os.close(self.valid_dn_file)
+        os.close(valid_dn_file)
+        with open(self.valid_dn_path, 'w') as dn:
+            dn.write('/test/dn')
 
         # Create a new certificate using the hardcoded key.
         # The subject has been hardcoded so that the generated
@@ -64,9 +63,9 @@ class TestSsm(unittest.TestCase):
         try:
             shutil.rmtree(self._msgdir)
             shutil.rmtree(self._tmp_dir)
-        except OSError, e:
-            print 'Error removing temporary directory %s' % self._tmp_dir
-            print e
+        except OSError as e:
+            print('Error removing temporary directory %s' % self._tmp_dir)
+            print(e)
 
     def test_on_message(self):
         '''
@@ -84,9 +83,9 @@ class TestSsm(unittest.TestCase):
 
         # Try changing permissions on the directory we're writing to.
         # The on_message function shouldn't throw an exception.
-        os.chmod(self._msgdir, 0400)
+        os.chmod(self._msgdir, 0o0400)
         test_ssm.on_message({'nothing': 'dummy'}, 'Not signed or encrypted.')
-        os.chmod(self._msgdir, 0777)
+        os.chmod(self._msgdir, 0o0777)
 
         # Check that message with ID of 'ping' doesn't raise an exception.
         # Messages with this ID are handled differently to normal messages.

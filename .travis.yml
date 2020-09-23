@@ -1,15 +1,8 @@
+os: linux
 language: python
 python:
-  - "2.6"
   - "2.7"
-  - "nightly"
-matrix:
-  allow_failures:
-    - python: "nightly"
-  fast_finish: true
-
-# Pin Ubuntu to Trusty for the moment for Python 2.6 support
-dist: trusty
+  - "3.7"
 
 # Cache the dependencies installed by pip
 cache: pip
@@ -29,7 +22,7 @@ before_script:
   - export PYTHONPATH=$PYTHONPATH:`pwd -P`
   - cd test
 
-script: coverage run --branch --source=ssm,bin -m unittest2 discover --buffer
+script: coverage run --branch --source=ssm,bin -m unittest discover --buffer
 
 after_success:
   - coveralls

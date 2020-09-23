@@ -15,14 +15,7 @@
 
    @author: Will Rogers
 '''
-
-# It's possible for SSM to be used without SSL, and the ssl module isn't in the
-# standard library until 2.6, so this makes it safe for earlier Python versions.
-try:
-    import ssl
-except ImportError:
-    # ImportError is raised later on if SSL is actually requested.
-    ssl = None
+from __future__ import print_function
 
 from ssm import crypto
 from ssm.message_directory import MessageDirectory
@@ -43,7 +36,12 @@ import socket
 import time
 import logging
 
-from argo_ams_library import ArgoMessagingService, AmsMessage
+try:
+    from argo_ams_library import ArgoMessagingService, AmsMessage
+except ImportError:
+    # ImportError is raised later on if AMS is requested but lib not installed.
+    ArgoMessagingService = None
+    AmsMessage = None
 
 # Set up logging
 log = logging.getLogger(__name__)
@@ -107,6 +105,11 @@ class Ssm2(stomp.ConnectionListener):
         self._token = token
 
         if self._protocol == Ssm2.AMS_MESSAGING:
+            if ArgoMessagingService is None:
+                raise ImportError(
+                    "The Python package argo_ams_library must be installed to "
+                    "use AMS. Please install or use STOMP."
+                )
             self._ams = ArgoMessagingService(endpoint=self._brokers[0],
                                              token=self._token,
                                              cert=self._cert,
@@ -227,36 +230,8 @@ class Ssm2(stomp.ConnectionListener):
             empaid = 'noid'
 
         log.info("Received message. ID = %s", empaid)
-        extracted_msg, signer, err_msg = self._handle_msg(body)
-
-        try:
-            # If the message is empty or the error message is not empty
-            # then reject the message.
-            if extracted_msg is None or err_msg is not None:
-                if signer is None:  # crypto failed
-                    signer = 'Not available.'
-                elif extracted_msg is not None:
-                    # If there is a signer then it was rejected for not being
-                    # in the DNs list, so we can use the extracted msg, which
-                    # allows the msg to be reloaded if needed.
-                    body = extracted_msg
-
-                log.warn("Message rejected: %s", err_msg)
-
-                name = self._rejectq.add({'body': body,
-                                          'signer': signer,
-                                          'empaid': empaid,
-                                          'error': err_msg})
-                log.info("Message saved to reject queue as %s", name)
-
-            else:  # message verified ok
-                name = self._inq.add({'body': extracted_msg,
-                                      'signer': signer,
-                                      'empaid': empaid})
-                log.info("Message saved to incoming queue as %s", name)
-
-        except (IOError, OSError) as e:
-            log.error('Failed to read or write file: %s', e)
+        # Save the message to either accept or reject queue.
+        self._save_msg_to_queue(body, empaid)
 
     def on_error(self, headers, body):
         '''
@@ -321,7 +296,7 @@ class Ssm2(stomp.ConnectionListener):
         if 'application/pkcs7-mime' in text or 'application/x-pkcs7-mime' in text:
             try:
                 text = crypto.decrypt(text, self._cert, self._key)
-            except crypto.CryptoException, e:
+            except crypto.CryptoException as e:
                 error = 'Failed to decrypt message: %s' % e
                 log.error(error)
                 return None, None, error
@@ -329,7 +304,7 @@ class Ssm2(stomp.ConnectionListener):
         # always signed
         try:
             message, signer = crypto.verify(text, self._capath, self._check_crls)
-        except crypto.CryptoException, e:
+        except crypto.CryptoException as e:
             error = 'Failed to verify message: %s' % e
             log.error(error)
             return None, None, error
@@ -342,6 +317,38 @@ class Ssm2(stomp.ConnectionListener):
             log.info('Valid signer: %s', signer)
 
         return message, signer, None
+
+    def _save_msg_to_queue(self, body, empaid):
+        """Extract message contents and add to the accept or reject queue."""
+        extracted_msg, signer, err_msg = self._handle_msg(body)
+        try:
+            # If the message is empty or the error message is not empty
+            # then reject the message.
+            if extracted_msg is None or err_msg is not None:
+                if signer is None:  # crypto failed
+                    signer = 'Not available.'
+                elif extracted_msg is not None:
+                    # If there is a signer then it was rejected for not being
+                    # in the DNs list, so we can use the extracted msg, which
+                    # allows the msg to be reloaded if needed.
+                    body = extracted_msg
+
+                log.warn("Message rejected: %s", err_msg)
+
+                name = self._rejectq.add({'body': body,
+                                          'signer': signer,
+                                          'empaid': empaid,
+                                          'error': err_msg})
+                log.info("Message saved to reject queue as %s", name)
+
+            else:  # message verified ok
+                name = self._inq.add({'body': extracted_msg,
+                                      'signer': signer,
+                                      'empaid': empaid})
+                log.info("Message saved to incoming queue as %s", name)
+
+        except (IOError, OSError) as error:
+            log.error('Failed to read or write file: %s', error)
 
     def _send_msg(self, message, msgid):
         '''
@@ -366,6 +373,27 @@ class Ssm2(stomp.ConnectionListener):
         except TypeError:
             # If it fails, use the v3 metod signiture
             self._conn.send(to_send, headers=headers)
+
+    def _send_msg_ams(self, text, msgid):
+        """Send one message using AMS, returning the AMS ID of the mesage.
+
+        The message will be signed using the host cert and key. If an
+        encryption certificate has been supplied, the message will also be
+        encrypted.
+        """
+        log.info('Sending message: %s', msgid)
+        if text is not None:
+            # First we sign the message
+            to_send = crypto.sign(text, self._cert, self._key)
+            # Possibly encrypt the message.
+            if self._enc_cert is not None:
+                to_send = crypto.encrypt(to_send, self._enc_cert)
+            # Then we need to wrap text up as an AMS Message.
+            message = AmsMessage(data=to_send,
+                                 attributes={'empaid': msgid}).dict()
+
+            argo_response = self._ams.publish(self._dest, message)
+            return argo_response['messageIds'][0]
 
     def pull_msg_ams(self):
         """Pull 1 message from the AMS and acknowledge it."""
@@ -400,42 +428,14 @@ class Ssm2(stomp.ConnectionListener):
             body = msg.get_data()
 
             log.info('Received message. ID = %s, Argo ID = %s', empaid, msgid)
+            # Save the message to either accept or reject queue.
+            self._save_msg_to_queue(body, empaid)
 
-            extracted_msg, signer, err_msg = self._handle_msg(body)
-
-            try:
-                # If the message is empty or the error message is not empty
-                # then reject the message.
-                if extracted_msg is None or err_msg is not None:
-                    if signer is None:  # crypto failed
-                        signer = 'Not available.'
-                    elif extracted_msg is not None:
-                        # If there is a signer then it was rejected for not
-                        # being in the DNs list, so we can use the
-                        # extracted msg, which allows the msg to be
-                        # reloaded if needed.
-                        body = extracted_msg
-
-                    log.warn("Message rejected: %s", err_msg)
-
-                    name = self._rejectq.add({'body': body,
-                                              'signer': signer,
-                                              'empaid': empaid,
-                                              'error': err_msg})
-                    log.info("Message saved to reject queue as %s", name)
-
-                else:  # message verified ok
-                    name = self._inq.add({'body': extracted_msg,
-                                          'signer': signer,
-                                          'empaid': empaid})
-                    log.info("Message saved to incoming queue as %s", name)
-
-                # If we get here, we have saved the message, so add the
-                # ack ID to the list of those to be acknowledged.
-                ackids.append(msg_ack_id)
-
-            except OSError, error:
-                log.error('Failed to read or write file: %s', error)
+            # The message has either been saved or there's been a problem with
+            # writing it out, but either way we add the ack ID to the list
+            # of those to be acknowledged so that we don't get stuck reading
+            # the same message.
+            ackids.append(msg_ack_id)
 
         # pass list of extracted ackIds to AMS Service so that
         # it can move the offset for the next subscription pull
@@ -485,33 +485,22 @@ class Ssm2(stomp.ConnectionListener):
                 while self._last_msg is None:
                     if not self.connected:
                         raise Ssm2Exception('Lost connection.')
+                    # Small sleep to avoid hammering the CPU
+                    time.sleep(0.01)
 
                 log_string = "Sent %s" % msgid
 
             elif self._protocol == Ssm2.AMS_MESSAGING:
                 # Then we are sending to an Argo Messaging Service instance.
-                if text is not None:
-                    # First we sign the message
-                    to_send = crypto.sign(text, self._cert, self._key)
-                    # Possibly encrypt the message.
-                    if self._enc_cert is not None:
-                        to_send = crypto.encrypt(to_send, self._enc_cert)
+                argo_id = self._send_msg_ams(text, msgid)
 
-                    # Then we need to wrap text up as an AMS Message.
-                    message = AmsMessage(data=to_send,
-                                         attributes={'empaid': msgid}).dict()
-
-                    argo_response = self._ams.publish(self._dest, message)
-
-                    argo_id = argo_response['messageIds'][0]
-                    log_string = "Sent %s, Argo ID: %s" % (msgid, argo_id)
+                log_string = "Sent %s, Argo ID: %s" % (msgid, argo_id)
 
             else:
                 # The SSM has been improperly configured
                 raise Ssm2Exception('Unknown messaging protocol: %s' %
                                     self._protocol)
 
-            time.sleep(0.1)
             # log that the message was sent
             log.info(log_string)
 
@@ -522,7 +511,7 @@ class Ssm2(stomp.ConnectionListener):
         try:
             # Remove empty dirs and unlock msgs older than 5 min (default)
             self._outq.purge()
-        except OSError, e:
+        except OSError as e:
             log.warn('OSError raised while purging message queue: %s', e)
 
     ############################################################################
@@ -536,9 +525,6 @@ class Ssm2(stomp.ConnectionListener):
         '''
         log.info("Established connection to %s, port %i", host, port)
         if self._use_ssl:
-            if ssl is None:
-                raise ImportError("SSL connection requested but the ssl module "
-                                  "wasn't found.")
             log.info('Connecting using SSL...')
         else:
             log.warning("SSL connection not requested, your messages may be "
@@ -572,10 +558,10 @@ class Ssm2(stomp.ConnectionListener):
             try:
                 self.start_connection()
                 break
-            except ConnectFailedException, e:
+            except ConnectFailedException as e:
                 # ConnectFailedException doesn't provide a message.
                 log.warn('Failed to connect to %s:%s.', host, port)
-            except Ssm2Exception, e:
+            except Ssm2Exception as e:
                 log.warn('Failed to connect to %s:%s: %s', host, port, e)
 
         if not self.connected:
@@ -677,7 +663,7 @@ class Ssm2(stomp.ConnectionListener):
                 f.write(str(os.getpid()))
                 f.write('\n')
                 f.close()
-            except IOError, e:
+            except IOError as e:
                 log.warn('Failed to create pidfile %s: %s', self._pidfile, e)
 
         self.handle_connect()
@@ -693,6 +679,6 @@ class Ssm2(stomp.ConnectionListener):
                     os.remove(self._pidfile)
                 else:
                     log.warn('pidfile %s not found.', self._pidfile)
-            except IOError, e:
+            except IOError as e:
                 log.warn('Failed to remove pidfile %s: %e', self._pidfile, e)
                 log.warn('SSM may not start again until it is removed.')

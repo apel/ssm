@@ -15,6 +15,15 @@ SSM is written in Python. Packages are available for RHEL 6 and 7, and
 
 For more information about SSM, see the [EGI wiki](https://wiki.egi.eu/wiki/APEL/SSM).
 
+## Acknowledgements
+
+<span>
+  <img alt="STFC logo" src="https://github.com/GOCDB/gocdb/raw/dev/htdocs/web_portal/img/UKRI_STF_Council-Logo_Horiz-RGB_crop.png" height="57" />
+  <img alt="EU flag" src="https://github.com/GOCDB/gocdb/raw/dev/htdocs/web_portal/img/eu_flag_yellow_low_150.png" height="51" />
+  <img alt="EOSC-hub logo" src="https://github.com/GOCDB/gocdb/raw/dev/htdocs/web_portal/img/eosc-hub-v-web_150.png" height="57" />
+</span>
+
+SSM is provided by [STFC](https://stfc.ukri.org/), a part of [UK Research and Innovation](www.ukri.org), and is co-funded by the [EOSC-hub](https://www.eosc-hub.eu/) project (Horizon 2020) under Grant number 777536. Licensed under the [Apache 2 License](http://www.apache.org/licenses/LICENSE-2.0).
 
 ## Installing the RPM
 
@@ -24,12 +33,13 @@ The EPEL repository must be enabled.  This can be done by installing
 the RPM for your version of SL, which is available on this page:
 http://fedoraproject.org/wiki/EPEL
 
-The Python STOMP library (N.B. versions 3.1.1 and above are currently supported)
+The Python STOMP library (N.B. versions between 3.1.1 (inclusive) and 5.0.0
+(exclusive) are currently supported)
 * `yum install stomppy`
 
-The Python AMS library. See here for details on obtaining an RPM: https://github.com/ARGOeu/argo-ams-library/
+The Python AMS library. This is only required if you want to use AMS. See here for details on obtaining an RPM: https://github.com/ARGOeu/argo-ams-library/
 
-The Python daemon library (N.B. only versions below 2.2.0 are currently supported)
+The Python daemon library
 * `yum install python-daemon`
 
 The Python ldap library
@@ -90,7 +100,7 @@ Install any missing system packages needed for the SSM:
 * `apt-get -f install`
 
 Install any missing Python requirements that don't have system packages:
-* `pip install "stomp.py>=3.1.1" dirq`
+* `pip install "stomp.py<5.0.0" dirq`
 
 If you wish to run the SSM as a receiver, you will also need to install the python-daemon system package:
 * `apt-get install python-daemon`

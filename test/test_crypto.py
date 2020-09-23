@@ -1,8 +1,5 @@
-'''
-Created on 7 Dec 2011
+from __future__ import print_function
 
-@author: will
-'''
 import unittest
 import logging
 import os
@@ -43,7 +40,8 @@ class TestEncryptUtils(unittest.TestCase):
         # self-signed certificate as its own CA certificate, but with its
         # name as <hash-of-subject-DN>.0.
         p1 = Popen(['openssl', 'x509', '-subject_hash', '-noout'],
-                    stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                   stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                   universal_newlines=True)
 
         with open(TEST_CERT_FILE, 'r') as test_cert:
             cert_string = test_cert.read()
@@ -87,10 +85,10 @@ class TestEncryptUtils(unittest.TestCase):
         '''
         signed = sign(MSG, TEST_CERT_FILE, TEST_KEY_FILE)
 
-        if not 'MIME-Version' in signed:
+        if 'MIME-Version' not in signed:
             self.fail("Didn't get MIME message when signing.")
 
-        if not MSG in signed:
+        if MSG not in signed:
             self.fail('The plaintext should be included in the signed message.')
 
         # Indirect testing, using the verify_message() method
@@ -108,8 +106,15 @@ class TestEncryptUtils(unittest.TestCase):
 
         # This is a manual 'fudge' to make MS2 appear like a
         # quoted-printable message when signed
-        # Encode MSG2 so it's 'quoted-printable'
-        quopri_msg = quopri.encodestring(MSG2)
+        # Encode MSG2 so it's 'quoted-printable', after encoding it to ensure
+        # it's a bytes object for Python 3. Latter is a no-op in Python 2.
+        quopri_msg = quopri.encodestring(MSG2.encode())
+
+        # In Python 3, encodestring() returns bytes so decode to a string while
+        # Python 2 compatability is still required.
+        if not isinstance(quopri_msg, str):
+            quopri_msg = quopri_msg.decode()
+
         # Add Content-Type and Content-Transfer-Encoding
         # headers to message
         header_quopri_msg = ('Content-Type: text/xml; charset=utf8\n'
@@ -120,7 +125,8 @@ class TestEncryptUtils(unittest.TestCase):
         # We can't use crypto.sign as that assumes the use of the '-text' option
         # which cause the message to be interpreted as plaintext
         p1 = Popen(['openssl', 'smime', '-sign', '-inkey', TEST_KEY_FILE, '-signer', TEST_CERT_FILE],
-                   stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                   stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                   universal_newlines=True)
 
         signed_msg2, error = p1.communicate(header_quopri_msg)
 
@@ -138,13 +144,13 @@ class TestEncryptUtils(unittest.TestCase):
         retrieved_msg2, retrieved_dn2 = verify(signed_msg2, TEST_CA_DIR, False)
 
         if not retrieved_dn2 == TEST_CERT_DN:
-            print retrieved_dn2
-            print TEST_CERT_DN
+            print(retrieved_dn2)
+            print(TEST_CERT_DN)
             self.fail("The DN of the verified message didn't match the cert.")
 
         if not retrieved_msg2.strip() == MSG2:
-            print retrieved_msg2
-            print MSG2
+            print(retrieved_msg2)
+            print(MSG2)
             self.fail("The verified messge didn't match the original.")
 
         # Try empty string
@@ -216,7 +222,7 @@ class TestEncryptUtils(unittest.TestCase):
         '''
         encrypted = encrypt(MSG, TEST_CERT_FILE)
 
-        if not 'MIME-Version' in encrypted:
+        if 'MIME-Version' not in encrypted:
             self.fail('Encrypted message is not MIME')
 
         # Indirect testing, using the decrypt_message function.

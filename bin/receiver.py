@@ -18,13 +18,19 @@
 Script to run a receiving SSM.
 @author: Will Rogers
 '''
+from __future__ import print_function
 
 from ssm.brokers import StompBrokerGetter, STOMP_SERVICE, STOMP_SSL_SERVICE
 from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm import __version__, set_up_logging, LOG_BREAK
 
 from stomp.exception import NotConnectedException
-from argo_ams_library import AmsConnectionException
+try:
+    from argo_ams_library import AmsConnectionException
+except ImportError:
+    # ImportError is raised when Ssm2 initialised if AMS is requested but lib
+    # not installed.
+    AmsConnectionException = None
 
 import time
 import logging.config
@@ -33,11 +39,16 @@ import os
 import sys
 from optparse import OptionParser
 from daemon import DaemonContext
-import ConfigParser
+
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 # How often (in seconds) to read the list of valid DNs.
 REFRESH_DNS = 600
 log = None
+
 
 def get_dns(dn_file):
     '''
@@ -83,13 +94,13 @@ def main():
 
     (options, unused_args) = op.parse_args()
 
-    cp = ConfigParser.ConfigParser()
+    cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
     cp.read(options.config)
 
     # Check for pidfile
     pidfile = cp.get('daemon', 'pidfile')
     if os.path.exists(pidfile):
-        print 'Cannot start SSM.  Pidfile %s already exists.' % pidfile
+        print('Cannot start SSM.  Pidfile %s already exists.' % pidfile)
         sys.exit(1)
 
     # set up logging
@@ -100,9 +111,9 @@ def main():
             set_up_logging(cp.get('logging', 'logfile'),
                            cp.get('logging', 'level'),
                            cp.getboolean('logging', 'console'))
-    except (ConfigParser.Error, ValueError, IOError), err:
-        print 'Error configuring logging: %s' % str(err)
-        print 'SSM will exit.'
+    except (ConfigParser.Error, ValueError, IOError) as err:
+        print('Error configuring logging: %s' % err)
+        print('SSM will exit.')
         sys.exit(1)
 
     global log
@@ -128,17 +139,18 @@ def main():
         project = None
         token = ''
 
+        use_ssl = cp.getboolean('broker', 'use_ssl')
+        if use_ssl:
+            service = STOMP_SSL_SERVICE
+        else:
+            service = STOMP_SERVICE
+
         # If we can't get a broker to connect to, we have to give up.
         try:
             bg = StompBrokerGetter(cp.get('broker', 'bdii'))
-            use_ssl = cp.getboolean('broker', 'use_ssl')
-            if use_ssl:
-                service = STOMP_SSL_SERVICE
-            else:
-                service = STOMP_SERVICE
             brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker',
                                                                     'network'))
-        except ConfigParser.NoOptionError, e:
+        except ConfigParser.NoOptionError as e:
             try:
                 host = cp.get('broker', 'host')
                 port = cp.get('broker', 'port')
@@ -150,7 +162,7 @@ def main():
                 log.error('System will exit.')
                 log.info(LOG_BREAK)
                 sys.exit(1)
-        except ldap.SERVER_DOWN, e:
+        except ldap.SERVER_DOWN as e:
             log.error('Could not connect to LDAP server: %s', e)
             log.error('System will exit.')
             log.info(LOG_BREAK)
@@ -174,7 +186,7 @@ def main():
                       'please check your configuration')
             log.error('System will exit.')
             log.info(LOG_BREAK)
-            print 'SSM failed to start.  See log file for details.'
+            print('SSM failed to start.  See log file for details.')
             sys.exit(1)
 
         # Attempt to configure AMS specific variables.
@@ -182,12 +194,12 @@ def main():
             token = cp.get('messaging', 'token')
             project = cp.get('messaging', 'ams_project')
 
-        except (ConfigParser.Error, ValueError, IOError), err:
+        except (ConfigParser.Error, ValueError, IOError) as err:
             # A token and project are needed to successfully receive from an
             # AMS instance, so log and then exit on an error.
             log.error('Error configuring AMS values: %s', err)
             log.error('SSM will exit.')
-            print 'SSM failed to start.  See log file for details.'
+            print('SSM failed to start.  See log file for details.')
             sys.exit(1)
 
     if len(brokers) == 0:
@@ -221,7 +233,7 @@ def main():
         dns = get_dns(options.dn_file)
         ssm.set_dns(dns)
 
-    except Exception, e:
+    except Exception as e:
         log.fatal('Failed to initialise SSM: %s', e)
         log.info(LOG_BREAK)
         sys.exit(1)
@@ -237,13 +249,13 @@ def main():
         # The message listening loop.
         while True:
             try:
-                time.sleep(1)
+                time.sleep(0.1)
                 if protocol == Ssm2.AMS_MESSAGING:
                     # We need to pull down messages as part of
                     # this loop when using AMS.
                     ssm.pull_msg_ams()
 
-                if i % REFRESH_DNS == 0:
+                if i % (REFRESH_DNS * 10) == 0:
                     log.info('Refreshing valid DNs and then sending ping.')
                     dns = get_dns(options.dn_file)
                     ssm.set_dns(dns)
@@ -264,11 +276,11 @@ def main():
 
             i += 1
 
-    except SystemExit, e:
+    except SystemExit as e:
         log.info('Received the shutdown signal: %s', e)
         ssm.shutdown()
         dc.close()
-    except Exception, e:
+    except Exception as e:
         log.error('Unexpected exception: %s', e)
         log.error('Exception type: %s', e.__class__)
         log.error('The SSM will exit.')

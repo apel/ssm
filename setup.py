@@ -51,10 +51,11 @@ def main():
           download_url='https://github.com/apel/ssm/releases',
           license='Apache License, Version 2.0',
           install_requires=[
-              'stomp.py>=3.1.1', 'python-ldap', 'argo-ams-library',
+              'stomp.py<5.0.0', 'python-ldap',
           ],
           extras_require={
-              'python-daemon': ['python-daemon<2.2.0'],
+              'AMS': ['argo-ams-library'],
+              'daemon': ['python-daemon'],
               'dirq': ['dirq'],
           },
           packages=find_packages(exclude=['bin', 'test']),
@@ -71,21 +72,7 @@ def main():
           # We have disabled this feature so installing via the setup
           # script is similar to installing the RPM apel-ssm
           zip_safe=False,
-          # The following two settings allow the test suite
-          # to be run via 'python setup.py test'
-
-          # The test command runs the project's unit tests without
-          # actually deploying it, by temporarily putting the project's
-          # source on sys.path, after first running build_ext -i and
-          # egg_info to ensure that any C extensions and
-          # project metadata are up-to-date.
-
-          # This does require a old version of unittest to work
-          # on python2.6 (unittest2==0.5.1)
-          # The python package where the tests are located
-          test_suite='test',
-          # the test requirements
-          tests_require=['unittest2', 'mock'])
+          )
 
     # Remove temporary files with deployment names
     if 'install' in sys.argv:
