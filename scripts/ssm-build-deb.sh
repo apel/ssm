@@ -16,7 +16,7 @@
 
 set -eu
 
-TAG=2.4.1-1
+TAG=3.0.0-1
 
 SOURCE_DIR=~/debbuild/source
 BUILD_DIR=~/debbuild/build

@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        2.4.1
+Version:        3.0.0
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -100,6 +100,15 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Wed Sep 23 2020 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.0.0-1
+ - As part of the migration to Python 3, this release removes support for
+   Python 2.6.
+ - The argo-ams-library is now an optional module, depending on whether AMS is
+   used or not.
+ - Fixed how the use_ssl config option is retrieved to avoid "referenced before
+   assignment" errors leading to SSM failing to run.
+ - Changes made to messaging loops to avoid high CPU usage.
+
 * Tue Sep 03 2019 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 2.4.1-1
  - Fixed handling of OpenSSL errors so that messages that have been tampered
    with are now rejected.
