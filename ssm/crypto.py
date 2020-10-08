@@ -1,4 +1,4 @@
-'''
+"""
    Copyright (C) 2012 STFC.
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@
    We investigated python's crypto libraries (all openssl bindings) and
    found that none were mature enough to implement the SMIME crypto we had
    decided on.
-'''
+"""
 from __future__ import print_function
 
 from subprocess import Popen, PIPE
@@ -34,16 +34,13 @@ CIPHERS = ['aes128', 'aes192', 'aes256']
 
 
 class CryptoException(Exception):
-    '''
-    Exception for use by the crypto module.
-    '''
+    """Exception for use by the crypto module."""
+
     pass
 
 
 def _from_file(filename):
-    '''
-    Convenience function to read entire file into string.
-    '''
+    """Read entire file into string. Convenience function."""
     f = open(filename, 'r')
     s = f.read()
     f.close()
@@ -51,10 +48,10 @@ def _from_file(filename):
 
 
 def check_cert_key(certpath, keypath):
-    '''
-    Check that a certificate and a key match, using openssl directly to fetch
-    the modulus of each, which must be the same.
-    '''
+    """Check that a certificate and a key match.
+
+    Uses openssl directly to fetch the modulus of each, which must be the same.
+    """
     try:
         cert = _from_file(certpath)
         key = _from_file(keypath)
@@ -86,13 +83,13 @@ def check_cert_key(certpath, keypath):
 
 
 def sign(text, certpath, keypath):
-    '''
-    Sign the specified message using the certificate and key in the files specified.
+    """Sign the message using the certificate and key in the files specified.
 
     Returns the signed message as an SMIME string, suitable for transmission.
-    '''
+    """
     try:
-        p1 = Popen(['openssl', 'smime', '-sign', '-inkey', keypath, '-signer', certpath, '-text'],
+        p1 = Popen(['openssl', 'smime', '-sign', '-inkey',
+                    keypath, '-signer', certpath, '-text'],
                    stdin=PIPE, stdout=PIPE, stderr=PIPE,
                    universal_newlines=True)
 
@@ -105,15 +102,14 @@ def sign(text, certpath, keypath):
 
     except OSError as e:
         log.error('Failed to sign message: %s', e)
-        raise CryptoException('Message signing failed.  Check cert and key permissions.')
+        raise CryptoException('Message signing failed. Check cert and key permissions.')
 
 
 def encrypt(text, certpath, cipher='aes128'):
-    '''
-    Encrypt the specified message using the certificate string.
+    """Encrypt the specified message using the certificate string.
 
     Returns the encrypted SMIME text suitable for transmission
-    '''
+    """
     if cipher not in CIPHERS:
         raise CryptoException('Invalid cipher %s.' % cipher)
 
@@ -131,15 +127,17 @@ def encrypt(text, certpath, cipher='aes128'):
 
 
 def verify(signed_text, capath, check_crl):
-    '''
-    Verify the signed message has been signed by the certificate (attached to the
-    supplied SMIME message) it claims to have, by one of the accepted CAs in
-    capath.
+    """Verify the signed message has been signed by the certificate.
 
-    Returns a tuple including the signer's certificate and the plain-text of the
-    message if it has been verified.  If the content transfer encoding is specified
-    as 'quoted-printable' or 'base64', decode the message body accordingly.
-    '''
+    Verify the signed message has been signed by the certificate (attached to
+    the supplied SMIME message) it claims to have, by one of the accepted CAs
+    in capath.
+
+    Returns a tuple including the signer's certificate and the plain-text of
+    the message if it has been verified. If the content transfer encoding is
+    specified as 'quoted-printable' or 'base64', decode the message body
+    accordingly.
+    """
     if signed_text is None or capath is None:
         raise CryptoException('Invalid None argument to verify().')
     # This ensures that openssl knows that the string is finished.
@@ -195,14 +193,15 @@ def verify(signed_text, capath, check_crl):
 
 
 def decrypt(encrypted_text, certpath, keypath):
-    '''
-    Decrypt the specified message using the certificate and key contained in the
-    named PEM files. The capath should point to a directory holding all the
-    CAs that we accept
+    """Decrypt the specified message using the certificate and key.
+
+    Decrypt the specified message using the certificate and key contained in
+    the named PEM files. The capath should point to a directory holding all the
+    CAs that we accept.
 
     This decryption function can be used whether or not OpenSSL is used to
-    encrypt the data
-    '''
+    encrypt the data.
+    """
     # This ensures that openssl knows that the string is finished.
     # It makes no difference if the signed message is correct, but
     # prevents it from hanging in the case of an empty string.
@@ -250,15 +249,13 @@ def verify_cert_date(certpath):
 
 
 def verify_cert(certstring, capath, check_crls=True):
-    '''
-    Verify that the certificate is signed by a CA whose certificate is stored in
-    capath.
+    """Verify that the certificate is signed by a CA with a cert in capath.
 
     Note that I've had to compare strings in the output of openssl to check
     for verification, which may make this brittle.
 
     Returns True if the certificate is verified
-    '''
+    """
     if certstring is None or capath is None:
         raise CryptoException('Invalid None argument to verify_cert().')
 
@@ -293,18 +290,16 @@ def verify_cert(certstring, capath, check_crls=True):
 
 
 def verify_cert_path(certpath, capath, check_crls=True):
-    '''
-    Verify certificate, but using the certificate filepath rather than
-    the certificate string as in verify_cert.
-    '''
+    """Verify certificate using the certificate filepath.
+
+    This is different to verify_cert which uses the certificate string.
+    """
     certstring = _from_file(certpath)
     return verify_cert(certstring, capath, check_crls)
 
 
 def get_certificate_subject(certstring):
-    '''
-    Return the certificate subject's DN, in legacy openssl format.
-    '''
+    """Return the certificate subject's DN, in legacy openssl format."""
     p1 = Popen(['openssl', 'x509', '-noout', '-subject'],
                stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
@@ -314,7 +309,7 @@ def get_certificate_subject(certstring):
         log.error(error)
         raise CryptoException('Failed to get subject: %s' % error)
 
-    subject = subject.strip()[9:] # remove 'subject= ' from the front
+    subject = subject.strip()[9:]  # remove 'subject= ' from the front
     return subject
 
 

@@ -1,4 +1,4 @@
-'''
+"""
    Copyright (C) 2012 STFC
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-   @author: Will Rogers
-'''
+"""
 from __future__ import print_function
 
 from ssm import crypto
@@ -48,19 +46,18 @@ log = logging.getLogger(__name__)
 
 
 class Ssm2Exception(Exception):
-    '''
-    Exception for use by SSM2.
-    '''
+    """Exception for use by SSM2."""
+
     pass
 
 
 class Ssm2(stomp.ConnectionListener):
-    '''
-    Minimal SSM implementation.
-    '''
+    """Minimal SSM implementation."""
+
     # Schema for the dirq message queue.
-    QSCHEMA = {'body': 'string', 'signer':'string', 'empaid':'string?'}
-    REJECT_SCHEMA = {'body': 'string', 'signer':'string?', 'empaid':'string?', 'error':'string'}
+    QSCHEMA = {'body': 'string', 'signer': 'string', 'empaid': 'string?'}
+    REJECT_SCHEMA = {'body': 'string', 'signer': 'string?',
+                     'empaid': 'string?', 'error': 'string'}
     CONNECTION_TIMEOUT = 10
 
     # Messaging protocols
@@ -71,10 +68,10 @@ class Ssm2(stomp.ConnectionListener):
                  capath=None, check_crls=False, use_ssl=False, username=None, password=None,
                  enc_cert=None, verify_enc_cert=True, pidfile=None, path_type='dirq',
                  protocol=STOMP_MESSAGING, project=None, token=''):
-        '''
-        Creates an SSM2 object.  If a listen value is supplied,
-        this SSM2 will be a receiver.
-        '''
+        """Create an SSM2 object.
+
+        If a listen value is supplied, this SSM2 will be a receiver.
+        """
         self._conn = None
         self._last_msg = None
 
@@ -185,9 +182,7 @@ class Ssm2(stomp.ConnectionListener):
                               ).setLevel(logging.INFO)
 
     def set_dns(self, dn_list):
-        '''
-        Set the list of DNs which are allowed to sign incoming messages.
-        '''
+        """Set the list of DNs which are allowed to sign incoming messages."""
         self._valid_dns = dn_list
 
     ##########################################################################
@@ -195,12 +190,11 @@ class Ssm2(stomp.ConnectionListener):
     ##########################################################################
 
     def on_send(self, frame, unused_body=None):
-        '''
-        Called by stomppy when a message is sent.
+        """Log sending of message with empaid if available.
 
-        unused_body is only present to have a backward compatible
-        method signature when using stomp.py v3.1.X
-        '''
+        Called by stomppy when a message is sent. 'unused_body' is only present
+        to have a backward compatible method signature for stomp.py v3.1.X
+        """
         try:
             # Try the stomp.py v4 way first
             empaid = frame.headers['empa-id']
@@ -216,14 +210,13 @@ class Ssm2(stomp.ConnectionListener):
         log.debug('Sent message: %s', empaid)
 
     def on_message(self, headers, body):
-        '''
-        Called by stomppy when a message is received.
+        """Handle the message according to its content and headers.
 
-        Handle the message according to its content and headers.
-        '''
+        Called by stomppy when a message is received.
+        """
         try:
             empaid = headers['empa-id']
-            if empaid == 'ping': # ignore ping message
+            if empaid == 'ping':  # ignore ping message
                 log.info('Received ping message.')
                 return
         except KeyError:
@@ -234,9 +227,10 @@ class Ssm2(stomp.ConnectionListener):
         self._save_msg_to_queue(body, empaid)
 
     def on_error(self, headers, body):
-        '''
+        """Log error messages.
+
         Called by stomppy when an error frame is received.
-        '''
+        """
         if 'No user for client certificate: ' in headers['message']:
             log.error('The following certificate is not authorised: %s',
                       headers['message'].split(':')[1])
@@ -244,33 +238,34 @@ class Ssm2(stomp.ConnectionListener):
             log.error('Error message received: %s', body)
 
     def on_connected(self, unused_headers, unused_body):
-        '''
-        Called by stomppy when a connection is established.
+        """Track the connection.
 
-        Track the connection.
-        '''
+        Called by stomppy when a connection is established.
+        """
         self.connected = True
         log.info('Connected.')
 
     def on_disconnected(self):
-        '''
+        """Log disconnection and set 'connected' to 'False'.
+
         Called by stomppy when disconnected from the broker.
-        '''
+        """
         log.info('Disconnected from broker.')
         self.connected = False
 
     def on_receipt(self, headers, unused_body):
-        '''
+        """Log receipt of message by broker and set '_last_msg'.
+
         Called by stomppy when the broker acknowledges receipt of a message.
-        '''
+        """
         log.info('Broker received message: %s', headers['receipt-id'])
         self._last_msg = headers['receipt-id']
 
     def on_receiver_loop_completed(self, _unused_headers, _unused_body):
-        """
-        Called by stompy when the receiver loop ends.
+        """Log receiver loop complete for debug only.
 
-        This is usually trigger as part of a disconnect.
+        Called by stompy when the receiver loop ends. This is usually triggered
+        as part of a disconnect.
         """
         log.debug('on_receiver_loop_completed called.')
 
@@ -279,12 +274,13 @@ class Ssm2(stomp.ConnectionListener):
     ##########################################################################
 
     def _handle_msg(self, text):
-        '''
-        Deal with the raw message contents appropriately:
+        """Deal with the raw message contents appropriately.
+
+        Namely:
         - decrypt if necessary
         - verify signature
-        Return plain-text message, signer's DN and an error/None.
-        '''
+        - Return plain-text message, signer's DN and an error/None.
+        """
         if text is None or text == '':
             warning = 'Empty text passed to _handle_msg.'
             log.warn(warning)
@@ -351,11 +347,11 @@ class Ssm2(stomp.ConnectionListener):
             log.error('Failed to read or write file: %s', error)
 
     def _send_msg(self, message, msgid):
-        '''
-        Send one message using stomppy.  The message will be signed using
-        the host cert and key.  If an encryption certificate
-        has been supplied, the message will also be encrypted.
-        '''
+        """Send one message using stomppy.
+
+        The message will be signed using the host cert and key. If an
+        encryption certificate has been supplied, it will also be encrypted.
+        """
         log.info('Sending message: %s', msgid)
         headers = {'destination': self._dest, 'receipt': msgid,
                    'empa-id': msgid}
@@ -444,13 +440,14 @@ class Ssm2(stomp.ConnectionListener):
             self._ams.ack_sub(self._listen, ackids)
 
     def send_ping(self):
-        '''
+        """Perform connection stay-alive steps.
+
         If a STOMP connection is left open with no activity for an hour or
         so, it stops responding. Stomppy 3.1.3 has two ways of handling
         this, but stomppy 3.0.3 (EPEL 5 and 6) has neither.
         To get around this, we begin and then abort a STOMP transaction to
         keep the connection active.
-        '''
+        """
         # Use time as transaction id to ensure uniqueness within each connection
         transaction_id = str(time.time())
 
@@ -458,17 +455,15 @@ class Ssm2(stomp.ConnectionListener):
         self._conn.abort({'transaction': transaction_id})
 
     def has_msgs(self):
-        '''
-        Return True if there are any messages in the outgoing queue.
-        '''
+        """Return True if there are any messages in the outgoing queue."""
         return self._outq.count() > 0
 
     def send_all(self):
-        '''
+        """
         Send all the messages in the outgoing queue.
 
         Either via STOMP or HTTPS (to an Argo Message Broker).
-        '''
+        """
         log.info('Found %s messages.', self._outq.count())
         for msgid in self._outq:
             if not self._outq.lock(msgid):
@@ -514,15 +509,15 @@ class Ssm2(stomp.ConnectionListener):
         except OSError as e:
             log.warn('OSError raised while purging message queue: %s', e)
 
-    ############################################################################
+    ###########################################################################
     # Connection handling methods
-    ############################################################################
+    ###########################################################################
 
     def _initialise_connection(self, host, port):
-        '''
-        Create the self._connection object with the appropriate properties,
-        but don't try to start the connection.
-        '''
+        """Create the self._connection object with the appropriate properties.
+
+        This doesn't start the connection.
+        """
         log.info("Established connection to %s, port %i", host, port)
         if self._use_ssl:
             log.info('Connecting using SSL...')
@@ -540,13 +535,14 @@ class Ssm2(stomp.ConnectionListener):
         self._conn.set_listener('SSM', self)
 
     def handle_connect(self):
-        '''
+        """Connect to broker.
+
         Assuming that the SSM has retrieved the details of the broker or
         brokers it wants to connect to, connect to one.
 
         If more than one is in the list self._network_brokers, try to
         connect to each in turn until successful.
-        '''
+        """
         if self._protocol == Ssm2.AMS_MESSAGING:
             log.debug('handle_connect called for AMS, doing nothing.')
             return
@@ -565,13 +561,10 @@ class Ssm2(stomp.ConnectionListener):
                 log.warn('Failed to connect to %s:%s: %s', host, port, e)
 
         if not self.connected:
-            raise Ssm2Exception('Attempts to start the SSM failed.  The system will exit.')
+            raise Ssm2Exception('Attempts to start the SSM failed. The system will exit.')
 
     def handle_disconnect(self):
-        '''
-        When disconnected, attempt to reconnect using the same method as used
-        when starting up.
-        '''
+        """Attempt to reconnect using the same method as when starting up."""
         if self._protocol == Ssm2.AMS_MESSAGING:
             log.debug('handle_disconnect called for AMS, doing nothing.')
             return
@@ -596,13 +589,11 @@ class Ssm2(stomp.ConnectionListener):
             raise Ssm2Exception(err_msg)
 
     def start_connection(self):
-        '''
-        Once self._connection exists, attempt to start it and subscribe
-        to the relevant topics.
+        """Start existing connection and subscribe to the relevant topics.
 
         If the timeout is reached without receiving confirmation of
         connection, raise an exception.
-        '''
+        """
         if self._protocol == Ssm2.AMS_MESSAGING:
             log.debug('start_connection called for AMS, doing nothing.')
             return
@@ -634,11 +625,11 @@ class Ssm2(stomp.ConnectionListener):
             log.info('Subscribing to: %s', self._listen)
 
     def close_connection(self):
-        '''
-        Close the connection.  This is important because it runs
-        in a separate thread, so it can outlive the main process
-        if it is not ended.
-        '''
+        """Close the connection.
+
+        This is important because it runs in a separate thread, so it can
+        outlive the main process if it is not ended.
+        """
         if self._protocol == Ssm2.AMS_MESSAGING:
             log.debug('close_connection called for AMS, doing nothing.')
             return
@@ -654,9 +645,7 @@ class Ssm2(stomp.ConnectionListener):
         log.info('SSM connection ended.')
 
     def startup(self):
-        '''
-        Create the pidfile then start the connection.
-        '''
+        """Create the pidfile then start the connection."""
         if self._pidfile is not None:
             try:
                 f = open(self._pidfile, 'w')
@@ -669,9 +658,7 @@ class Ssm2(stomp.ConnectionListener):
         self.handle_connect()
 
     def shutdown(self):
-        '''
-        Close the connection then remove the pidfile.
-        '''
+        """Close the connection then remove the pidfile."""
         self.close_connection()
         if self._pidfile is not None:
             try:
