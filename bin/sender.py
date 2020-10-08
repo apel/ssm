@@ -14,10 +14,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-'''
-Script to run a sending SSM.
-@author: Will Rogers
-'''
+"""Script to run a sending SSM."""
+
 from __future__ import print_function
 
 from ssm import __version__, set_up_logging, LOG_BREAK
@@ -38,13 +36,11 @@ except ImportError:
 
 
 def main():
-    '''
-    Set up connection, send all messages and quit.
-    '''
+    """Set up connection, send all messages and quit."""
     ver = "SSM %s.%s.%s" % __version__
     op = OptionParser(description=__doc__, version=ver)
     op.add_option('-c', '--config', help='location of config file',
-                          default='/etc/apel/sender.cfg')
+                  default='/etc/apel/sender.cfg')
     op.add_option('-l', '--log_config',
                         help='location of logging config file (optional)',
                         default='/etc/apel/logging.cfg')
@@ -174,7 +170,7 @@ def main():
         server_cert = None
         verify_server_cert = True
         try:
-            server_cert = cp.get('certificates','server_cert')
+            server_cert = cp.get('certificates', 'server_cert')
             try:
                 verify_server_cert = cp.getboolean('certificates', 'verify_server_cert')
             except ConfigParser.NoOptionError:

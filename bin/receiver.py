@@ -14,10 +14,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-'''
-Script to run a receiving SSM.
-@author: Will Rogers
-'''
+"""Script to run a receiving SSM."""
+
 from __future__ import print_function
 
 from ssm.brokers import StompBrokerGetter, STOMP_SERVICE, STOMP_SSL_SERVICE
@@ -51,9 +49,7 @@ log = None
 
 
 def get_dns(dn_file):
-    '''
-    Retrieve a list of DNs from a file.
-    '''
+    """Retrieve a list of DNs from a file."""
     dns = []
     f = None
     try:
@@ -78,9 +74,7 @@ def get_dns(dn_file):
 
 
 def main():
-    '''
-    Set up connection, and listen for messages.
-    '''
+    """Set up connection, and listen for messages."""
     ver = "SSM %s.%s.%s" % __version__
     op = OptionParser(description=__doc__, version=ver)
     op.add_option('-c', '--config', help='location of config file',
@@ -217,10 +211,10 @@ def main():
 
     try:
         ssm = Ssm2(brokers,
-                   cp.get('messaging','path'),
-                   cert=cp.get('certificates','certificate'),
-                   key=cp.get('certificates','key'),
-                   listen=cp.get('messaging','destination'),
+                   cp.get('messaging', 'path'),
+                   cert=cp.get('certificates', 'certificate'),
+                   key=cp.get('certificates', 'key'),
+                   listen=cp.get('messaging', 'destination'),
                    use_ssl=use_ssl,
                    capath=cp.get('certificates', 'capath'),
                    check_crls=cp.getboolean('certificates', 'check_crls'),
