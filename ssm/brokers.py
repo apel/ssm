@@ -1,4 +1,4 @@
-'''
+"""
    Copyright (C) 2012 STFC.
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 
 Class to interact with a BDII LDAP server to retrieve information about
 the stomp brokers specified in a network.
-'''
+"""
 from __future__ import print_function
 
 import ldap
@@ -32,32 +32,31 @@ STOMP_SSL_SERVICE = 'msg.broker.stomp-ssl'
 STOMP_PREFIX = 'stomp'
 STOMP_SSL_PREFIX = 'stomp+ssl'
 
+
 class StompBrokerGetter(object):
-    '''
+    """Class for seaching a BDII for message brokers.
+
     Given the URL of a BDII, searches for all the STOMP
     brokers listed that are part of the specified network.
-    '''
+    """
 
     def __init__(self, bdii_url):
-        '''
-        Set up the LDAP connection and strings which are re-used.
-        '''
+        """Set up the LDAP connection and strings which are re-used."""
         # Set up the LDAP connection
         log.debug('Connecting to %s...', bdii_url)
         self._ldap_conn = ldap.initialize(bdii_url)
 
         self._base_dn = 'o=grid'
         self._service_id_key = 'GlueServiceUniqueID'
-        self._endpoint_key  = 'GlueServiceEndpoint'
+        self._endpoint_key = 'GlueServiceEndpoint'
         self._service_data_value_key = 'GlueServiceDataValue'
 
     def get_broker_urls(self, service_type, network):
-        '''
-        Gets the list of all the stomp brokers in the BDII, then
-        checks them to see if they are part of the network.  The network
-        is supplied as a string.
-        Returns a list of URLs.
-        '''
+        """Get a list stomp broker URLs in a specified network from a BDII.
+
+        Checks them to see if they are part of the network. The network is
+        supplied as a string. Returns a list of URLs.
+        """
         prod_broker_urls = []
 
         broker_details = self._get_broker_details(service_type)
@@ -69,12 +68,12 @@ class StompBrokerGetter(object):
         return prod_broker_urls
 
     def get_broker_hosts_and_ports(self, service_type, network):
-        '''
-        Gets the list of all the stomp brokers in the BDII, then
-        checks them to see if they are part of the network. The network
-        is supplied as a string.
-        Returns a list of (host, port) tuples.
-        '''
+        """Get a list of stomp broker (host, port) tuples from a BDII.
+
+        Gets the list of all the stomp brokers in the BDII, then checks them to
+        see if they are part of the network. The network is supplied as a
+        string.Returns a list of (host, port) tuples.
+        """
         urls = self.get_broker_urls(service_type, network)
         hosts_and_ports = []
         for url in urls:
@@ -82,10 +81,10 @@ class StompBrokerGetter(object):
         return hosts_and_ports
 
     def _get_broker_details(self, service_type):
-        '''
-        Searches the BDII for all STOMP message brokers.  Returns a list of
-        tuples: (<GlueServiceUniqueID>, <URL>).
-        '''
+        """Search the BDII for all STOMP message brokers.
+
+        Returns a list of tuples: (<GlueServiceUniqueID>, <URL>).
+        """
         broker_details = []
 
         ldap_filter = '(&(objectClass=GlueService)(GlueServiceType=%s))' % service_type
@@ -100,26 +99,26 @@ class StompBrokerGetter(object):
         return broker_details
 
     def _broker_in_network(self, broker_id, network):
-        '''
-        Given a GlueServiceUniqueID for a message broker, check that it is
-        part of the specified network.
-        '''
+        """Check that a GlueServiceUniqueID is part of a specified netowrk."""
         ldap_filter = '(&(GlueServiceDataKey=cluster)(GlueChunkKey=GlueServiceUniqueID=%s))' \
             % broker_id
         attrs = [self._service_data_value_key]
-        results = self._ldap_conn.search_s(self._base_dn, ldap.SCOPE_SUBTREE, ldap_filter, attrs)
+        results = self._ldap_conn.search_s(self._base_dn, ldap.SCOPE_SUBTREE,
+                                           ldap_filter, attrs)
 
         try:
             unused_dn, attrs2 = results[0]
             return network in attrs2[self._service_data_value_key]
-        except IndexError: # no results from the query
+        except IndexError:  # no results from the query
             return False
 
+
 def parse_stomp_url(stomp_url):
-    '''
+    """Parse a stomp scheme URL.
+
     Given a URL of the form stomp://stomp.cern.ch:6262/,
     return a tuple containing (stomp.cern.ch, 6262).
-    '''
+    """
     parts = stomp_url.split(':')
 
     protocols = [STOMP_PREFIX, STOMP_SSL_PREFIX]
@@ -140,6 +139,7 @@ if __name__ == '__main__':
     BG = StompBrokerGetter(BDII)
 
     def print_brokers(text, service, network):
+        """Pretty print a list of brokers."""
         brokers = BG.get_broker_hosts_and_ports(service, network)
         # Print section heading
         print('==', text, '==')

@@ -1,4 +1,4 @@
-'''
+"""
    Copyright (C) 2012 STFC.
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +14,18 @@
    limitations under the License.
 
    @author: Will Rogers
-'''
+"""
 
 import logging
 import sys
 
-__version__ = (3, 0, 0)
+__version__ = (3, 1, 0)
 
 LOG_BREAK = '========================================'
 
+
 def set_up_logging(logfile, level, console):
-    '''
-    Programmatically initialise logging system.
-    '''
+    """Programmatically initialise logging system."""
     levels = {'DEBUG': logging.DEBUG,
               'INFO': logging.INFO,
               'WARN': logging.WARN,
