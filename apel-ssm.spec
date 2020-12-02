@@ -100,7 +100,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
-* Tue Dev 01 2020 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.1.0-1
+* Tue Dec 01 2020 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.1.0-1
  - Enabled retries for all AMS communication methods to avoid timeouts from
    crashing SSM.
 
