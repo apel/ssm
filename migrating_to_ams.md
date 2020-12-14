@@ -1,28 +1,30 @@
 # Migrating from using EGI ActiveMQ Message Brokers to using EGI ARGO Messaging Service
 
-Migration requires upgrading SSM to at least version 2.4.0 and adding new values to your configuration.
+Migration requires upgrading APEL SSM to at least version 2.4.0, installing the ARGO AMS Library, and adding new values to your configuration.
+
+The ARGO AMS Library is available in UMD as `python-argo-ams-library`. Versions above 0.5.0 are recommended.
 
 ## Sender
 
 The sender configuration is usually found under `/etc/apel/sender.cfg`. Follow the steps below to migrate.
 
 1. Comment out `bdii` and `network`.
-1. Uncomment `host` and set it to `msg-devel.argo.grnet.gr`.
+1. Uncomment `host` and set it to `msg.argo.grnet.gr`.
 1. Add the following as a new section at the top of your configuration:
-```
-[sender]
-# Either 'STOMP' for STOMP message brokers or 'AMS' for Argo Messaging Service
-protocol: AMS
-```
+   ```
+   [sender]
+   # Either 'STOMP' for STOMP message brokers or 'AMS' for Argo Messaging Service
+   protocol: AMS
+   ```
 1. Add the following to the `[messaging]` section of your configuration:
-```
-# If using AMS this is the project that SSM will connect to. Ignored for STOMP.
-ams_project: accounting
-```
+   ```
+   # If using AMS this is the project that SSM will connect to. Ignored for STOMP.
+   ams_project: accounting
+   ```
 1. To send to the central APEL Accounting server, change `destination` to one of the following depending on your type of accounting:
-  * `gLite-APEL` for Grid Accounting
-  * `eu.egi.cloud.accounting` for Cloud Accounting
-  * `eu.egi.storage.accounting` for Storage Accounting
+   * `gLite-APEL` for Grid Accounting
+   * `eu.egi.cloud.accounting` for Cloud Accounting
+   * `eu.egi.storage.accounting` for Storage Accounting
 
 The next time `ssmsend` runs it should be using the AMS. You can check this by looking in the logs for a successful run, which should look like this:
 
@@ -42,9 +44,9 @@ The next time `ssmsend` runs it should be using the AMS. You can check this by l
 
 ## Receiver
 
-1. Follow the steps 1 to 4 as per the [Sender documentation](#Sender) but editing your receiver configuration instead, usually found under `/etc/apel/receiver.cfg`, naming the sction `[receiver]` rather than `[sender]`.
+1. Follow the steps 1 to 4 as per the [Sender documentation](#Sender) but editing your receiver configuration instead, usually found under `/etc/apel/receiver.cfg`, naming the section `[receiver]` rather than `[sender]`.
 1. Change `destination` to be the subscription you are using to pull messages down.
 1. Add your token to the `[messaging]` section of your configuration:
-```
-token: your_token_here
-```
+   ```
+   token: your_token_here
+   ```
