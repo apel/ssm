@@ -1,6 +1,8 @@
 # Migrating from using EGI ActiveMQ Message Brokers to using EGI ARGO Messaging Service
 
-Migration requires upgrading SSM to at least version 2.4.0 and adding new values to your configuration.
+Migration requires upgrading APEL SSM to at least version 2.4.0, installing the ARGO AMS Library, and adding new values to your configuration.
+
+The ARGO AMS Library is available in UMD as `python-argo-ams-library`. Versions above 0.5.0 are recommended.
 
 ## Sender
 
