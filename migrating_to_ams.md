@@ -7,7 +7,7 @@ Migration requires upgrading SSM to at least version 2.4.0 and adding new values
 The sender configuration is usually found under `/etc/apel/sender.cfg`. Follow the steps below to migrate.
 
 1. Comment out `bdii` and `network`.
-1. Uncomment `host` and set it to `msg-devel.argo.grnet.gr`.
+1. Uncomment `host` and set it to `msg.argo.grnet.gr`.
 1. Add the following as a new section at the top of your configuration:
    ```
    [sender]
@@ -42,7 +42,7 @@ The next time `ssmsend` runs it should be using the AMS. You can check this by l
 
 ## Receiver
 
-1. Follow the steps 1 to 4 as per the [Sender documentation](#Sender) but editing your receiver configuration instead, usually found under `/etc/apel/receiver.cfg`, naming the sction `[receiver]` rather than `[sender]`.
+1. Follow the steps 1 to 4 as per the [Sender documentation](#Sender) but editing your receiver configuration instead, usually found under `/etc/apel/receiver.cfg`, naming the section `[receiver]` rather than `[sender]`.
 1. Change `destination` to be the subscription you are using to pull messages down.
 1. Add your token to the `[messaging]` section of your configuration:
    ```
