@@ -174,11 +174,15 @@ class Ssm2(stomp.ConnectionListener):
             logging.getLogger("stomp.py").setLevel(logging.WARNING)
             logging.getLogger("requests.packages.urllib3.connectionpool"
                               ).setLevel(logging.WARNING)
+            logging.getLogger("urllib3.connectionpool"
+                              ).setLevel(logging.WARNING)
         # If the overall SSM log level is debug, we want to only
         # see entries from stomp.py and connectionpool at INFO above.
         elif logging.getLogger("ssm.ssm2").getEffectiveLevel() == logging.DEBUG:
             logging.getLogger("stomp.py").setLevel(logging.INFO)
             logging.getLogger("requests.packages.urllib3.connectionpool"
+                              ).setLevel(logging.INFO)
+            logging.getLogger("urllib3.connectionpool"
                               ).setLevel(logging.INFO)
 
     def set_dns(self, dn_list):
