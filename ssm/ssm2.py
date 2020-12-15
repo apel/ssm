@@ -168,14 +168,18 @@ class Ssm2(stomp.ConnectionListener):
                     raise Ssm2Exception('Failed to verify server certificate %s against CA path %s.'
                                         % (self._enc_cert, self._capath))
 
-        # If the overall SSM log level is info, we want to only
+        self._set_external_logging_levels()
+
+    def _set_external_logging_levels(self):
+        """Tweak the logging of dependencies to better match SSM verbosity."""
+        # If the overall SSM log level is INFO, we want to only
         # see entries from stomp.py and connectionpool at WARNING and above.
         if getLogger("ssm.ssm2").getEffectiveLevel() == INFO:
             getLogger("stomp.py").setLevel(WARNING)
             getLogger("requests.packages.urllib3.connectionpool"
                       ).setLevel(WARNING)
             getLogger("urllib3.connectionpool").setLevel(WARNING)
-        # If the overall SSM log level is debug, we want to only
+        # If the overall SSM log level is DEBUG, we want to only
         # see entries from stomp.py and connectionpool at INFO above.
         elif getLogger("ssm.ssm2").getEffectiveLevel() == DEBUG:
             getLogger("stomp.py").setLevel(INFO)
