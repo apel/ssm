@@ -32,7 +32,7 @@ from stomp.exception import ConnectFailedException
 import os
 import socket
 import time
-import logging
+from logging import getLogger, INFO, WARNING, DEBUG
 
 try:
     from argo_ams_library import ArgoMessagingService, AmsMessage
@@ -42,7 +42,7 @@ except ImportError:
     AmsMessage = None
 
 # Set up logging
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 class Ssm2Exception(Exception):
@@ -170,20 +170,18 @@ class Ssm2(stomp.ConnectionListener):
 
         # If the overall SSM log level is info, we want to only
         # see entries from stomp.py and connectionpool at WARNING and above.
-        if logging.getLogger("ssm.ssm2").getEffectiveLevel() == logging.INFO:
-            logging.getLogger("stomp.py").setLevel(logging.WARNING)
-            logging.getLogger("requests.packages.urllib3.connectionpool"
-                              ).setLevel(logging.WARNING)
-            logging.getLogger("urllib3.connectionpool"
-                              ).setLevel(logging.WARNING)
+        if getLogger("ssm.ssm2").getEffectiveLevel() == INFO:
+            getLogger("stomp.py").setLevel(WARNING)
+            getLogger("requests.packages.urllib3.connectionpool"
+                      ).setLevel(WARNING)
+            getLogger("urllib3.connectionpool").setLevel(WARNING)
         # If the overall SSM log level is debug, we want to only
         # see entries from stomp.py and connectionpool at INFO above.
-        elif logging.getLogger("ssm.ssm2").getEffectiveLevel() == logging.DEBUG:
-            logging.getLogger("stomp.py").setLevel(logging.INFO)
-            logging.getLogger("requests.packages.urllib3.connectionpool"
-                              ).setLevel(logging.INFO)
-            logging.getLogger("urllib3.connectionpool"
-                              ).setLevel(logging.INFO)
+        elif getLogger("ssm.ssm2").getEffectiveLevel() == DEBUG:
+            getLogger("stomp.py").setLevel(INFO)
+            getLogger("requests.packages.urllib3.connectionpool"
+                      ).setLevel(INFO)
+            getLogger("urllib3.connectionpool").setLevel(INFO)
 
     def set_dns(self, dn_list):
         """Set the list of DNs which are allowed to sign incoming messages."""
