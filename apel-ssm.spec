@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        3.1.0
+Version:        3.1.1
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -100,6 +100,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Wed Dec 16 2020 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.1.1-1
+ - Changed logging to reduce how verbose the logging of a 3rd-party module is.
+
 * Tue Dec 01 2020 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.1.0-1
  - Enabled retries for all AMS communication methods to avoid timeouts from
    crashing SSM.
