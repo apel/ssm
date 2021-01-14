@@ -23,8 +23,8 @@ The sender configuration is usually found under `/etc/apel/sender.cfg`. Follow t
    ```
 1. To send to the central APEL Accounting server, change `destination` to one of the following depending on your type of accounting:
    * `gLite-APEL` for Grid Accounting
-   * `eu.egi.cloud.accounting` for Cloud Accounting
-   * `eu.egi.storage.accounting` for Storage Accounting
+   * `eu-egi-cloud-accounting` for Cloud Accounting
+   * `eu-egi-storage-accounting` for Storage Accounting
 
 The next time `ssmsend` runs it should be using the AMS. You can check this by looking in the logs for a successful run, which should look like this:
 
