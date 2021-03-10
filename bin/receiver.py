@@ -21,7 +21,7 @@ from __future__ import print_function
 import agents
 from ssm import __version__, LOG_BREAK
 
-import logging.config
+import logging
 import os
 import sys
 from optparse import OptionParser
