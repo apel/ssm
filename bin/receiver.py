@@ -45,10 +45,9 @@ except ImportError:
 
 # How often (in seconds) to read the list of valid DNs.
 REFRESH_DNS = 600
-log = None
 
 
-def get_dns(dn_file):
+def get_dns(dn_file, log):
     """Retrieve a list of DNs from a file."""
     dns = []
     f = None
@@ -110,7 +109,6 @@ def main():
         print('SSM will exit.')
         sys.exit(1)
 
-    global log
     log = logging.getLogger('ssmreceive')
 
     log.info(LOG_BREAK)
@@ -224,7 +222,7 @@ def main():
                    token=token)
 
         log.info('Fetching valid DNs.')
-        dns = get_dns(options.dn_file)
+        dns = get_dns(options.dn_file, log)
         ssm.set_dns(dns)
 
     except Exception as e:
@@ -251,7 +249,7 @@ def main():
 
                 if i % (REFRESH_DNS * 10) == 0:
                     log.info('Refreshing valid DNs and then sending ping.')
-                    dns = get_dns(options.dn_file)
+                    dns = get_dns(options.dn_file, log)
                     ssm.set_dns(dns)
 
                     if protocol == Ssm2.STOMP_MESSAGING:

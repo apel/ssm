@@ -23,7 +23,8 @@ class getDNsTest(unittest.TestCase):
 
     def test_get_empty_dns_file(self):
         """Attempting to read an empty DNs file should raise an exception."""
-        self.assertRaises(Ssm2Exception, bin.receiver.get_dns, self.tf_path)
+        self.assertRaises(Ssm2Exception, bin.receiver.get_dns,
+                          self.tf_path, self.mock_log)
 
     def test_get_good_dns(self):
         dn_text = dedent("""\
@@ -41,7 +42,7 @@ class getDNsTest(unittest.TestCase):
         f = open(self.tf_path, 'w')
         f.write(dn_text)
         f.close()
-        self.assertEqual(bin.receiver.get_dns(self.tf_path), output)
+        self.assertEqual(bin.receiver.get_dns(self.tf_path, self.mock_log), output)
 
     def test_get_iffy_dns(self):
         """Check that the two bad DNs are picked up."""
@@ -56,7 +57,7 @@ class getDNsTest(unittest.TestCase):
         f = open(self.tf_path, 'w')
         f.write(dn_text)
         f.close()
-        bin.receiver.get_dns(self.tf_path)
+        bin.receiver.get_dns(self.tf_path, self.mock_log)
         self.assertEqual(self.mock_log.warn.call_count, 2)
 
     def tearDown(self):
