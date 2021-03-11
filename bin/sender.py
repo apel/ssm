@@ -18,7 +18,7 @@
 
 from __future__ import print_function
 
-import agents
+import ssm.agents
 from ssm import __version__, LOG_BREAK
 
 import logging
@@ -44,20 +44,20 @@ def main():
     cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
     cp.read(options.config)
 
-    agents.logging_helper(cp, options.log_config)
+    ssm.agents.logging_helper(cp, options.log_config)
 
     log = logging.getLogger('ssmsend')
 
     log.info(LOG_BREAK)
     log.info('Starting sending SSM version %s.%s.%s.', *__version__)
 
-    protocol = agents.get_protocol(cp, log)
+    protocol = ssm.agents.get_protocol(cp, log)
 
     log.info('Setting up SSM with protocol: %s', protocol)
 
-    brokers, project, token = agents.get_ssm_args(protocol, cp, log)
+    brokers, project, token = ssm.agents.get_ssm_args(protocol, cp, log)
 
-    agents.run_sender(protocol, brokers, project, token, cp, log)
+    ssm.agents.run_sender(protocol, brokers, project, token, cp, log)
 
 
 if __name__ == '__main__':

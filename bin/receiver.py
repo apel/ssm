@@ -18,7 +18,7 @@
 
 from __future__ import print_function
 
-import agents
+import ssm.agents
 from ssm import __version__, LOG_BREAK
 
 import logging
@@ -56,20 +56,21 @@ def main():
         print('Cannot start SSM.  Pidfile %s already exists.' % pidfile)
         sys.exit(1)
 
-    agents.logging_helper(cp, options.log_config)
+    ssm.agents.logging_helper(cp, options.log_config)
 
     log = logging.getLogger('ssmreceive')
 
     log.info(LOG_BREAK)
     log.info('Starting receiving SSM version %s.%s.%s.', *__version__)
 
-    protocol = agents.get_protocol(cp, log)
+    protocol = ssm.agents.get_protocol(cp, log)
 
     log.info('Setting up SSM with protocol: %s', protocol)
 
-    brokers, project, token = agents.get_ssm_args(protocol, cp, log)
+    brokers, project, token = ssm.agents.get_ssm_args(protocol, cp, log)
 
-    agents.run_receiver(protocol, brokers, project, token, cp, log, options.dn_file, log)
+    ssm.agents.run_receiver(protocol, brokers, project, token,
+                            cp, log, options.dn_file, log)
 
 
 if __name__ == '__main__':
