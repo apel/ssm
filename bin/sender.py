@@ -18,9 +18,9 @@
 
 from __future__ import print_function
 
-from ssm import __version__, set_up_logging, LOG_BREAK, crypto
+from ssm import __version__, set_up_logging, LOG_BREAK
 from ssm.ssm2 import Ssm2, Ssm2Exception
-from ssm.crypto import CryptoException
+from ssm.crypto import CryptoException, get_certificate_subject, _from_file
 from ssm.brokers import StompBrokerGetter, STOMP_SERVICE, STOMP_SSL_SERVICE
 
 import logging.config
@@ -171,7 +171,7 @@ def main():
         verify_server_cert = True
         try:
             server_cert = cp.get('certificates', 'server_cert')
-            server_dn = crypto.get_certificate_subject(crypto._from_file(server_cert))
+            server_dn = get_certificate_subject(_from_file(server_cert))
             log.info('Messages will be encrypted using %s', server_dn)
             try:
                 verify_server_cert = cp.getboolean('certificates', 'verify_server_cert')
@@ -196,7 +196,7 @@ def main():
             path_type = 'dirq'
 
         host_cert = cp.get('certificates', 'certificate')
-        host_dn = crypto.get_certificate_subject(crypto._from_file(host_cert))
+        host_dn = get_certificate_subject(_from_file(host_cert))
         log.info('Messages will be signed using %s', host_dn)
 
         sender = Ssm2(brokers,
