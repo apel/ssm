@@ -65,13 +65,28 @@ def logging_helper(cp, log_manual_path=''):
 def get_protocol(cp, log):
     """Get the protocol from a ConfigParser object, defaulting to STOMP."""
     try:
-        protocol = cp.get('sender', 'protocol')
+        if 'sender' in cp.sections():
+            protocol = cp.get('sender', 'protocol')
+        elif 'receiver' in cp.sections():
+            protocol = cp.get('receiver', 'protocol')
+        else:
+            raise ConfigParser.NoSectionError('sender or receiver')
+
+        if protocol not in (Ssm2.STOMP_MESSAGING, Ssm2.AMS_MESSAGING):
+            raise ValueError
 
     except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
         # If the newer configuration setting 'protocol' is not set, use 'STOMP'
         # for backwards compatability.
         protocol = Ssm2.STOMP_MESSAGING
-        log.debug("No option set for 'protocol'. Defaulting to %s.", protocol)
+        log.warn("No option set for 'protocol'. Defaulting to %s.", protocol)
+    except ValueError:
+        log.critical("Invalid protocol '%s' set. Must be either '%s' or '%s'.",
+                     protocol, Ssm2.STOMP_MESSAGING, Ssm2.AMS_MESSAGING)
+        log.critical('SSM will exit.')
+        print('SSM failed to start.  See log file for details.')
+        sys.exit(1)
+
     return protocol
 
 
