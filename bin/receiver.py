@@ -70,7 +70,7 @@ def main():
     brokers, project, token = ssm.agents.get_ssm_args(protocol, cp, log)
 
     ssm.agents.run_receiver(protocol, brokers, project, token,
-                            cp, log, options.dn_file, log)
+                            cp, log, options.dn_file)
 
 
 if __name__ == '__main__':
