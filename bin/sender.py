@@ -195,14 +195,14 @@ def main():
             log.info('No path type defined, assuming dirq.')
             path_type = 'dirq'
 
-        host_cert = cp.get('certificates','certificate')
+        host_cert = cp.get('certificates', 'certificate')
         host_dn = crypto.get_certificate_subject(crypto._from_file(host_cert))
         log.info('Messages will be signed using %s', host_dn)
 
         sender = Ssm2(brokers,
                       cp.get('messaging', 'path'),
                       path_type=path_type,
-                      cert=cp.get('certificates', 'certificate'),
+                      cert=host_cert,
                       key=cp.get('certificates', 'key'),
                       dest=cp.get('messaging', 'destination'),
                       use_ssl=use_ssl,
