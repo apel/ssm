@@ -16,7 +16,7 @@
 
 set -eu
 
-TAG=3.1.1-1
+TAG=3.2.0-1
 
 SOURCE_DIR=~/debbuild/source
 BUILD_DIR=~/debbuild/build
@@ -54,6 +54,7 @@ fpm -s python -t deb \
 --no-auto-depends \
 --depends python2.7 \
 --depends python-pip \
+--depends 'python-stomp < 5.0.0' \
 --depends python-ldap \
 --depends libssl-dev \
 --depends libsasl2-dev \

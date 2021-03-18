@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        3.1.1
+Version:        3.2.0
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -100,6 +100,12 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Thu Mar 18 2021 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.2.0-1
+ - Added logging of what certificate DNs/subjects are being used to facilitate
+   troubleshooting.
+ - Added stomp.py as .deb package dependency to avoid broken installations.
+ - Refactored code to enable simpler external calls and better testing.
+
 * Wed Dec 16 2020 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.1.1-1
  - Changed logging to reduce how verbose the logging of a 3rd-party module is.
 
