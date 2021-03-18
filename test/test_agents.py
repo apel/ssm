@@ -7,7 +7,7 @@ import unittest
 
 import mock
 
-import bin.receiver
+import ssm.agents
 from ssm.ssm2 import Ssm2Exception
 
 
@@ -18,12 +18,13 @@ class getDNsTest(unittest.TestCase):
         os.close(self.tf)
         # Mock the logging to prevent errors due to it not being set up and so
         # that we can count how often logging methods are called
-        self.patcher = mock.patch('bin.receiver.log')
+        self.patcher = mock.patch('logging.Logger', autospec=True)
         self.mock_log = self.patcher.start()
 
     def test_get_empty_dns_file(self):
         """Attempting to read an empty DNs file should raise an exception."""
-        self.assertRaises(Ssm2Exception, bin.receiver.get_dns, self.tf_path)
+        self.assertRaises(Ssm2Exception, ssm.agents.get_dns,
+                          self.tf_path, self.mock_log)
 
     def test_get_good_dns(self):
         dn_text = dedent("""\
@@ -41,7 +42,7 @@ class getDNsTest(unittest.TestCase):
         f = open(self.tf_path, 'w')
         f.write(dn_text)
         f.close()
-        self.assertEqual(bin.receiver.get_dns(self.tf_path), output)
+        self.assertEqual(ssm.agents.get_dns(self.tf_path, self.mock_log), output)
 
     def test_get_iffy_dns(self):
         """Check that the two bad DNs are picked up."""
@@ -56,7 +57,7 @@ class getDNsTest(unittest.TestCase):
         f = open(self.tf_path, 'w')
         f.write(dn_text)
         f.close()
-        bin.receiver.get_dns(self.tf_path)
+        ssm.agents.get_dns(self.tf_path, self.mock_log)
         self.assertEqual(self.mock_log.warn.call_count, 2)
 
     def tearDown(self):
