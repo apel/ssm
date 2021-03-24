@@ -1,5 +1,18 @@
 # Migrating from using EGI ActiveMQ Message Brokers to using EGI ARGO Messaging Service
 
+## Prerequisites for using AMS
+
+- A valid host certificate from an IGTF Accredited CA.
+- A GOCDB 'Site' entry flagged as 'Production'.
+- A GOCDB 'Service' entry of the correct service type flagged as 'Production'. The following service types are used:
+  - For Grid accounting use 'gLite-APEL'.
+  - For Cloud accounting use 'eu.egi.cloud.accounting'.
+  - For Storage accounting use 'eu.egi.storage.accounting'.
+- The 'Host DN' listed in the GOCDB 'Service' entry must exactly match the certificate DN of the host used for accounting. Make sure there are no leading or trailing spaces in the 'Host DN' field.
+- Messages sent via AMS must be below 1 Megabyte in size, and the messaging service is optimised around this limit. If your messages start hitting this limit when using SSM, see the advice at the bottom of this document.
+
+## Software requirements
+
 Migration requires upgrading APEL SSM to at least version 2.4.0, installing the ARGO AMS Library, and adding new values to your configuration.
 
 The ARGO AMS Library is available in UMD as `python-argo-ams-library`. Versions above 0.5.0 are recommended.
