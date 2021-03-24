@@ -17,7 +17,9 @@ Migration requires upgrading APEL SSM to at least version 2.4.0, installing the 
 
 The ARGO AMS Library is available in UMD as `python-argo-ams-library`. Versions above 0.5.0 are recommended.
 
-## Sender
+## Configuration changes
+
+### Sender
 
 The sender configuration is usually found under `/etc/apel/sender.cfg`. Follow the steps below to migrate.
 
@@ -55,7 +57,9 @@ The next time `ssmsend` runs it should be using the AMS. You can check this by l
 2018-09-19 14:18:07,862 - ssmsend - INFO - ========================================
 ```
 
-## Receiver
+### Receiver
+
+This is only used for the central Accounting Repository, Accounting Portal, and regional accounting servers.
 
 1. Follow the steps 1 to 4 as per the [Sender documentation](#Sender) but editing your receiver configuration instead, usually found under `/etc/apel/receiver.cfg`, naming the section `[receiver]` rather than `[sender]`.
 1. Change `destination` to be the subscription you are using to pull messages down.
