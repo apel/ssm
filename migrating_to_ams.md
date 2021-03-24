@@ -67,3 +67,20 @@ This is only used for the central Accounting Repository, Accounting Portal, and 
    ```
    token: your_token_here
    ```
+
+## Issues
+
+### Messages too large
+
+- Cloud sites using cASO should ensure they are using at least version 1.4.0 of cASO as this version limits the number of records in a message.
+- Grid sites using the APEL accounting client need to be using APEL 1.9.0 and SSM 3.2.0. They can then modify their APEL client script, usually located at `/usr/bin/apelclient`. At the moment, this requires a manual change, but will become a configuration option in the next version of APEL. For example, to halve the number of records per message from the default of 1000, add the line `unloader.records_per_message = 500` after the call to `DbUnloader`:
+  ```
+  @@ -233,6 +233,7 @@ def run_client(ccp):
+
+           unloader = DbUnloader(db, unload_dir, include_vos, exclude_vos,
+                                 local_jobs, withhold_dns)
+  +        unloader.records_per_message = 500
+           try:
+               if interval == 'latest':
+                   msgs, recs = unloader.unload_latest(table_name, send_ur)
+  ```
