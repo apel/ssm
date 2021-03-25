@@ -1,10 +1,25 @@
 # Migrating from using EGI ActiveMQ Message Brokers to using EGI ARGO Messaging Service
 
+## Prerequisites for using AMS
+
+- A valid host certificate from an IGTF Accredited CA.
+- A GOCDB 'Site' entry flagged as 'Production'.
+- A GOCDB 'Service' entry of the correct service type flagged as 'Production'. The following service types are used:
+  - For Grid accounting use 'gLite-APEL'.
+  - For Cloud accounting use 'eu.egi.cloud.accounting'.
+  - For Storage accounting use 'eu.egi.storage.accounting'.
+- The 'Host DN' listed in the GOCDB 'Service' entry must exactly match the certificate DN of the host used for accounting. Make sure there are no leading or trailing spaces in the 'Host DN' field.
+- Messages sent via AMS must be below 1 Megabyte in size, and the messaging service is optimised around this limit. If your messages start hitting this limit when using SSM, see the advice at the bottom of this document.
+
+## Software requirements
+
 Migration requires upgrading APEL SSM to at least version 2.4.0, installing the ARGO AMS Library, and adding new values to your configuration.
 
 The ARGO AMS Library is available in UMD as `python-argo-ams-library`. Versions above 0.5.0 are recommended.
 
-## Sender
+## Configuration changes
+
+### Sender
 
 The sender configuration is usually found under `/etc/apel/sender.cfg`. Follow the steps below to migrate.
 
@@ -42,7 +57,9 @@ The next time `ssmsend` runs it should be using the AMS. You can check this by l
 2018-09-19 14:18:07,862 - ssmsend - INFO - ========================================
 ```
 
-## Receiver
+### Receiver
+
+This is only used for the central Accounting Repository, Accounting Portal, and regional accounting servers.
 
 1. Follow the steps 1 to 4 as per the [Sender documentation](#Sender) but editing your receiver configuration instead, usually found under `/etc/apel/receiver.cfg`, naming the section `[receiver]` rather than `[sender]`.
 1. Change `destination` to be the subscription you are using to pull messages down.
@@ -50,3 +67,20 @@ The next time `ssmsend` runs it should be using the AMS. You can check this by l
    ```
    token: your_token_here
    ```
+
+## Issues
+
+### Messages too large
+
+- Cloud sites using cASO should ensure they are using at least version 1.4.0 of cASO as this version limits the number of records in a message.
+- Grid sites using the APEL accounting client need to be using APEL 1.9.0 and SSM 3.2.0. They can then modify their APEL client script, usually located at `/usr/bin/apelclient`. At the moment, this requires a manual change, but will become a configuration option in the next version of APEL. For example, to halve the number of records per message from the default of 1000, add the line `unloader.records_per_message = 500` after the call to `DbUnloader`:
+  ```
+  @@ -233,6 +233,7 @@ def run_client(ccp):
+
+           unloader = DbUnloader(db, unload_dir, include_vos, exclude_vos,
+                                 local_jobs, withhold_dns)
+  +        unloader.records_per_message = 500
+           try:
+               if interval == 'latest':
+                   msgs, recs = unloader.unload_latest(table_name, send_ur)
+  ```
