@@ -4,6 +4,7 @@ import unittest
 import logging
 import os
 from subprocess import call, Popen, PIPE
+import tempfile
 import quopri
 
 from ssm.crypto import check_cert_key, \
@@ -74,6 +75,19 @@ class TestEncryptUtils(unittest.TestCase):
 
         if check_cert_key(TEST_CERT_FILE, TEST_CERT_FILE):
             self.fail('Accepted certificate as key.')
+
+        # Check incorrect ordering of cert and key path arguments.
+        self.assertFalse(check_cert_key(TEST_KEY_FILE, TEST_KEY_FILE),
+                         'Accepted key as cert.')
+        self.assertFalse(check_cert_key(TEST_KEY_FILE, TEST_CERT_FILE),
+                         'Accepted key and cert wrong way round.')
+
+        # Check behaviour with an invalid cert or key file.
+        with tempfile.NamedTemporaryFile() as tmp:
+            self.assertFalse(check_cert_key(tmp.name, TEST_KEY_FILE),
+                             'Accepted invalid cert file.')
+            self.assertFalse(check_cert_key(TEST_CERT_FILE, tmp.name),
+                             'Accepted invalid key file.')
 
         if not check_cert_key(TEST_CERT_FILE, TEST_KEY_FILE):
             self.fail('Cert and key match but function failed.')
