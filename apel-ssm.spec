@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        3.2.0
+Version:        3.2.1
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -100,6 +100,10 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Wed Apr 28 2021 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.2.1-1
+ - Changed certificate and key comparison to allow both RSA and EC keys.
+ - Corrected dependencies to include OpenSSL.
+
 * Thu Mar 18 2021 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.2.0-1
  - Added logging of what certificate DNs/subjects are being used to facilitate
    troubleshooting.

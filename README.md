@@ -32,6 +32,7 @@ SSM is provided by [STFC](https://stfc.ukri.org/), a part of [UK Research and In
 The EPEL repository must be enabled.  This can be done by installing
 the RPM for your version of SL, which is available on this page:
 http://fedoraproject.org/wiki/EPEL
+You will also need to have the OpenSSL library installed. Other prerequisites are listed below.
 
 The Python STOMP library (N.B. versions between 3.1.1 (inclusive) and 5.0.0
 (exclusive) are currently supported)
