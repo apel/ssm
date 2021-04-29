@@ -4,6 +4,7 @@ import unittest
 import logging
 import os
 from subprocess import call, Popen, PIPE
+import tempfile
 import quopri
 
 from ssm.crypto import check_cert_key, \
@@ -59,24 +60,35 @@ class TestEncryptUtils(unittest.TestCase):
         os.remove(self.ca_certpath)
 
     def test_check_cert_key(self):
-        '''
-        This will print an error log message for the tests that are
-        supposed to fail; you can ignore it.
-        '''
+        """Check that valid cert and key works."""
+        self.assertTrue(check_cert_key(TEST_CERT_FILE, TEST_KEY_FILE),
+                        'Cert and key match but function failed.')
 
-        # One version of the method would have passed this, because of the
-        # way it checked for validity.
-        try:
-            if check_cert_key('hello', 'hello'):
-                self.fail('Accepted non-existent cert and key.')
-        except CryptoException:
-            pass
+    def test_check_cert_key_invalid_paths(self):
+        """Check invalid file paths don't return True."""
+        self.assertFalse(check_cert_key('hello', 'hello'),
+                         'Accepted invalid file paths.')
+        self.assertFalse(check_cert_key(TEST_CERT_FILE, 'k'),
+                         'Accepted invalid key path.')
+        self.assertFalse(check_cert_key('c', TEST_KEY_FILE),
+                         'Accepted invalid cert path.')
 
-        if check_cert_key(TEST_CERT_FILE, TEST_CERT_FILE):
-            self.fail('Accepted certificate as key.')
+    def test_check_cert_key_arg_order(self):
+        """Check incorrect order of cert and key path args doesn't succeed."""
+        self.assertFalse(check_cert_key(TEST_CERT_FILE, TEST_CERT_FILE),
+                         'Accepted certificate as key.')
+        self.assertFalse(check_cert_key(TEST_KEY_FILE, TEST_KEY_FILE),
+                         'Accepted key as cert.')
+        self.assertFalse(check_cert_key(TEST_KEY_FILE, TEST_CERT_FILE),
+                         'Accepted key and cert wrong way round.')
 
-        if not check_cert_key(TEST_CERT_FILE, TEST_KEY_FILE):
-            self.fail('Cert and key match but function failed.')
+    def test_check_cert_key_invalid_files(self):
+        """Check behaviour with an invalid cert or key file."""
+        with tempfile.NamedTemporaryFile() as tmp:
+            self.assertFalse(check_cert_key(tmp.name, TEST_KEY_FILE),
+                             'Accepted invalid cert file.')
+            self.assertFalse(check_cert_key(TEST_CERT_FILE, tmp.name),
+                             'Accepted invalid key file.')
 
     def test_sign(self):
         '''
