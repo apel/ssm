@@ -4,8 +4,22 @@ on: push
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # This is so that our tar file ends up added as a volume to the rpmbuild container
+      RPMDIR: /home/runner/work/_temp/_github_home/rpmbuild
+      VERSION: 3.2.1-1
+      # Can't refer to the VERSION env above within the env block unfortunately
+      SSMDIR: apel-ssm-3.2.1-1
     steps:
     - uses: actions/checkout@v2
+
+    # Copied over from the ssm-build-rpm.sh script
+    - run: wget --no-check-certificate https://github.com/apel/ssm/archive/$VERSION.tar.gz -O $VERSION
+    - run: tar xzvf $VERSION
+    - run: mv ssm-$VERSION $SSMDIR
+    - run: tar czvf $SSMDIR.tar.gz $SSMDIR
+    - run: sudo mkdir -p $RPMDIR/SOURCES
+    - run: sudo cp $SSMDIR.tar.gz $RPMDIR/SOURCES
 
     - name: build RPM package
       id: rpm
@@ -16,5 +30,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v2.2.4
       with:
-        name: Binary RPM
-        path: ${{ steps.rpm.outputs.rpm_dir_path }}
+        name: Binary and Source RPMs
+        path: |
+          ${{ steps.rpm.outputs.rpm_dir_path }}
+          ${{ steps.rpm.outputs.source_rpm_dir_path }}
