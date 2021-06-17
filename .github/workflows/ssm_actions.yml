@@ -28,18 +28,7 @@ jobs:
            mkdir $TMPDIR
            export PYTHONPATH=$PYTHONPATH:`pwd -P`
            cd test
-    - name: script
+    - name: coverage script
       run: coverage run --branch --source=ssm,bin -m unittest discover --buffer 
-        
-    - name: upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with: 
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./coverage.xml,./coverage.xml
-        directory: ./coverage/reports/
-        flags: unittests
-        env_vars: OS,PYTHON
-        name: codecov-umberella
-        fail_ci_if_error: true
-        path_to_write_report: ./coverage/codecov_report.txt
-        verbose: true
+    - name: post test summary
+      run: codecov
