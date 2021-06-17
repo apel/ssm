@@ -308,7 +308,6 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
 
                 if i % (REFRESH_DNS * 10) == 0:
                     log.info('Refreshing valid DNs and then sending ping.')
-                    dns = get_dns(dn_file, log)
                     ssm.set_dns(dns)
 
                     if protocol == Ssm2.STOMP_MESSAGING:
@@ -362,6 +361,6 @@ def get_dns(dn_file, log):
     # If no valid DNs, SSM cannot receive any messages.
     if len(dns) == 0:
         raise Ssm2Exception('No valid DNs found in %s.  SSM will not start' % dn_file)
-
+    
     log.debug('%s DNs found.', len(dns))
     return dns
