@@ -14,32 +14,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps: 
-      - uses: actions/checkout@v2
-      - name: Set up Python 2.7
+    - uses: actions/checkout@v2
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: 2.7
-      - name: Base requirements for SSM
-        run: pip install -r requirements.txt
-      - name: Additional requirements for the unit and coverage tests
-        run: pip install -r requirements-test.txt 
-      - name: before_script
-        run: export TMPDIR=$PWD/tmp
-             mkdir $TMPDIR
-             export PYTHONPATH=$PYTHONPATH:`pwd -P`
-             cd test
-      - name: script
-        run: coverage run --branch --source=ssm,bin -m unittest discover --buffer 
+    - name: Base requirements for SSM
+      run: pip install -r requirements.txt
+    - name: Additional requirements for the unit and coverage tests
+      run: pip install -r requirements-test.txt 
+    - name: before_script
+      run: export TMPDIR=$PWD/tmp
+           mkdir $TMPDIR
+           export PYTHONPATH=$PYTHONPATH:`pwd -P`
+           cd test
+    - name: script
+      run: coverage run --branch --source=ssm,bin -m unittest discover --buffer 
         
-      - name: upload coverage to Codecov
-        uses: codecov/codecov-action@v1
-        with: 
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml,./coverage.xml
-          directory: ./coverage/reports/
-          flags: unittests
-          env_vars: OS,PYTHON
-          name: codecov-umberella
-          fail_ci_if_error: true
-          path_to_write_report: ./coverage/codecov_report.txt
-          verbose: true
+    - name: upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with: 
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.xml,./coverage.xml
+        directory: ./coverage/reports/
+        flags: unittests
+        env_vars: OS,PYTHON
+        name: codecov-umberella
+        fail_ci_if_error: true
+        path_to_write_report: ./coverage/codecov_report.txt
+        verbose: true
