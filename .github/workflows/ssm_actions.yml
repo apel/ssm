@@ -1,7 +1,7 @@
 name: Test_action
 
 on: [push,pull_request]
-  #push: 
+  # push: 
     # branches:
     #   - dev
  # pull_request:
@@ -10,14 +10,15 @@ on: [push,pull_request]
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
+
     steps: 
-       - name: Set up Python 2.7
+      - uses: actions/checkout@v2
+      - name: Set up Python 2.7
       uses: actions/setup-python@v2
       with:
         python-version: 2.7
-      - name: Checkout code
-        run: actions/checkout@v2
       - name: Base requirements for SSM
         run: pip install -r requirements.txt
       - name: Additional requirements for the unit and coverage tests
