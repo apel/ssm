@@ -1,27 +1,29 @@
-name: RPM Build
+name: Build Packages
 on: push
 
 jobs:
-  build:
+  build-rpm:
     runs-on: ubuntu-latest
     env:
-      # This is so that our tar file ends up added as a volume to the rpmbuild container
+      # _github_home is the dir used as a volume by the container
       RPMDIR: /home/runner/work/_temp/_github_home/rpmbuild
       VERSION: 3.2.1-1
-      # Can't refer to the VERSION env above within the env block unfortunately
+      # Can't use the VERSION var above within the env block unfortunately
       SSMDIR: apel-ssm-3.2.1-1
     steps:
     - uses: actions/checkout@v2
 
-    # Copied over from the ssm-build-rpm.sh script
-    - run: wget --no-check-certificate https://github.com/apel/ssm/archive/$VERSION.tar.gz -O $VERSION
-    - run: tar xzvf $VERSION
-    - run: mv ssm-$VERSION $SSMDIR
-    - run: tar czvf $SSMDIR.tar.gz $SSMDIR
-    - run: sudo mkdir -p $RPMDIR/SOURCES
-    - run: sudo cp $SSMDIR.tar.gz $RPMDIR/SOURCES
+    # Based on the ssm-build-rpm.sh script
+    - name: Download and rename archive
+      run: |
+        wget --no-check-certificate https://github.com/apel/ssm/archive/$VERSION.tar.gz -O $VERSION
+        tar xzvf $VERSION
+        mv ssm-$VERSION $SSMDIR
+        tar czvf $SSMDIR.tar.gz $SSMDIR
+        sudo mkdir -p $RPMDIR/SOURCES
+        sudo cp $SSMDIR.tar.gz $RPMDIR/SOURCES
 
-    - name: build RPM package
+    - name: Build RPM package
       id: rpm
       uses: naveenrajm7/rpmbuild@v1.0.0
       with:
