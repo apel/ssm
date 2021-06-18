@@ -1,5 +1,6 @@
 name: Build Packages
 on: push
+# tags: [0-9]+.[0-9]+.[0-9]+-*
 
 jobs:
   build-rpm:
@@ -7,11 +8,15 @@ jobs:
     env:
       # _github_home is the dir used as a volume by the container
       RPMDIR: /home/runner/work/_temp/_github_home/rpmbuild
-      VERSION: 3.2.1-1
-      # Can't use the VERSION var above within the env block unfortunately
-      SSMDIR: apel-ssm-3.2.1-1
     steps:
     - uses: actions/checkout@v2
+      with:
+        # Get all branches and tags so the latest tag can be found for VERSION
+        fetch-depth: 0
+    - name: Set VERSION
+      run: echo "VERSION=`echo $(git describe --tags $(git rev-list --tags --max-count=1))`" >> $GITHUB_ENV
+    - name: Set SSMDIR
+      run: echo "SSMDIR=apel-ssm-$VERSION" >> $GITHUB_ENV
 
     # Based on the ssm-build-rpm.sh script
     - name: Download and rename archive
