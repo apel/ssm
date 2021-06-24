@@ -1,10 +1,9 @@
-name: Test_action
+name: Run Unit Tests
 
-on: [push,pull_request]
+on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps: 
@@ -20,10 +19,11 @@ jobs:
     - name: Additional requirements for the unit and coverage tests
       run: pip install -r requirements-test.txt 
     - name: Pre-test set up
-      run: export TMPDIR=$PWD/tmp
-           mkdir $TMPDIR
-           export PYTHONPATH=$PYTHONPATH:`pwd -P`
-           cd test
+      run: |
+        export TMPDIR=$PWD/tmp
+        mkdir $TMPDIR
+        export PYTHONPATH=$PYTHONPATH:`pwd -P`
+        cd test
     - name: Run unit tests
       run: coverage run --branch --source=ssm,bin -m unittest discover --buffer 
     - name: Push coverage results to codecov
