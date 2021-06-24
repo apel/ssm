@@ -26,5 +26,5 @@ jobs:
         cd test
     - name: Run unit tests
       run: coverage run --branch --source=ssm,bin -m unittest discover --buffer 
-    - name: Push coverage results to codecov
-      run: codecov
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
