@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Execute the following as root to install build tools and create a build user:
-# yum install fedora-packager
+# yum install rpmdevtools rpmlint mock
 # useradd -m rpmb
 # usermod -a -G mock rpmb
 
