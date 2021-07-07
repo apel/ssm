@@ -289,7 +289,7 @@ class Ssm2(stomp.ConnectionListener):
         """
         if text is None or text == '':
             warning = 'Empty text passed to _handle_msg.'
-            log.warn(warning)
+            log.warning(warning)
             return None, None, warning
 #        if not text.startswith('MIME-Version: 1.0'):
 #            raise Ssm2Exception('Not a valid message.')
@@ -313,7 +313,7 @@ class Ssm2(stomp.ConnectionListener):
 
         if signer not in self._valid_dns:
             warning = 'Signer not in valid DNs list: %s' % signer
-            log.warn(warning)
+            log.warning(warning)
             return None, signer, warning
         else:
             log.info('Valid signer: %s', signer)
@@ -335,7 +335,7 @@ class Ssm2(stomp.ConnectionListener):
                     # allows the msg to be reloaded if needed.
                     body = extracted_msg
 
-                log.warn("Message rejected: %s", err_msg)
+                log.warning("Message rejected: %s", err_msg)
 
                 name = self._rejectq.add({'body': body,
                                           'signer': signer,
@@ -474,7 +474,7 @@ class Ssm2(stomp.ConnectionListener):
         log.info('Found %s messages.', self._outq.count())
         for msgid in self._outq:
             if not self._outq.lock(msgid):
-                log.warn('Message was locked. %s will not be sent.', msgid)
+                log.warning('Message was locked. %s will not be sent.', msgid)
                 continue
 
             text = self._outq.get(msgid)
@@ -514,7 +514,7 @@ class Ssm2(stomp.ConnectionListener):
             # Remove empty dirs and unlock msgs older than 5 min (default)
             self._outq.purge()
         except OSError as e:
-            log.warn('OSError raised while purging message queue: %s', e)
+            log.warning('OSError raised while purging message queue: %s', e)
 
     ###########################################################################
     # Connection handling methods
@@ -563,9 +563,9 @@ class Ssm2(stomp.ConnectionListener):
                 break
             except ConnectFailedException as e:
                 # ConnectFailedException doesn't provide a message.
-                log.warn('Failed to connect to %s:%s.', host, port)
+                log.warning('Failed to connect to %s:%s.', host, port)
             except Ssm2Exception as e:
-                log.warn('Failed to connect to %s:%s: %s', host, port, e)
+                log.warning('Failed to connect to %s:%s: %s', host, port, e)
 
         if not self.connected:
             raise Ssm2Exception('Attempts to start the SSM failed. The system will exit.')
@@ -660,7 +660,7 @@ class Ssm2(stomp.ConnectionListener):
                 f.write('\n')
                 f.close()
             except IOError as e:
-                log.warn('Failed to create pidfile %s: %s', self._pidfile, e)
+                log.warning('Failed to create pidfile %s: %s', self._pidfile, e)
 
         self.handle_connect()
 
@@ -672,7 +672,7 @@ class Ssm2(stomp.ConnectionListener):
                 if os.path.exists(self._pidfile):
                     os.remove(self._pidfile)
                 else:
-                    log.warn('pidfile %s not found.', self._pidfile)
+                    log.warning('pidfile %s not found.', self._pidfile)
             except IOError as e:
-                log.warn('Failed to remove pidfile %s: %e', self._pidfile, e)
-                log.warn('SSM may not start again until it is removed.')
+                log.warning('Failed to remove pidfile %s: %e', self._pidfile, e)
+                log.warning('SSM may not start again until it is removed.')
