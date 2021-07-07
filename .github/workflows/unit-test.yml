@@ -9,7 +9,7 @@ jobs:
       matrix:
         python-version: ['2.x', '3.x']
     name: Python ${{ matrix.python-version }} test
-    steps: 
+    steps:
     - uses: actions/checkout@v2
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -20,7 +20,7 @@ jobs:
     - name: Base requirements for SSM
       run: pip install -r requirements.txt
     - name: Additional requirements for the unit and coverage tests
-      run: pip install -r requirements-test.txt 
+      run: pip install -r requirements-test.txt
     - name: Pre-test set up
       run: |
         export TMPDIR=$PWD/tmp
@@ -28,6 +28,6 @@ jobs:
         export PYTHONPATH=$PYTHONPATH:`pwd -P`
         cd test
     - name: Run unit tests
-      run: coverage run --branch --source=ssm,bin -m unittest discover --buffer 
+      run: coverage run --branch --source=ssm,bin -m unittest discover --buffer
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
