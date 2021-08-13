@@ -79,7 +79,7 @@ def get_protocol(cp, log):
         # If the newer configuration setting 'protocol' is not set, use 'STOMP'
         # for backwards compatability.
         protocol = Ssm2.STOMP_MESSAGING
-        log.warn("No option set for 'protocol'. Defaulting to %s.", protocol)
+        log.warning("No option set for 'protocol'. Defaulting to %s.", protocol)
     except ValueError:
         log.critical("Invalid protocol '%s' set. Must be either '%s' or '%s'.",
                      protocol, Ssm2.STOMP_MESSAGING, Ssm2.AMS_MESSAGING)
@@ -315,7 +315,7 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
                         ssm.send_ping()
 
             except (NotConnectedException, AmsConnectionException) as error:
-                log.warn('Connection lost.')
+                log.warning('Connection lost.')
                 log.debug(error)
                 ssm.shutdown()
                 dc.close()
@@ -355,7 +355,7 @@ def get_dns(dn_file, log):
             elif line.strip().startswith('/'):
                 dns.append(line.strip())
             else:
-                log.warn('DN in incorrect format: %s', line)
+                log.warning('DN in incorrect format: %s', line)
     finally:
         if f is not None:
             f.close()
