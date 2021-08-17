@@ -212,8 +212,8 @@ def run_sender(protocol, brokers, project, token, cp, log):
             destination = cp.get('messaging', 'destination')
             if destination == '':
                 raise Ssm2Exception('No destination queue is configured.')
-            else:
-                log.info('Configured destination queue: %s', destination)
+
+            log.info('Configured destination queue: %s', destination)
         except ConfigParser.NoOptionError as e:
             raise Ssm2Exception(e)
 
