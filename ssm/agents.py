@@ -209,7 +209,7 @@ def run_sender(protocol, brokers, project, token, cp, log):
             log.info('No server certificate supplied.  Will not encrypt messages.')
 
         # Check that the destination queue is configured and log the queue
-        destination_helper(cp, log)
+        check_destination(cp, log)
 
         # Determine what type of message store we are interacting with,
         # i.e. a dirq QueueSimple object or a plain MessageDirectory directory.
@@ -274,7 +274,7 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
     log.info('The SSM will run as a daemon.')
 
     # Check that the destination queue is configured and log the queue
-    destination_helper(cp, log)
+    check_destination(cp, log)
 
     # We need to preserve the file descriptor for any log files.
     rootlog = logging.getLogger()
@@ -382,7 +382,7 @@ def get_dns(dn_file, log):
     return dns
 
 
-def destination_helper(cp, log):
+def check_destination(cp, log):
     try:
         destination = cp.get('messaging', 'destination')
         if destination == '':
