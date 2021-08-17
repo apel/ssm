@@ -208,14 +208,8 @@ def run_sender(protocol, brokers, project, token, cp, log):
         except ConfigParser.NoOptionError:
             log.info('No server certificate supplied.  Will not encrypt messages.')
 
-        try:
-            destination = cp.get('messaging', 'destination')
-            if destination == '':
-                raise Ssm2Exception('No destination queue is configured.')
-
-            log.info('Configured destination queue: %s', destination)
-        except ConfigParser.NoOptionError as e:
-            raise Ssm2Exception(e)
+        # Check that the destination queue is configured and log the queue
+        destination_helper(cp, log)
 
         # Determine what type of message store we are interacting with,
         # i.e. a dirq QueueSimple object or a plain MessageDirectory directory.
@@ -278,6 +272,9 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
         sys.exit(1)
 
     log.info('The SSM will run as a daemon.')
+
+    # Check that the destination queue is configured and log the queue
+    destination_helper(cp, log)
 
     # We need to preserve the file descriptor for any log files.
     rootlog = logging.getLogger()
@@ -383,3 +380,14 @@ def get_dns(dn_file, log):
 
     log.debug('%s DNs found.', len(dns))
     return dns
+
+
+def destination_helper(cp, log):
+    try:
+        destination = cp.get('messaging', 'destination')
+        if destination == '':
+            raise Ssm2Exception('No destination queue is configured.')
+
+        log.info('Configured destination queue: %s', destination)
+    except ConfigParser.NoOptionError as e:
+        raise Ssm2Exception(e)
