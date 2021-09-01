@@ -388,6 +388,5 @@ def check_destination(cp, log):
         if destination == '':
             raise Ssm2Exception('No destination queue is configured.')
 
-        log.info('Configured destination queue: %s', destination)
     except ConfigParser.NoOptionError as e:
         raise Ssm2Exception(e)

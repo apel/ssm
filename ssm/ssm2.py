@@ -15,6 +15,8 @@
 """
 from __future__ import print_function
 
+import pkg_resources
+
 from ssm import crypto
 from ssm.message_directory import MessageDirectory
 
@@ -549,7 +551,20 @@ class Ssm2(stomp.ConnectionListener):
         connect to each in turn until successful.
         """
         if self._protocol == Ssm2.AMS_MESSAGING:
-            log.debug('handle_connect called for AMS, doing nothing.')
+            log.info("Using AMS version %s.%s.%s.", pkg_resources.get_distribution('argo_ams_library').version)
+
+            for host, port in self._brokers:
+                log.info("Establishing connection to %s, port %i", host, port)
+
+            if self._dest is not None:
+                log.info('Will send messages to: %s', self._dest)
+
+            if self._listen is not None:
+                # Use a static ID for the subscription ID because we only ever have
+                # one subscription within a connection and ID is only considered
+                # to differentiate subscriptions within a connection.
+                self._conn.subscribe(destination=self._listen, id=1, ack='auto')
+                log.info('Subscribing to: %s', self._listen)
             return
 
         log.info("Using stomp.py version %s.%s.%s.", *stomp.__version__)
