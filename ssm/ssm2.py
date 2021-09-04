@@ -551,10 +551,9 @@ class Ssm2(stomp.ConnectionListener):
         connect to each in turn until successful.
         """
         if self._protocol == Ssm2.AMS_MESSAGING:
-            log.info("Using AMS version %s.%s.%s.", pkg_resources.get_distribution('argo_ams_library').version)
+            log.info("Using AMS version %s", pkg_resources.get_distribution('argo_ams_library').version)
 
-            for host, port in self._brokers:
-                log.info("Establishing connection to %s, port %i", host, port)
+            log.info("Establishing connection to %s", self._brokers[0])
 
             if self._dest is not None:
                 log.info('Will send messages to: %s', self._dest)
