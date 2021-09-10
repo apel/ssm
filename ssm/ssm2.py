@@ -113,16 +113,21 @@ class Ssm2(stomp.ConnectionListener):
 
         # create the filesystem queues for accepted and rejected messages
         if dest is not None and listen is None:
+            outqpath = os.path.join(qpath, 'outgoing')
+            rejectqpath = os.path.join(qpath, 'reject')
+
             # Determine what sort of outgoing structure to make
             if path_type == 'dirq':
                 if QueueSimple is None:
                     raise ImportError("dirq path_type requested but the dirq "
                                       "module wasn't found.")
 
-                self._outq = QueueSimple(qpath)
+                self._outq = QueueSimple(outqpath)
+                self._rejectq = QueueSimple(rejectqpath)
 
             elif path_type == 'directory':
-                self._outq = MessageDirectory(qpath)
+                self._outq = MessageDirectory(outqpath)
+                self._rejectq = MessageDirectory(rejectqpath)
             else:
                 raise Ssm2Exception('Unsupported path_type variable.')
 
@@ -499,8 +504,17 @@ class Ssm2(stomp.ConnectionListener):
                     if "Message size is too large" not in str(e):
                         raise
                     else:
-                        # Exit out of loop iteration so that message is not removed.
                         log.warn('Message %s could not be sent as its larger than 1MB', msgid)
+
+                        # Add the message to the rejected queue
+                        name = self._rejectq.add(text)
+                        log.info("Message %s saved to reject queue as %s", msgid, name)
+
+                        # Remove the message from the outgoing queue
+                        self._last_msg = None
+                        self._outq.remove(msgid)
+
+                        # Exit out of loop iteration so that message is not removed.
                         continue
 
             else:
