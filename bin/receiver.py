@@ -47,6 +47,9 @@ def main():
 
     (options, unused_args) = op.parse_args()
 
+    # Give dn_file absolute path
+    options.dn_file=os.path.abspath(options.dn_file)
+
     cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
     cp.read(options.config)
 
