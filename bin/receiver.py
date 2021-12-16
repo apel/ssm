@@ -47,7 +47,7 @@ def main():
 
     (options, unused_args) = op.parse_args()
 
-    # Give dn_file absolute path
+    # Absolute file path required when refreshing dn_file, relative path resulted in an error. 
     options.dn_file=os.path.abspath(options.dn_file)
 
     cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
