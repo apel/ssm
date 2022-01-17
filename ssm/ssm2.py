@@ -553,13 +553,13 @@ class Ssm2(stomp.ConnectionListener):
         if self._protocol == Ssm2.AMS_MESSAGING:
             log.info("Using AMS version %s", pkg_resources.get_distribution('argo_ams_library').version)
 
-            log.info("Establishing connection to %s", self._brokers[0])
+            log.info("Will connect to %s", self._brokers[0])
 
             if self._dest is not None:
                 log.info('Will send messages to: %s', self._dest)
 
             if self._listen is not None:
-                log.info('Subscribing to: %s', self._listen)
+                log.info('Will subscribe to: %s', self._listen)
             return
 
         log.info("Using stomp.py version %s.%s.%s.", *stomp.__version__)
