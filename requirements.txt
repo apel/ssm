@@ -2,7 +2,7 @@
 
 stomp.py<5.0.0
 python-daemon
-python-ldap<3.4.0
+python-ldap<3.4.0  # python-ldap-3.4.0 dropped support for Python 2
 # Dependencies for optional dirq based sending
 dirq
 
