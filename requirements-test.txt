@@ -1,6 +1,6 @@
 # Additional requirements for the unit and coverage tests
 
 coveralls<=1.2.0
-mock
+mock<4.0.0  # Pinned because version 4 dropped support for Python 2.7
 codecov
 pre-commit
