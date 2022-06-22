@@ -50,6 +50,10 @@ jobs:
         name: Build and push Docker image
         uses: docker/build-push-action@v2.5.0
         with:
-          push: true
+          # Only push containers to the registry on GitHub pushes,
+          # not pull requests. GitHub won't let a rogue PR create a container
+          # in the registry without secrets being set up before hand anyway,
+          # if GitHub were to try without secrets - the action would fail.
+          push: ${{ github.event_name == 'push' }}
           labels: ${{ steps.meta.outputs.labels }}
           tags: ${{ steps.meta.outputs.tags }}
