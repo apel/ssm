@@ -6,6 +6,7 @@ jobs:
   unit-test:
     runs-on: ubuntu-18.04
     strategy:
+      fail-fast: false
       matrix:
         python-version: ['2.x', '3.x']
     name: Python ${{ matrix.python-version }} test
