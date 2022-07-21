@@ -36,15 +36,13 @@ def main():
     op = OptionParser(description=__doc__, version=ver)
     op.add_option('-c', '--config', help='location of config file',
                   default='/etc/apel/sender.cfg')
-    op.add_option('-l', '--log_config',
-                        help='location of logging config file (optional)',
-                        default='/etc/apel/logging.cfg')
+
     (options, unused_args) = op.parse_args()
 
     cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
     cp.read(options.config)
 
-    ssm.agents.logging_helper(cp, options.log_config)
+    ssm.agents.logging_helper(cp)
 
     log = logging.getLogger('ssmsend')
 

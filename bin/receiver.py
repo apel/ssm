@@ -38,9 +38,6 @@ def main():
     op = OptionParser(description=__doc__, version=ver)
     op.add_option('-c', '--config', help='location of config file',
                   default='/etc/apel/receiver.cfg')
-    op.add_option('-l', '--log_config',
-                  help='location of logging config file (optional)',
-                  default='/etc/apel/logging.cfg')
     op.add_option('-d', '--dn_file',
                   help='location of the file containing valid DNs',
                   default='/etc/apel/dns')
@@ -59,7 +56,7 @@ def main():
         print('Cannot start SSM.  Pidfile %s already exists.' % pidfile)
         sys.exit(1)
 
-    ssm.agents.logging_helper(cp, options.log_config)
+    ssm.agents.logging_helper(cp)
 
     log = logging.getLogger('ssmreceive')
 

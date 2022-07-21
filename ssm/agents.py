@@ -58,12 +58,10 @@ REFRESH_DNS = 600
 def logging_helper(cp, log_manual_path=''):
     """Take config parser object and set up root logger."""
     try:
-        if os.path.exists(log_manual_path):
-            logging.cp.fileConfig(log_manual_path)
-        else:
-            set_up_logging(cp.get('logging', 'logfile'),
-                           cp.get('logging', 'level'),
-                           cp.getboolean('logging', 'console'))
+        set_up_logging(cp.get('logging', 'logfile'),
+                        cp.get('logging', 'level'),
+                        cp.getboolean('logging', 'console'))
+                        
     except (ConfigParser.Error, ValueError, IOError) as err:
         print('Error configuring logging: %s' % err)
         print('The system will exit.')
