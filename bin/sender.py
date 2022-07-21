@@ -37,7 +37,7 @@ def main():
     op.add_option('-c', '--config', help='location of config file',
                   default='/etc/apel/sender.cfg')
 
-    (options, unused_args) = op.parse_args()
+    options, unused_args = op.parse_args()
 
     cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
     cp.read(options.config)

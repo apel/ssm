@@ -42,7 +42,7 @@ def main():
                   help='location of the file containing valid DNs',
                   default='/etc/apel/dns')
 
-    (options, unused_args) = op.parse_args()
+    options, unused_args = op.parse_args()
 
     # Absolute file path required when refreshing dn_file, relative path resulted in an error. 
     options.dn_file = os.path.abspath(options.dn_file)
