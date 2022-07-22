@@ -55,7 +55,7 @@ from ssm.brokers import StompBrokerGetter, STOMP_SERVICE, STOMP_SSL_SERVICE
 REFRESH_DNS = 600
 
 
-def logging_helper(cp, log_manual_path=''):
+def logging_helper(cp):
     """Take config parser object and set up root logger."""
     try:
         set_up_logging(
