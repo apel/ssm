@@ -63,7 +63,6 @@ def logging_helper(cp):
             cp.get('logging', 'level'),
             cp.getboolean('logging', 'console')
         )
-                        
     except (ConfigParser.Error, ValueError, IOError) as err:
         print('Error configuring logging: %s' % err)
         print('The system will exit.')
