@@ -655,10 +655,9 @@ class Ssm2(stomp.ConnectionListener):
         """Create the pidfile then start the connection."""
         if self._pidfile is not None:
             try:
-                f = open(self._pidfile, 'w')
-                f.write(str(os.getpid()))
-                f.write('\n')
-                f.close()
+                with open(self._pidfile, 'w') as f:
+                    f.write(str(os.getpid()))
+                    f.write('\n')
             except IOError as e:
                 log.warning('Failed to create pidfile %s: %s', self._pidfile, e)
 
