@@ -55,7 +55,7 @@ def main():
           ],
           extras_require={
               'AMS': ['argo-ams-library'],
-              'daemon': ['python-daemon'],
+              'daemon': ['python-daemon<=2.3.0'],
               'dirq': ['dirq'],
           },
           packages=find_packages(exclude=['bin', 'test']),
