@@ -34,11 +34,7 @@ class Test(unittest.TestCase):
 
         http_url = 'http://not.a.stomp.url:8080'
 
-        try:
-            brokers.parse_stomp_url(http_url)
-            self.fail('Parsed a URL which was not STOMP.')
-        except ValueError:
-            pass
+        self.assertRaises(ValueError, brokers.parse_stomp_url, http_url)
 
         self.assertRaises(ValueError, brokers.parse_stomp_url,
                           'stomp://invalid.port.number:abc')
