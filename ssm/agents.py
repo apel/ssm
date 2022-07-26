@@ -42,7 +42,9 @@ try:
 except ImportError:
     # ImportError is raised when Ssm2 initialised if AMS is requested but lib
     # not installed.
-    AmsConnectionException = None
+    class AmsConnectionException(Exception):
+        """Placeholder exception if argo_ams_library not used."""
+        pass
 
 from ssm import set_up_logging, LOG_BREAK
 from ssm.ssm2 import Ssm2, Ssm2Exception
