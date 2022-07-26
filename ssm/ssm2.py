@@ -291,8 +291,6 @@ class Ssm2(stomp.ConnectionListener):
             warning = 'Empty text passed to _handle_msg.'
             log.warning(warning)
             return None, None, warning
-#        if not text.startswith('MIME-Version: 1.0'):
-#            raise Ssm2Exception('Not a valid message.')
 
         # encrypted - this could be nicer
         if 'application/pkcs7-mime' in text or 'application/x-pkcs7-mime' in text:
