@@ -122,6 +122,9 @@ class Test(unittest.TestCase):
                 'rgo.grnet.gr_msg.broker.stomp_175215210,Mds-Vo-name=HG-06-EKT'
                 ',Mds-Vo-name=local,o=grid', {'GlueServiceDataValue': ['PROD']}
             )]
+        else:
+            # This will tell mock to use the normal return value
+            return mock.DEFAULT
 
 
 if __name__ == '__main__':
