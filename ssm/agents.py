@@ -203,6 +203,7 @@ def run_sender(protocol, brokers, project, token, cp, log):
             try:
                 verify_server_cert = cp.getboolean('certificates', 'verify_server_cert')
             except ConfigParser.NoOptionError:
+                # If option not set, resort to value of verify_server_cert set above.
                 pass
         except ConfigParser.NoOptionError:
             log.info('No server certificate supplied.  Will not encrypt messages.')
