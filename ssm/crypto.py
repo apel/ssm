@@ -41,9 +41,8 @@ class CryptoException(Exception):
 
 def _from_file(filename):
     """Read entire file into string. Convenience function."""
-    f = open(filename, 'r')
-    s = f.read()
-    f.close()
+    with open(filename, 'r') as f:
+        s = f.read()
     return s
 
 

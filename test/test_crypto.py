@@ -106,11 +106,12 @@ class TestEncryptUtils(unittest.TestCase):
         # Indirect testing, using the verify_message() method
         retrieved_msg, retrieved_dn = verify(signed, TEST_CA_DIR, False)
 
-        if not retrieved_dn == TEST_CERT_DN:
-            self.fail("The DN of the verified message didn't match the cert.")
+        self.assertEqual(
+            retrieved_dn, TEST_CERT_DN,
+            "The DN of the verified message didn't match the cert.")
 
-        if not retrieved_msg == MSG:
-            self.fail("The verified message didn't match the original.")
+        self.assertEqual(retrieved_msg, MSG,
+                         "The verified message didn't match the original.")
 
     def test_verify(self):
 
@@ -147,43 +148,31 @@ class TestEncryptUtils(unittest.TestCase):
 
         retrieved_msg, retrieved_dn = verify(signed_msg, TEST_CA_DIR, False)
 
-        if not retrieved_dn == TEST_CERT_DN:
-            self.fail("The DN of the verified message didn't match the cert.")
+        self.assertEqual(
+            retrieved_dn, TEST_CERT_DN,
+            "The DN of the verified message didn't match the cert.")
 
-        if not retrieved_msg.strip() == MSG:
-            self.fail("The verified messge didn't match the original.")
+        self.assertEqual(
+            retrieved_msg.strip(), MSG,
+            "The verified messge didn't match the original.")
 
         retrieved_msg2, retrieved_dn2 = verify(signed_msg2, TEST_CA_DIR, False)
 
-        if not retrieved_dn2 == TEST_CERT_DN:
-            print(retrieved_dn2)
-            print(TEST_CERT_DN)
-            self.fail("The DN of the verified message didn't match the cert.")
+        self.assertEqual(
+            retrieved_dn2, TEST_CERT_DN,
+            "The DN of the verified message didn't match the cert.")
 
-        if not retrieved_msg2.strip() == MSG2:
-            print(retrieved_msg2)
-            print(MSG2)
-            self.fail("The verified messge didn't match the original.")
+        self.assertEqual(
+            retrieved_msg2.strip(), MSG2,
+            "The verified messge didn't match the original.")
 
         # Try empty string
-        try:
-            verify('', TEST_CA_DIR, False)
-        except CryptoException:
-            pass
+        self.assertRaises(CryptoException, verify, '', TEST_CA_DIR, False)
         # Try rubbish
-        try:
-            verify('Bibbly bobbly', TEST_CA_DIR, False)
-        except CryptoException:
-            pass
+        self.assertRaises(CryptoException, verify, 'Bibbly bobbly', TEST_CA_DIR, False)
         # Try None arguments
-        try:
-            verify('Bibbly bobbly', None, False)
-        except CryptoException:
-            pass
-        try:
-            verify(None, 'not a path', False)
-        except CryptoException:
-            pass
+        self.assertRaises(CryptoException, verify, 'Bibbly bobbly', None, False)
+        self.assertRaises(CryptoException, verify, None, 'not a path', False)
 
     def test_get_certificate_subject(self):
         '''
@@ -198,17 +187,9 @@ class TestEncryptUtils(unittest.TestCase):
         if not dn == TEST_CERT_DN:
             self.fail("Didn't retrieve correct DN from cert.")
 
-        try:
-            subj = get_certificate_subject('Rubbish')
-            self.fail('Returned %s as subject from empty string.' % subj)
-        except CryptoException:
-            pass
+        self.assertRaises(CryptoException, get_certificate_subject, 'Rubbish')
 
-        try:
-            subj = get_certificate_subject('')
-            self.fail('Returned %s as subject from empty string.' % subj)
-        except CryptoException:
-            pass
+        self.assertRaises(CryptoException, get_certificate_subject, '')
 
     def test_get_signer_cert(self):
         '''
@@ -244,10 +225,7 @@ class TestEncryptUtils(unittest.TestCase):
             self.fail("Encrypted message wasn't decrypted successfully.")
 
         # invalid cipher
-        try:
-            encrypted = encrypt(MSG, TEST_CERT_FILE, 'aes1024')
-        except CryptoException:
-            pass
+        self.assertRaises(CryptoException, encrypt, MSG, TEST_CERT_FILE, 'aes1024')
 
 
     def test_decrypt(self):
@@ -287,11 +265,7 @@ class TestEncryptUtils(unittest.TestCase):
             self.fail('The self-signed certificate should not be verified ' +
                       'if CRLs are checked.')
 
-        try:
-            if verify_cert(None, TEST_CA_DIR, False):
-                self.fail('Verified None rather than certificate string.')
-        except CryptoException:
-            pass
+        self.assertRaises(CryptoException, verify_cert, None, TEST_CA_DIR, False)
 
     def test_message_tampering(self):
         """Test that a tampered message is not accepted as valid."""

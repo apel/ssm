@@ -42,7 +42,9 @@ try:
 except ImportError:
     # ImportError is raised when Ssm2 initialised if AMS is requested but lib
     # not installed.
-    AmsConnectionException = None
+    class AmsConnectionException(Exception):
+        """Placeholder exception if argo_ams_library not used."""
+        pass
 
 from ssm import set_up_logging, LOG_BREAK
 from ssm.ssm2 import Ssm2, Ssm2Exception
@@ -201,6 +203,7 @@ def run_sender(protocol, brokers, project, token, cp, log):
             try:
                 verify_server_cert = cp.getboolean('certificates', 'verify_server_cert')
             except ConfigParser.NoOptionError:
+                # If option not set, resort to value of verify_server_cert set above.
                 pass
         except ConfigParser.NoOptionError:
             log.info('No server certificate supplied.  Will not encrypt messages.')

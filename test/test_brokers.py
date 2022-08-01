@@ -34,11 +34,7 @@ class Test(unittest.TestCase):
 
         http_url = 'http://not.a.stomp.url:8080'
 
-        try:
-            brokers.parse_stomp_url(http_url)
-            self.fail('Parsed a URL which was not STOMP.')
-        except ValueError:
-            pass
+        self.assertRaises(ValueError, brokers.parse_stomp_url, http_url)
 
         self.assertRaises(ValueError, brokers.parse_stomp_url,
                           'stomp://invalid.port.number:abc')
@@ -126,6 +122,9 @@ class Test(unittest.TestCase):
                 'rgo.grnet.gr_msg.broker.stomp_175215210,Mds-Vo-name=HG-06-EKT'
                 ',Mds-Vo-name=local,o=grid', {'GlueServiceDataValue': ['PROD']}
             )]
+        else:
+            # This will tell mock to use the normal return value
+            return mock.DEFAULT
 
 
 if __name__ == '__main__':
