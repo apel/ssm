@@ -15,6 +15,8 @@
 """
 from __future__ import print_function
 
+import pkg_resources
+
 from ssm import crypto
 from ssm.message_directory import MessageDirectory
 
@@ -25,13 +27,6 @@ except ImportError:
     # ImportError is raised later on if dirq is requested but not installed.
     QueueSimple = None
     Queue = None
-
-try:
-    import pkg_resources
-except ImportError:
-    # pkg_resources is distributed with setuptools, but as it's only used to enhance
-    # the logging, it can be optional.
-    pkg_resources = None
 
 import stomp
 from stomp.exception import ConnectFailedException
@@ -556,9 +551,7 @@ class Ssm2(stomp.ConnectionListener):
         connect to each in turn until successful.
         """
         if self._protocol == Ssm2.AMS_MESSAGING:
-            if pkg_resources is not None:
-                # We only log the version if pkg_resources is available.
-                log.info("Using AMS version %s", pkg_resources.get_distribution('argo_ams_library').version)
+            log.info("Using AMS version %s", pkg_resources.get_distribution('argo_ams_library').version)
 
             log.info("Will connect to %s", self._brokers[0])
 
