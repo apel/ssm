@@ -38,13 +38,21 @@ def main():
     op = OptionParser(description=__doc__, version=ver)
     op.add_option('-c', '--config', help='location of config file',
                   default='/etc/apel/receiver.cfg')
+    op.add_option('-l', '--log_config',
+                  help='DEPRECATED - location of logging config file (optional)',
+                  default=None)
     op.add_option('-d', '--dn_file',
                   help='location of the file containing valid DNs',
                   default='/etc/apel/dns')
 
     options, unused_args = op.parse_args()
 
-    # Absolute file path required when refreshing dn_file, relative path resulted in an error. 
+    # Deprecating functionality.
+    old_log_config_default_path = '/etc/apel/logging.cfg'
+    if (os.path.exists(old_log_config_default_path) or options.log_config != None):
+        logging.warning('Separate logging config file option has been deprecated.')
+
+    # Absolute file path required when refreshing dn_file, relative path resulted in an error.
     options.dn_file = os.path.abspath(options.dn_file)
 
     cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
