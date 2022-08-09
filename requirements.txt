@@ -1,11 +1,10 @@
 # Base requirements for ssm
 
+argo-ams-library
 stomp.py<5.0.0
 python-daemon<=2.3.0  # 2.3.1 dropped support for Python 2
 python-ldap<3.4.0  # python-ldap-3.4.0 dropped support for Python 2
+setuptools  # Required for pkg_resources (also happens to be a dependency of python-ldap)
+
 # Dependencies for optional dirq based sending
 dirq
-
-# Dependencies for experimental AMS functionality
-
-argo-ams-library
