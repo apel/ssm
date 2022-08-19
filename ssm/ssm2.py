@@ -285,6 +285,10 @@ class Ssm2(stomp.ConnectionListener):
         - verify signature
         - Return plain-text message, signer's DN and an error/None.
         """
+        
+        if isinstance(text, bytes):
+            text = text.decode()
+    
         if text is None or text == '':
             warning = 'Empty text passed to _handle_msg.'
             log.warning(warning)
@@ -380,6 +384,10 @@ class Ssm2(stomp.ConnectionListener):
         encrypted.
         """
         log.info('Sending message: %s', msgid)
+
+        if isinstance(text, bytes):
+            text = text.decode()
+
         if text is not None:
             # First we sign the message
             to_send = crypto.sign(text, self._cert, self._key)
