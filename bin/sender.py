@@ -22,8 +22,8 @@ import ssm.agents
 from ssm import __version__, LOG_BREAK
 
 import logging
-import os
 from optparse import OptionParser
+import os
 
 try:
     import ConfigParser
@@ -34,9 +34,11 @@ except ImportError:
 def main():
     """Set up connection, send all messages and quit."""
     ver = "SSM %s.%s.%s" % __version__
+    default_conf_location = '/etc/apel/sender.cfg'
     op = OptionParser(description=__doc__, version=ver)
-    op.add_option('-c', '--config', help='location of config file',
-                  default='/etc/apel/sender.cfg')
+    op.add_option('-c', '--config', help=('location of config file, '
+                  'default path: ' + default_conf_location),
+                  default=default_conf_location)
     op.add_option('-l', '--log_config',
                   help='DEPRECATED - location of logging config file (optional)',
                   default=None)
@@ -48,8 +50,13 @@ def main():
     if (os.path.exists(old_log_config_default_path) or options.log_config is not None):
         logging.warning('Separate logging config file option has been deprecated.')
 
-    cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
-    cp.read(options.config)
+    # check if config file exists using os.path.isfile function
+    if os.path.isfile(options.config):
+        cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
+        cp.read(options.config)
+    else:
+        print("Config file not found at", options.config)
+        exit(1)
 
     ssm.agents.logging_helper(cp)
 
