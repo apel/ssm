@@ -49,7 +49,7 @@ def main():
 
     # Deprecating functionality.
     old_log_config_default_path = '/etc/apel/logging.cfg'
-    if (os.path.exists(old_log_config_default_path) or options.log_config != None):
+    if (os.path.exists(old_log_config_default_path) or options.log_config is not None):
         logging.warning('Separate logging config file option has been deprecated.')
 
     # Absolute file path required when refreshing dn_file, relative path resulted in an error.
