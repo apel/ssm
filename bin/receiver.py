@@ -38,8 +38,9 @@ def main():
     default_conf_location = '/etc/apel/receiver.cfg'
     default_dns_location = '/etc/apel/dns'
     op = OptionParser(description=__doc__, version=ver)
-    op.add_option('-c', '--config', help=('location of config file, '
-                  'default path: ' + default_conf_location),
+    op.add_option('-c', '--config',
+                  help=('location of config file, '
+                        'default path: ' + default_conf_location),
                   default=default_conf_location)
     op.add_option('-l', '--log_config',
                   help='DEPRECATED - location of logging config file (optional)',
@@ -59,7 +60,7 @@ def main():
     # Absolute file path required when refreshing dn_file, relative path resulted in an error.
     options.dn_file = os.path.abspath(options.dn_file)
 
-    # check if config file exists using os.path.isfile function
+    # Check if config file exists using os.path.isfile function.
     if os.path.isfile(options.config):
         cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
         cp.read(options.config)
