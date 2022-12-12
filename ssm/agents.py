@@ -20,7 +20,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import logging
 import ldap
-import os
 import sys
 import time
 
