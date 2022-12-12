@@ -67,8 +67,8 @@ class Ssm2(stomp.ConnectionListener):
     AMS_MESSAGING = 'AMS'
 
     def __init__(self, hosts_and_ports, qpath, cert, key, dest=None, listen=None,
-                 capath=None, check_crls=False, use_ssl=True, username=None, password=None,
-                 enc_cert=None, verify_enc_cert=True, pidfile=None, path_type='dirq',
+                 capath=None, check_crls=False, use_ssl=True, enc_cert=None, 
+                 verify_enc_cert=True, pidfile=None, path_type='dirq',
                  protocol=STOMP_MESSAGING, project=None, token=''):
         """Create an SSM2 object.
 
@@ -83,11 +83,7 @@ class Ssm2(stomp.ConnectionListener):
         self._enc_cert = enc_cert
         self._capath = capath
         self._check_crls = check_crls
-        self._user = username
-        self._pwd = password
         self._use_ssl = use_ssl
-        # use pwd auth if we're supplied both user and pwd
-        self._use_pwd = username is not None and password is not None
         self.connected = False
 
         self._listen = listen
