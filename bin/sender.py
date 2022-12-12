@@ -22,6 +22,7 @@ import ssm.agents
 from ssm import __version__, LOG_BREAK
 
 import logging
+import os
 from optparse import OptionParser
 
 try:
@@ -37,14 +38,20 @@ def main():
     op.add_option('-c', '--config', help='location of config file',
                   default='/etc/apel/sender.cfg')
     op.add_option('-l', '--log_config',
-                        help='location of logging config file (optional)',
-                        default='/etc/apel/logging.cfg')
-    (options, unused_args) = op.parse_args()
+                  help='DEPRECATED - location of logging config file (optional)',
+                  default=None)
+
+    options, unused_args = op.parse_args()
+
+    # Deprecating functionality.
+    old_log_config_default_path = '/etc/apel/logging.cfg'
+    if (os.path.exists(old_log_config_default_path) or options.log_config is not None):
+        logging.warning('Separate logging config file option has been deprecated.')
 
     cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
     cp.read(options.config)
 
-    ssm.agents.logging_helper(cp, options.log_config)
+    ssm.agents.logging_helper(cp)
 
     log = logging.getLogger('ssmsend')
 
