@@ -67,7 +67,7 @@ class Ssm2(stomp.ConnectionListener):
     AMS_MESSAGING = 'AMS'
 
     def __init__(self, hosts_and_ports, qpath, cert, key, dest=None, listen=None,
-                 capath=None, check_crls=False, use_ssl=True, enc_cert=None, 
+                 capath=None, check_crls=False, use_ssl=True, enc_cert=None,
                  verify_enc_cert=True, pidfile=None, path_type='dirq',
                  protocol=STOMP_MESSAGING, project=None, token=''):
         """Create an SSM2 object.
