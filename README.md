@@ -194,7 +194,7 @@ add your messages using the `add` method.
      -v /path/to/read/messages:/var/spool/apel/outgoing \
      -v /etc/grid-security:/etc/grid-security \
      -v /path/to/persistently/log:/var/log/apel \
-     stfc/ssm
+     ghcr.io/apel/ssm
  ```
  * The line `-v /path/to/persistently/log:/var/log/apel \` is only required if you want to access the sender log as a file. If `console: true` is set in your `sender.cfg`, the container will also log to stdout/stderr.
 
@@ -216,7 +216,7 @@ add your messages using the `add` method.
      -v /path/to/dns/file:/etc/apel/dns \
      -v /etc/grid-security:/etc/grid-security \
      -v /path/to/persistently/log:/var/log/apel \
-     stfc/ssm
+     ghcr.io/apel/ssm
  ```
   * The line `-v /path/to/persistently/log:/var/log/apel \` is only required if you want to access the receiver log as a file. If `console: true` is set in your `receiver.cfg`, the container will also log to stdout/stderr.
 
