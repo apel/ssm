@@ -37,7 +37,8 @@ except ImportError:
 
 from stomp.exception import NotConnectedException
 try:
-    from argo_ams_library import AmsConnectionException
+    from argo_ams_library import (AmsConnectionException, AmsTimeoutException,
+                                  AmsBalancerException)
 except ImportError:
     # ImportError is raised when Ssm2 initialised if AMS is requested but lib
     # not installed.
@@ -328,7 +329,9 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
                     if protocol == Ssm2.STOMP_MESSAGING:
                         ssm.send_ping()
 
-            except (NotConnectedException, AmsConnectionException) as error:
+            except (NotConnectedException, AmsConnectionException,
+                    AmsTimeoutException, AmsBalancerException) as error:
+
                 log.warning('Connection lost.')
                 log.debug(error)
                 ssm.shutdown()
