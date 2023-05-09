@@ -19,6 +19,8 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    if: '!github.event.repository.fork'
+
     permissions:
       actions: read
       contents: read

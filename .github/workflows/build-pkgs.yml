@@ -11,6 +11,8 @@ on:
 jobs:
   build-rpm:
     runs-on: ubuntu-latest
+    if: '!github.event.repository.fork'
+
     env:
       # _github_home is the dir used as a volume by the container
       RPMDIR: /home/runner/work/_temp/_github_home/rpmbuild
