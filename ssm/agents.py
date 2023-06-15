@@ -298,6 +298,10 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
         dns = get_dns(dn_file, log)
         ssm.set_dns(dns)
 
+        log.info('Fetching banned DNs.')
+        banned_dns = get_banned_dns(log)
+        ssm.set_banned_dns(banned_dns)
+
     except Exception as e:
         log.fatal('Failed to initialise SSM: %s', e)
         log.info(LOG_BREAK)
@@ -379,3 +383,30 @@ def get_dns(dn_file, log):
 
     log.debug('%s DNs found.', len(dns))
     return dns
+
+
+def get_banned_dns(log):
+    """Retrieve the list of banned dns"""
+    banned_dns_list = []
+    try:
+        banned_dns_path = cp.get('auth', 'banned-dns')
+        banned_dns_file = os.path.normpath(os.path.expandvars(banned_dns_path))
+    except ConfigParser.NoOptionError:
+        banned_dns_file = None
+    f = None
+    try:
+        f = open(banned_dns_file, 'r')
+        lines = f.readlines()
+        for line in lines:
+            if line.isspace() or line.strip().startswith('#'):
+                continue
+            elif line.strip().startswith('/'):
+                banned_dns_list.append(line.strip())
+            else:
+                log.warning('DN in banned dns list is not in correct format: %s', line)
+    finally:
+        if f is not None:
+            f.close()
+
+    return banned_dns_list
+

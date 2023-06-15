@@ -90,6 +90,7 @@ class Ssm2(stomp.ConnectionListener):
         self._dest = dest
 
         self._valid_dns = []
+        self._banned_dns = []
         self._pidfile = pidfile
 
         # Used to differentiate between STOMP and AMS methods
@@ -189,6 +190,10 @@ class Ssm2(stomp.ConnectionListener):
         """Set the list of DNs which are allowed to sign incoming messages."""
         self._valid_dns = dn_list
 
+    def set_banned_dns(self, banned_dn_list):
+        """Set the list of banned dns, so their messages can be dropped."""
+        self._banned_dns = banned_dn_list
+
     ##########################################################################
     # Methods called by stomppy
     ##########################################################################
@@ -283,8 +288,10 @@ class Ssm2(stomp.ConnectionListener):
         Namely:
         - decrypt if necessary
         - verify signature
+        - drop the message if the sender is a banned dn
         - Return plain-text message, signer's DN and an error/None.
         """
+
         if text is None or text == '':
             warning = 'Empty text passed to _handle_msg.'
             log.warning(warning)
@@ -306,6 +313,13 @@ class Ssm2(stomp.ConnectionListener):
             error = 'Failed to verify message: %s' % e
             log.error(error)
             return None, None, error
+
+        # If the message has been sent from a banned dn,
+        # don't send the message to the reject queue.
+        # Instead, just drop the message.
+        if signer in self._banned_dns:
+            log.info("Message deleted as was sent from banned dn: %s", signer)
+            return
 
         if signer not in self._valid_dns:
             warning = 'Signer not in valid DNs list: %s' % signer
