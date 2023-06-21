@@ -288,7 +288,7 @@ class Ssm2(stomp.ConnectionListener):
         Namely:
         - decrypt if necessary
         - verify signature
-        - drop the message if the sender is a banned dn
+        - send an error message if the message wasn't sent from a valid DN
         - Return plain-text message, signer's DN and an error/None.
         """
 
@@ -314,17 +314,23 @@ class Ssm2(stomp.ConnectionListener):
             log.error(error)
             return None, None, error
 
-        # If the message has been sent from a banned dn,
-        # don't send the message to the reject queue.
-        # Instead, just drop the message.
+        # If the message has been sent from a banned DN,
+        # set a specific error message that can be
+        # checked for later.
         if signer in self._banned_dns:
-            log.info("Message deleted as was sent from banned dn: %s", signer)
-            return
+            warning = 'Signer is in the banned DNs list'
+            log.warning(warning)
+            return None, signer, warning
 
-        if signer not in self._valid_dns:
+        # Else, if the signer is not in valid DNs list,
+        # but also not a banned dn,
+        # set a specific error message
+        elif signer not in self._valid_dns:
             warning = 'Signer not in valid DNs list: %s' % signer
             log.warning(warning)
             return None, signer, warning
+
+        # Else, the message has been sent from a valid DN
         else:
             log.info('Valid signer: %s', signer)
 
@@ -334,9 +340,15 @@ class Ssm2(stomp.ConnectionListener):
         """Extract message contents and add to the accept or reject queue."""
         extracted_msg, signer, err_msg = self._handle_msg(body)
         try:
+            # If the warning states the message was sent from a banned DN,
+            # don't send the message to the reject queue.
+            # Instead, drop the message (don't send it to any queue)
+            if err_msg == "Signer is in the banned DNs list":
+                log.info("Message dropped as was sent from a banned dn: %s", signer)
+
             # If the message is empty or the error message is not empty
             # then reject the message.
-            if extracted_msg is None or err_msg is not None:
+            elif extracted_msg is None or err_msg is not None:
                 if signer is None:  # crypto failed
                     signer = 'Not available.'
                 elif extracted_msg is not None:
