@@ -39,9 +39,8 @@ class getDNsTest(unittest.TestCase):
         output = ['/C=UK/O=eScience/OU=CLRC/L=RAL/CN=scarfrap.esc.rl.ac.uk',
                   '/C=UK/O=eScience/OU=CLRC/L=RAL/CN=uas-dev.esc.rl.ac.uk',
                   '/C=UK/ST=RAL/L=A City/O=eScene/OU=CC/CN=cld.grid.rl.uk']
-        f = open(self.tf_path, 'w')
-        f.write(dn_text)
-        f.close()
+        with open(self.tf_path, 'w') as f:
+            f.write(dn_text)
         self.assertEqual(ssm.agents.get_dns(self.tf_path, self.mock_log), output)
 
     def test_get_iffy_dns(self):
@@ -54,11 +53,10 @@ class getDNsTest(unittest.TestCase):
                          # Another bad DN
                          C=UK/O=eScene/OU=CLRC/L=RAL/CN=apel-dev.esc.rl.ac.uk
                          """)
-        f = open(self.tf_path, 'w')
-        f.write(dn_text)
-        f.close()
+        with open(self.tf_path, 'w') as f:
+            f.write(dn_text)
         ssm.agents.get_dns(self.tf_path, self.mock_log)
-        self.assertEqual(self.mock_log.warn.call_count, 2)
+        self.assertEqual(self.mock_log.warning.call_count, 2)
 
     def tearDown(self):
         os.remove(self.tf_path)

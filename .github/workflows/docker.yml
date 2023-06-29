@@ -1,0 +1,59 @@
+name: Docker
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+on:
+  push:
+    # Build all branches
+    branches: '*'
+    # Build tags which look like ###.###.###-###, i.e. actual releases only
+    # as any build from a GitHub tag also get's published as latest.
+    # Note: This is a GitHub actions filter pattern, not a regex
+    # (see https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet).
+    tags: [ '[0-9]+.[0-9]+.[0-9]+-[0-9]+' ]
+  pull_request:
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        # Login against a Docker registry
+        # https://github.com/docker/login-action
+        name: Login to ${{ env.REGISTRY }}
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      -
+        # Extract metadata (tags, labels) for Docker
+        # https://github.com/docker/metadata-action
+        name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      -
+        # Build and push Docker image
+        # https://github.com/docker/build-push-action
+        name: Build and push Docker image
+        uses: docker/build-push-action@v4.1.1
+        with:
+          # Only push containers to the registry on GitHub pushes,
+          # not pull requests. GitHub won't let a rogue PR create a container
+          # in the registry without secrets being set up before hand anyway,
+          # if GitHub were to try without secrets - the action would fail.
+          push: ${{ github.event_name == 'push' }}
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}

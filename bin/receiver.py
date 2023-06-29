@@ -35,20 +35,38 @@ except ImportError:
 def main():
     """Set up connection, and listen for messages."""
     ver = "SSM %s.%s.%s" % __version__
+    default_conf_location = '/etc/apel/receiver.cfg'
+    default_dns_location = '/etc/apel/dns'
     op = OptionParser(description=__doc__, version=ver)
-    op.add_option('-c', '--config', help='location of config file',
-                  default='/etc/apel/receiver.cfg')
+    op.add_option('-c', '--config',
+                  help=('location of config file, '
+                        'default path: ' + default_conf_location),
+                  default=default_conf_location)
     op.add_option('-l', '--log_config',
-                  help='location of logging config file (optional)',
-                  default='/etc/apel/logging.cfg')
+                  help='DEPRECATED - location of logging config file (optional)',
+                  default=None)
     op.add_option('-d', '--dn_file',
-                  help='location of the file containing valid DNs',
-                  default='/etc/apel/dns')
+                  help=('location of the file containing valid DNs, '
+                        'default path: ' + default_dns_location),
+                  default=default_dns_location)
 
-    (options, unused_args) = op.parse_args()
+    options, unused_args = op.parse_args()
 
-    cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
-    cp.read(options.config)
+    # Deprecating functionality.
+    old_log_config_default_path = '/etc/apel/logging.cfg'
+    if (os.path.exists(old_log_config_default_path) or options.log_config is not None):
+        logging.warning('Separate logging config file option has been deprecated.')
+
+    # Absolute file path required when refreshing dn_file, relative path resulted in an error.
+    options.dn_file = os.path.abspath(options.dn_file)
+
+    # Check if config file exists using os.path.isfile function.
+    if os.path.isfile(options.config):
+        cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
+        cp.read(options.config)
+    else:
+        print("Config file not found at", options.config)
+        exit(1)
 
     # Check for pidfile
     pidfile = cp.get('daemon', 'pidfile')
@@ -56,7 +74,7 @@ def main():
         print('Cannot start SSM.  Pidfile %s already exists.' % pidfile)
         sys.exit(1)
 
-    ssm.agents.logging_helper(cp, options.log_config)
+    ssm.agents.logging_helper(cp)
 
     log = logging.getLogger('ssmreceive')
 

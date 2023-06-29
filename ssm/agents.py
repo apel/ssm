@@ -18,10 +18,8 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from daemon import DaemonContext
 import logging
 import ldap
-import os
 import sys
 import time
 
@@ -30,13 +28,23 @@ try:
 except ImportError:
     import configparser as ConfigParser
 
+try:
+    from daemon import DaemonContext
+except ImportError:
+    # A error is logged and the receiver exits later if DaemonContext is
+    # requested but not installed.
+    DaemonContext = None
+
 from stomp.exception import NotConnectedException
 try:
-    from argo_ams_library import AmsConnectionException
+    from argo_ams_library import (AmsConnectionException, AmsTimeoutException,
+                                  AmsBalancerException)
 except ImportError:
     # ImportError is raised when Ssm2 initialised if AMS is requested but lib
     # not installed.
-    AmsConnectionException = None
+    class AmsConnectionException(Exception):
+        """Placeholder exception if argo_ams_library not used."""
+        pass
 
 from ssm import set_up_logging, LOG_BREAK
 from ssm.ssm2 import Ssm2, Ssm2Exception
@@ -47,15 +55,14 @@ from ssm.brokers import StompBrokerGetter, STOMP_SERVICE, STOMP_SSL_SERVICE
 REFRESH_DNS = 600
 
 
-def logging_helper(cp, log_manual_path=''):
+def logging_helper(cp):
     """Take config parser object and set up root logger."""
     try:
-        if os.path.exists(log_manual_path):
-            logging.cp.fileConfig(log_manual_path)
-        else:
-            set_up_logging(cp.get('logging', 'logfile'),
-                           cp.get('logging', 'level'),
-                           cp.getboolean('logging', 'console'))
+        set_up_logging(
+            cp.get('logging', 'logfile'),
+            cp.get('logging', 'level'),
+            cp.getboolean('logging', 'console')
+        )
     except (ConfigParser.Error, ValueError, IOError) as err:
         print('Error configuring logging: %s' % err)
         print('The system will exit.')
@@ -79,7 +86,7 @@ def get_protocol(cp, log):
         # If the newer configuration setting 'protocol' is not set, use 'STOMP'
         # for backwards compatability.
         protocol = Ssm2.STOMP_MESSAGING
-        log.warn("No option set for 'protocol'. Defaulting to %s.", protocol)
+        log.warning("No option set for 'protocol'. Defaulting to %s.", protocol)
     except ValueError:
         log.critical("Invalid protocol '%s' set. Must be either '%s' or '%s'.",
                      protocol, Ssm2.STOMP_MESSAGING, Ssm2.AMS_MESSAGING)
@@ -195,6 +202,7 @@ def run_sender(protocol, brokers, project, token, cp, log):
             try:
                 verify_server_cert = cp.getboolean('certificates', 'verify_server_cert')
             except ConfigParser.NoOptionError:
+                # If option not set, resort to value of verify_server_cert set above.
                 pass
         except ConfigParser.NoOptionError:
             log.info('No server certificate supplied.  Will not encrypt messages.')
@@ -259,6 +267,13 @@ def run_sender(protocol, brokers, project, token, cp, log):
 
 def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
     """Run Ssm2 as a receiver daemon."""
+    if DaemonContext is None:
+        log.error("Receiving SSMs must use python-daemon, but the "
+                  "python-daemon module wasn't found.")
+        log.error("System will exit.")
+        log.info(LOG_BREAK)
+        sys.exit(1)
+
     log.info('The SSM will run as a daemon.')
 
     # We need to preserve the file descriptor for any log files.
@@ -314,8 +329,10 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
                     if protocol == Ssm2.STOMP_MESSAGING:
                         ssm.send_ping()
 
-            except (NotConnectedException, AmsConnectionException) as error:
-                log.warn('Connection lost.')
+            except (NotConnectedException, AmsConnectionException,
+                    AmsTimeoutException, AmsBalancerException) as error:
+
+                log.warning('Connection lost.')
                 log.debug(error)
                 ssm.shutdown()
                 dc.close()
@@ -355,7 +372,7 @@ def get_dns(dn_file, log):
             elif line.strip().startswith('/'):
                 dns.append(line.strip())
             else:
-                log.warn('DN in incorrect format: %s', line)
+                log.warning('DN in incorrect format: %s', line)
     finally:
         if f is not None:
             f.close()

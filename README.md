@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/apel/ssm.svg?branch=dev)](https://travis-ci.org/apel/ssm)
 [![Coverage Status](https://coveralls.io/repos/github/apel/ssm/badge.svg?branch=dev)](https://coveralls.io/github/apel/ssm?branch=dev)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/cc3e808664ee41638938aa5c660a88ae)](https://www.codacy.com/app/apel/ssm)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/9d2b1c88ab844f0081e5fafab49b269d)](https://www.codacy.com/gh/apel/ssm/dashboard)
 [![Maintainability](https://api.codeclimate.com/v1/badges/34aa04f3583afce2ceb2/maintainability)](https://codeclimate.com/github/apel/ssm/maintainability)
 
 Secure STOMP Messenger (SSM) is designed to simply send messages
@@ -18,9 +18,9 @@ For more information about SSM, see the [EGI wiki](https://wiki.egi.eu/wiki/APEL
 ## Acknowledgements
 
 <span>
-  <img alt="STFC logo" src="https://github.com/GOCDB/gocdb/raw/dev/htdocs/web_portal/img/UKRI_STF_Council-Logo_Horiz-RGB_crop.png" height="57" />
-  <img alt="EU flag" src="https://github.com/GOCDB/gocdb/raw/dev/htdocs/web_portal/img/eu_flag_yellow_low_150.png" height="51" />
-  <img alt="EOSC-hub logo" src="https://github.com/GOCDB/gocdb/raw/dev/htdocs/web_portal/img/eosc-hub-v-web_150.png" height="57" />
+  <img alt="STFC logo" src="https://github.com/GOCDB/gocdb/raw/dev/htdocs/images/UKRI_STF_Council-Logo_Horiz-RGB_crop.png" height="57" />
+  <img alt="EU flag" src="https://github.com/GOCDB/gocdb/raw/dev/htdocs/images/eu_flag_yellow_low_150.png" height="51" />
+  <img alt="EOSC-hub logo" src="https://github.com/GOCDB/gocdb/raw/dev/htdocs/images/eosc-hub-v-web_150.png" height="57" />
 </span>
 
 SSM is provided by [STFC](https://stfc.ukri.org/), a part of [UK Research and Innovation](https://www.ukri.org/), and is co-funded by the [EOSC-hub](https://www.eosc-hub.eu/) project (Horizon 2020) under Grant number 777536. Licensed under the [Apache 2 License](http://www.apache.org/licenses/LICENSE-2.0).
@@ -40,15 +40,16 @@ The Python STOMP library (N.B. versions between 3.1.1 (inclusive) and 5.0.0
 
 The Python AMS library. This is only required if you want to use AMS. See here for details on obtaining an RPM: https://github.com/ARGOeu/argo-ams-library/
 
-The Python daemon library
-* `yum install python-daemon`
-
 The Python ldap library
 * `yum install python-ldap`
 
 Optionally, the Python dirq library (N.B. this is only required if your messages
 are stored in a dirq structure)
 * `yum install python-dirq`
+
+The Python daemon library (N.B. installing this library is only required when
+using the SSM as a receiver)
+* `yum install python-daemon`
 
 You need a certificate and key in PEM format accessible to the SSM.
 There are a number of ways to do this.  One is to make a copy of the
@@ -193,7 +194,7 @@ add your messages using the `add` method.
      -v /path/to/read/messages:/var/spool/apel/outgoing \
      -v /etc/grid-security:/etc/grid-security \
      -v /path/to/persistently/log:/var/log/apel \
-     stfc/ssm
+     ghcr.io/apel/ssm
  ```
  * The line `-v /path/to/persistently/log:/var/log/apel \` is only required if you want to access the sender log as a file. If `console: true` is set in your `sender.cfg`, the container will also log to stdout/stderr.
 
@@ -215,7 +216,7 @@ add your messages using the `add` method.
      -v /path/to/dns/file:/etc/apel/dns \
      -v /etc/grid-security:/etc/grid-security \
      -v /path/to/persistently/log:/var/log/apel \
-     stfc/ssm
+     ghcr.io/apel/ssm
  ```
   * The line `-v /path/to/persistently/log:/var/log/apel \` is only required if you want to access the receiver log as a file. If `console: true` is set in your `receiver.cfg`, the container will also log to stdout/stderr.
 

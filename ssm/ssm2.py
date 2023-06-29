@@ -15,6 +15,8 @@
 """
 from __future__ import print_function
 
+import pkg_resources
+
 from ssm import crypto
 from ssm.message_directory import MessageDirectory
 
@@ -65,8 +67,8 @@ class Ssm2(stomp.ConnectionListener):
     AMS_MESSAGING = 'AMS'
 
     def __init__(self, hosts_and_ports, qpath, cert, key, dest=None, listen=None,
-                 capath=None, check_crls=False, use_ssl=False, username=None, password=None,
-                 enc_cert=None, verify_enc_cert=True, pidfile=None, path_type='dirq',
+                 capath=None, check_crls=False, use_ssl=True, enc_cert=None,
+                 verify_enc_cert=True, pidfile=None, path_type='dirq',
                  protocol=STOMP_MESSAGING, project=None, token=''):
         """Create an SSM2 object.
 
@@ -81,11 +83,7 @@ class Ssm2(stomp.ConnectionListener):
         self._enc_cert = enc_cert
         self._capath = capath
         self._check_crls = check_crls
-        self._user = username
-        self._pwd = password
         self._use_ssl = use_ssl
-        # use pwd auth if we're supplied both user and pwd
-        self._use_pwd = username is not None and password is not None
         self.connected = False
 
         self._listen = listen
@@ -289,10 +287,8 @@ class Ssm2(stomp.ConnectionListener):
         """
         if text is None or text == '':
             warning = 'Empty text passed to _handle_msg.'
-            log.warn(warning)
+            log.warning(warning)
             return None, None, warning
-#        if not text.startswith('MIME-Version: 1.0'):
-#            raise Ssm2Exception('Not a valid message.')
 
         # encrypted - this could be nicer
         if 'application/pkcs7-mime' in text or 'application/x-pkcs7-mime' in text:
@@ -313,7 +309,7 @@ class Ssm2(stomp.ConnectionListener):
 
         if signer not in self._valid_dns:
             warning = 'Signer not in valid DNs list: %s' % signer
-            log.warn(warning)
+            log.warning(warning)
             return None, signer, warning
         else:
             log.info('Valid signer: %s', signer)
@@ -335,7 +331,7 @@ class Ssm2(stomp.ConnectionListener):
                     # allows the msg to be reloaded if needed.
                     body = extracted_msg
 
-                log.warn("Message rejected: %s", err_msg)
+                log.warning("Message rejected: %s", err_msg)
 
                 name = self._rejectq.add({'body': body,
                                           'signer': signer,
@@ -474,7 +470,7 @@ class Ssm2(stomp.ConnectionListener):
         log.info('Found %s messages.', self._outq.count())
         for msgid in self._outq:
             if not self._outq.lock(msgid):
-                log.warn('Message was locked. %s will not be sent.', msgid)
+                log.warning('Message was locked. %s will not be sent.', msgid)
                 continue
 
             text = self._outq.get(msgid)
@@ -514,7 +510,7 @@ class Ssm2(stomp.ConnectionListener):
             # Remove empty dirs and unlock msgs older than 5 min (default)
             self._outq.purge()
         except OSError as e:
-            log.warn('OSError raised while purging message queue: %s', e)
+            log.warning('OSError raised while purging message queue: %s', e)
 
     ###########################################################################
     # Connection handling methods
@@ -551,7 +547,16 @@ class Ssm2(stomp.ConnectionListener):
         connect to each in turn until successful.
         """
         if self._protocol == Ssm2.AMS_MESSAGING:
-            log.debug('handle_connect called for AMS, doing nothing.')
+            log.info("Using AMS version %s",
+                        pkg_resources.get_distribution('argo_ams_library').version)
+
+            log.info("Will connect to %s", self._brokers[0])
+
+            if self._dest is not None:
+                log.info('Will send messages to: %s', self._dest)
+
+            if self._listen is not None:
+                log.info('Will subscribe to: %s', self._listen)
             return
 
         log.info("Using stomp.py version %s.%s.%s.", *stomp.__version__)
@@ -563,9 +568,9 @@ class Ssm2(stomp.ConnectionListener):
                 break
             except ConnectFailedException as e:
                 # ConnectFailedException doesn't provide a message.
-                log.warn('Failed to connect to %s:%s.', host, port)
+                log.warning('Failed to connect to %s:%s.', host, port)
             except Ssm2Exception as e:
-                log.warn('Failed to connect to %s:%s: %s', host, port, e)
+                log.warning('Failed to connect to %s:%s: %s', host, port, e)
 
         if not self.connected:
             raise Ssm2Exception('Attempts to start the SSM failed. The system will exit.')
@@ -655,12 +660,11 @@ class Ssm2(stomp.ConnectionListener):
         """Create the pidfile then start the connection."""
         if self._pidfile is not None:
             try:
-                f = open(self._pidfile, 'w')
-                f.write(str(os.getpid()))
-                f.write('\n')
-                f.close()
+                with open(self._pidfile, 'w') as f:
+                    f.write(str(os.getpid()))
+                    f.write('\n')
             except IOError as e:
-                log.warn('Failed to create pidfile %s: %s', self._pidfile, e)
+                log.warning('Failed to create pidfile %s: %s', self._pidfile, e)
 
         self.handle_connect()
 
@@ -672,7 +676,7 @@ class Ssm2(stomp.ConnectionListener):
                 if os.path.exists(self._pidfile):
                     os.remove(self._pidfile)
                 else:
-                    log.warn('pidfile %s not found.', self._pidfile)
+                    log.warning('pidfile %s not found.', self._pidfile)
             except IOError as e:
-                log.warn('Failed to remove pidfile %s: %e', self._pidfile, e)
-                log.warn('SSM may not start again until it is removed.')
+                log.warning('Failed to remove pidfile %s: %e', self._pidfile, e)
+                log.warning('SSM may not start again until it is removed.')
