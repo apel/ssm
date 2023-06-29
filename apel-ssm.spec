@@ -106,7 +106,7 @@ rm -rf $RPM_BUILD_ROOT
  - Changed dependencies to limit python-ldap below 3.4.0 and python-daemon below 2.3.0.
  - Changed rpmbuild config to use less OS-specific dependencies.
  - Fixed read timeouts leading to a crash.
- - Fixed command line to allow a relative file path for the DNs file.
+ - Fixed command line arguments to allow a relative file path for the DNs file.
  - Removed the separate logging config file.
  - Removed python-daemon as a hard requirement as only needed for receivers.
  - Refactored a large amount of code for maintainability and security.
