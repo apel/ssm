@@ -4,11 +4,17 @@ import os
 import shutil
 import tempfile
 import unittest
-from subprocess import call
+import dirq
+from subprocess import call, Popen, PIPE
+import logging
 
 from ssm.message_directory import MessageDirectory
 from ssm.ssm2 import Ssm2, Ssm2Exception
 
+logging.basicConfig()
+
+schema = {"body": "string", "signer": "string",
+          "empaid": "string?", "error": "string?"}
 
 class TestSsm(unittest.TestCase):
     '''
@@ -134,6 +140,225 @@ class TestSsm(unittest.TestCase):
         # Assert the outbound queue is of the expected type.
         self.assertTrue(isinstance(ssm._outq, MessageDirectory))
 
+class TestMsgToQueue(unittest.TestCase):
+    '''
+    Class used for testing how messages are sent to queues based
+    upon the DN that sent them.
+    '''
+
+    def setUp(self):
+        # Create temporary directory for message queues and pidfiles
+        self.dir_path = tempfile.mkdtemp()
+
+        """Set up a test directory and certificates."""
+        self._tmp_dir = tempfile.mkdtemp(prefix='ssm')
+
+        # Below is not currently being used, and was an alternate method
+        # I would like to keep it until the test is working
+        """
+        # Some functions require the hardcoded expired certificate and
+        # key to be files.
+        key_fd, self._key_path = tempfile.mkstemp(prefix='key',
+                                                  dir=self._tmp_dir)
+        os.close(key_fd)
+        with open(self._key_path, 'w') as key:
+            key.write(TEST_KEY)
+
+        cert_fd, self._expired_cert_path = tempfile.mkstemp(prefix='cert',
+                                                            dir=self._tmp_dir)
+        os.close(cert_fd)
+        with open(self._expired_cert_path, 'w') as cert:
+            cert.write(TEST_CERT_FILE)
+
+        valid_dn_file, self.valid_dn_path = tempfile.mkstemp(
+            prefix='valid', dir=self._tmp_dir)
+        os.close(valid_dn_file)
+        with open(self.valid_dn_path, 'w') as dn:
+            dn.write('/test/dn')
+
+        # Create a new certificate using the hardcoded key.
+        # The subject has been hardcoded so that the generated
+        # certificate subject matches the subject of the hardcoded,
+        # expired, certificate at the bottom of this file.
+        # 2 days used so that verify_cert_date doesn't think it expires soon.
+        call(['openssl', 'req', '-x509', '-nodes', '-days', '2', '-new',
+              '-key', self._key_path, '-out', TEST_CERT_FILE,
+              '-subj', '/C=UK/O=STFC/OU=SC/CN=Test Cert'])
+        """
+
+        self._brokers = [('not.a.broker', 123)]
+        self._capath = '/not/a/path'
+        self._check_crls = False
+        self._pidfile = self._tmp_dir + '/pidfile'
+
+        self._listen = '/topic/test'
+        self._dest = '/topic/test'
+
+        self._msgdir = tempfile.mkdtemp(prefix='msgq')
+
+
+    def test_banned_dns_not_saved_to_queue(self):
+        '''
+        Test that messages sent from banned dns are dropped
+        and not sent to the accept or reject queue.
+        '''
+
+        # we need to setup an incoming and reject queue to make sure
+        # the banned messages aren't passed into either of them
+        in_q = dirq.queue.Queue(os.path.join(self._tmp_dir, 'incoming'),
+                                schema=schema)
+
+        re_q = dirq.queue.Queue(os.path.join(self._tmp_dir, 'reject'),
+                                schema=schema)
+
+        # create a list of fake valid dns that will send the messages
+        # to make sure these aren't sent to the reject queue
+        valid_dns = ("/C=UK/O=eScience/OU=CLRC/L=RAL/CN=valid-1.esc.rl.ac.uk",
+                     "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=valid-2.esc.rl.ac.uk",
+                     "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=valid-3.esc.rl.ac.uk")
+
+        # create a list of fake banned dns that feature in the dn list
+        # these should be dropped, and not sent to a queue
+        banned_dns = ("/C=UK/O=eScience/OU=CLRC/L=RAL/CN=banned-1.esc.rl.ac.uk",
+                      "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=banned-2.esc.rl.ac.uk",
+                      "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=banned-3.esc.rl.ac.uk")
+
+        # to check the valid dns aren't sent to the reject queue
+        # for each dn in the valid dn list
+        # method needs to be passed message and empaid
+        # empaid can just be 1
+        # message needs to contain the body, a signer dn from the dn list,
+        # and an error msg (none)
+        for dn in valid_dns:
+            # create a key/cert pair
+            call(['openssl', 'req', '-x509', '-nodes', '-days', '2',
+                  '-newkey', 'rsa:2048', '-keyout', TEST_KEY_FILE,
+                  '-out', TEST_CERT_FILE, '-subj', dn])
+
+            # Set up an openssl-style CA directory, containing the
+            # self-signed certificate as its own CA certificate, but with its
+            # name as <hash-of-subject-DN>.0.
+            p1 = Popen(['openssl', 'x509', '-subject_hash', '-noout'],
+                       stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                       universal_newlines=True)
+
+            with open(TEST_CERT_FILE, 'r') as test_cert:
+                cert_string = test_cert.read()
+
+            hash_name, _unused_error = p1.communicate(cert_string)
+
+            self.ca_certpath = os.path.join(TEST_CA_DIR, hash_name.strip() + '.0')
+            with open(self.ca_certpath, 'w') as ca_cert:
+                ca_cert.write(cert_string)
+
+            empaid = "1"
+            message_valid = {"body": """APEL-summary-job-message: v0.2
+                    Site: RAL-LCG2
+                    Month: 3
+                    Year: 2010
+                    GlobalUserName: """ + dn + """
+                    VO: atlas
+                    VOGroup: /atlas
+                    VORole: Role=production
+                    WallDuration: 234256
+                    CpuDuration: 2345
+                    NumberOfJobs: 100
+                    %%
+                    Site: RAL-LCG2
+                    Month: 4
+                    Year: 2010
+                    GlobalUserName: """ + dn + """
+                    VO: atlas
+                    VOGroup: /atlas
+                    VORole: Role=production
+                    WallDuration: 234256
+                    CpuDuration: 2345
+                    NumberOfJobs: 100
+                    %%""",
+                  "signer": dn, "empaid": empaid, "error": ""}
+
+            ssm = Ssm2(self._brokers, self._msgdir, TEST_CERT_FILE,
+                        TEST_KEY_FILE, dest=self._dest, listen=self._listen,
+                        capath=self.ca_certpath)
+            ssm._save_msg_to_queue(message_valid["body"], empaid)
+
+            # check the valid message hasn't been sent to the reject queue
+            self.assertEquals(re_q.count(), 0)
+
+            # check the valid message reached the incoming queue
+            self.assertEquals(in_q.count(), 1)
+
+
+        # to check the banned dns aren't sent to a queue
+        # for each dn in the banned dn list
+        # method needs to be passed message and empaid
+        # empaid can just be 1
+        # message needs to contain the body, a signer dn from the dn list,
+        # and an error msg (Signer is in the banned DNs list)
+        for dn in banned_dns:
+            # create a key/cert pair
+            call(['openssl', 'req', '-x509', '-nodes', '-days', '2',
+                  '-newkey', 'rsa:2048', '-keyout', TEST_KEY_FILE,
+                  '-out', TEST_CERT_FILE, '-subj', dn])
+
+            # Set up an openssl-style CA directory, containing the
+            # self-signed certificate as its own CA certificate, but with its
+            # name as <hash-of-subject-DN>.0.
+            p1 = Popen(['openssl', 'x509', '-subject_hash', '-noout'],
+                       stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                       universal_newlines=True)
+
+            with open(TEST_CERT_FILE, 'r') as test_cert:
+                cert_string = test_cert.read()
+
+            hash_name, _unused_error = p1.communicate(cert_string)
+
+            self.ca_certpath = os.path.join(TEST_CA_DIR, hash_name.strip() + '.0')
+            with open(self.ca_certpath, 'w') as ca_cert:
+                ca_cert.write(cert_string)
+
+
+            empaid = "1"
+            message_banned = {"body": """APEL-summary-job-message: v0.2
+                    Site: RAL-LCG2
+                    Month: 3
+                    Year: 2010
+                    GlobalUserName: """ + dn + """
+                    VO: atlas
+                    VOGroup: /atlas
+                    VORole: Role=production
+                    WallDuration: 234256
+                    CpuDuration: 2345
+                    NumberOfJobs: 100
+                    %%
+                    Site: RAL-LCG2
+                    Month: 4
+                    Year: 2010
+                    GlobalUserName: """ + dn + """
+                    VO: atlas
+                    VOGroup: /atlas
+                    VORole: Role=production
+                    WallDuration: 234256
+                    CpuDuration: 2345
+                    NumberOfJobs: 100
+                    %%""",
+                  "signer": dn, "empaid": empaid, "error": "Signer is in the banned DNs list"}
+
+            ssm = Ssm2(self._brokers, self._msgdir, TEST_CERT_FILE,
+                        TEST_KEY_FILE, dest=self._dest, listen=self._listen,
+                        capath=self.ca_certpath)
+            ssm._save_msg_to_queue(message_banned["body"], empaid)
+
+            # check the banned message hasn't been sent to the reject queue
+            self.assertEquals(re_q.count(), 0)
+
+            # check the banned message hasn't been sent to the incoming queue
+            self.assertEquals(in_q.count(), 0)
+
+
+TEST_KEY_FILE = '/tmp/test.key'
+
+TEST_CA_DIR='/tmp'
 
 TEST_CERT_FILE = '/tmp/test.crt'
 
