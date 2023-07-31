@@ -18,9 +18,9 @@ For more information about SSM, see the [EGI wiki](https://wiki.egi.eu/wiki/APEL
 ## Acknowledgements
 
 <span>
-  <img alt="STFC logo" src="https://github.com/GOCDB/gocdb/raw/dev/htdocs/images/UKRI_STF_Council-Logo_Horiz-RGB_crop.png" height="57" />
-  <img alt="EU flag" src="https://github.com/GOCDB/gocdb/raw/dev/htdocs/images/eu_flag_yellow_low_150.png" height="51" />
-  <img alt="EOSC-hub logo" src="https://github.com/GOCDB/gocdb/raw/dev/htdocs/images/eosc-hub-v-web_150.png" height="57" />
+  <img alt="STFC logo" src="https://github.com/GOCDB/gocdb/blob/dev/htdocs/images/logos/ukri_stfc.png" height="57" />
+  <img alt="EU flag" src="https://github.com/GOCDB/gocdb/blob/dev/htdocs/images/flags/eu.png" height="51" />
+  <img alt="EOSC-hub logo" src="https://github.com/GOCDB/gocdb/blob/dev/htdocs/images/logos/eosc_future.png" height="57" />
 </span>
 
 SSM is provided by [STFC](https://stfc.ukri.org/), a part of [UK Research and Innovation](https://www.ukri.org/), and is co-funded by the [EOSC-hub](https://www.eosc-hub.eu/) project (Horizon 2020) under Grant number 777536. Licensed under the [Apache 2 License](http://www.apache.org/licenses/LICENSE-2.0).
