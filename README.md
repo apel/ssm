@@ -37,7 +37,7 @@ The Python STOMP library (N.B. versions between 3.1.1 (inclusive) and 5.0.0
 
 The Python AMS library. This is only required if you want to use AMS. See here for details on obtaining an RPM: https://github.com/ARGOeu/argo-ams-library/
 
-The Python ldap library
+The Python ldap library (N.B. versions before 3.4.0 (exclusive) are currently supported)
 * `yum install python-ldap`
 
 Optionally, the Python dirq library (N.B. this is only required if your messages
