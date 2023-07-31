@@ -10,8 +10,7 @@ using the [STOMP protocol](http://stomp.github.io/) or via the ARGO Messaging Se
 Messages are signed and may be encrypted during transit.
 Persistent queues should be used to guarantee delivery.
 
-SSM is written in Python. Packages are available for RHEL 6 and 7, and
- Ubuntu Trusty.
+SSM is written in Python. Packages are available for RHEL 7, and Ubuntu Trusty.
 
 For more information about SSM, see the [EGI wiki](https://wiki.egi.eu/wiki/APEL/SSM).
 
