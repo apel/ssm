@@ -319,6 +319,7 @@ class Ssm2(stomp.ConnectionListener):
     def _save_msg_to_queue(self, body, empaid):
         """Extract message contents and add to the accept or reject queue."""
         extracted_msg, signer, err_msg = self._handle_msg(body)
+        fails = 0
         try:
             # If the message is empty or the error message is not empty
             # then reject the message.
@@ -343,14 +344,14 @@ class Ssm2(stomp.ConnectionListener):
                 name = self._inq.add({'body': extracted_msg,
                                       'signer': signer,
                                       'empaid': empaid})
-                try:
-                    log.info("Message saved to incoming queue as %s", name)
-                except:
-                    _save_msg_to_queue(self, body, empaid)
                 
+                log.info("Message saved to incoming queue as %s", name)     
 
         except (IOError, OSError) as error:
             log.error('Failed to read or write file: %s', error)
+            fails += 1
+            if fails > 3:
+                return _save_msg_to_queue(self, body, empaid)
 
     def _send_msg(self, message, msgid):
         """Send one message using stomppy.
