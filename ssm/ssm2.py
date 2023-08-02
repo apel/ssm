@@ -320,10 +320,7 @@ class Ssm2(stomp.ConnectionListener):
     def _save_msg_to_queue(self, body, empaid):
         """Extract message contents and add to the accept or reject queue."""
         extracted_msg, signer, err_msg = self._handle_msg(body)
-<<<<<<< HEAD
-=======
-        
->>>>>>> 4067424... procedure repeated
+
         try:
             # If the message is empty or the error message is not empty
             # then reject the message.
@@ -348,7 +345,8 @@ class Ssm2(stomp.ConnectionListener):
                 name = self._inq.add({'body': extracted_msg,
                                       'signer': signer,
                                       'empaid': empaid})
-                log.info("Message saved to incoming queue as %s", name)
+                
+                log.info("Message saved to incoming queue as %s", name)     
 
         except (IOError, OSError) as error:
             log.error('Failed to read or write file: %s', error)
