@@ -4,7 +4,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        3.2.1
+Version:        3.3.0
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -100,6 +100,17 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Thu Jun 29 2023 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.3.0-1
+ - Added destination queue to the log during startup to aid troubleshooting.
+ - Added check that the config file exists to allow for better error messages.
+ - Changed dependencies to limit python-ldap below 3.4.0 and python-daemon below 2.3.0.
+ - Changed rpmbuild config to use less OS-specific dependencies.
+ - Fixed read timeouts leading to a crash.
+ - Fixed command line arguments to allow a relative file path for the DNs file.
+ - Removed the separate logging config file.
+ - Removed python-daemon as a hard requirement as only needed for receivers.
+ - Refactored a large amount of code for maintainability and security.
+
 * Wed Apr 28 2021 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.2.1-1
  - Changed certificate and key comparison to allow both RSA and EC keys.
  - Corrected dependencies to include OpenSSL.
