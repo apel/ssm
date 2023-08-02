@@ -316,9 +316,14 @@ class Ssm2(stomp.ConnectionListener):
 
         return message, signer, None
 
+    fails = 0
     def _save_msg_to_queue(self, body, empaid):
         """Extract message contents and add to the accept or reject queue."""
         extracted_msg, signer, err_msg = self._handle_msg(body)
+<<<<<<< HEAD
+=======
+        
+>>>>>>> 4067424... procedure repeated
         try:
             # If the message is empty or the error message is not empty
             # then reject the message.
@@ -347,6 +352,9 @@ class Ssm2(stomp.ConnectionListener):
 
         except (IOError, OSError) as error:
             log.error('Failed to read or write file: %s', error)
+            fails += 1
+            if fails <= 3:
+                return _save_msg_to_queue(self, body, empaid)
 
     def _send_msg(self, message, msgid):
         """Send one message using stomppy.
