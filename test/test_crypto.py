@@ -17,9 +17,7 @@ from ssm.crypto import check_cert_key, \
     verify_cert, \
     CryptoException
 
-# Set up logging - is this necessary?
 logging.basicConfig()
-log = logging.getLogger('SSM')
 
 
 class TestEncryptUtils(unittest.TestCase):
