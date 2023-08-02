@@ -350,7 +350,7 @@ class Ssm2(stomp.ConnectionListener):
         except (IOError, OSError) as error:
             log.error('Failed to read or write file: %s', error)
             fails += 1
-            if fails > 3:
+            if fails < 3:
                 return _save_msg_to_queue(self, body, empaid)
 
     def _send_msg(self, message, msgid):
