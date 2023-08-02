@@ -386,26 +386,6 @@ def get_dns(dn_file, log):
     finally:
         if f is not None:
             f.close()
-<<<<<<< Updated upstream
-    # If no valid DNs, SSM cannot receive any messages.
-    if len(dns) == 0:
-        fails = 0
-        while fails < 3 and len(dns) == 0:
-            for line in lines:
-            if line.isspace() or line.strip().startswith('#'):
-                continue
-            elif line.strip().startswith('/'):
-                dns.append(line.strip())
-            else:
-                log.warning('DN in incorrect format: %s', line)
-        if len(dns) == 0:
-            raise Ssm2Exception('No valid DNs found in %s.  SSM will not start' % dn_file)
-    
-    finally:
-        if f is not None:
-            f.close()
-=======
->>>>>>> Stashed changes
 
     log.debug('%s DNs found.', len(dns))
     return dns
