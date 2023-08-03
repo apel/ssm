@@ -352,15 +352,17 @@ class Ssm2(stomp.ConnectionListener):
             log.error('Failed to read or write file: %s', error)
             for i in range(3):
                 try:
-                    name = self._rejectq.add({'body': body,
+                    if extracted_msg is None or err_msg is not None:
+                        name = self._rejectq.add({'body': body,
                                           'signer': signer,
                                           'empaid': empaid,
                                           'error': err_msg})
-                    log.info("Message saved to reject queue as %s", name)
-                    name = self._inq.add({'body': extracted_msg,
+                        log.info("Message saved to reject queue as %s", name)
+                    else:  # message verified ok
+                        name = self._inq.add({'body': extracted_msg,
                                       'signer': signer,
                                       'empaid': empaid})
-                    log.info("Message saved to incoming queue as %s", name)
+                        log.info("Message saved to incoming queue as %s", name)
                 except:
                     continue
                 break
