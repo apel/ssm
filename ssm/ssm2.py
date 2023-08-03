@@ -356,9 +356,11 @@ class Ssm2(stomp.ConnectionListener):
                                           'signer': signer,
                                           'empaid': empaid,
                                           'error': err_msg})
+                    log.info("Message saved to reject queue as %s", name)
                     name = self._inq.add({'body': extracted_msg,
                                       'signer': signer,
                                       'empaid': empaid})
+                    log.info("Message saved to incoming queue as %s", name)
                 except:
                     continue
                 break
