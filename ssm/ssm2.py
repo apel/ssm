@@ -346,7 +346,7 @@ class Ssm2(stomp.ConnectionListener):
                                       'signer': signer,
                                       'empaid': empaid})
                 
-                log.info("Message saved to incoming queue as %s", name)     
+                log.info("Message saved to incoming queue as %s", name)
 
         except (IOError, OSError) as error:
             log.error('Failed to read or write file: %s', error)
