@@ -141,10 +141,6 @@ def get_ssm_args(protocol, cp, log):
     elif protocol == Ssm2.AMS_MESSAGING:
         # Then we are setting up an SSM to connect to a AMS.
 
-        # TODO: See if setting use_ssl directly in Ssm2 constructor is ok.
-        # 'use_ssl' isn't checked when using AMS (SSL is always used), but it
-        # is needed for the call to the Ssm2 constructor below.
-        use_ssl = None
         try:
             # We only need a hostname, not a port
             host = cp.get('broker', 'host')
