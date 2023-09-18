@@ -250,6 +250,7 @@ def run_sender(protocol, brokers, project, token, cp, log):
         print('SSM failed to complete successfully.  See log file for details.')
         log.error('Unexpected exception in SSM: %s', e)
         log.error('Exception type: %s', e.__class__)
+        sys.exit(1)
 
     try:
         sender.close_connection()
@@ -350,6 +351,7 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
         log.error('The SSM will exit.')
         ssm.shutdown()
         dc.close()
+        sys.exit(1)
 
     log.info('Receiving SSM has shut down.')
     log.info(LOG_BREAK)
