@@ -357,11 +357,11 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
         ssm.shutdown()
         dc.close()
         receiver_failed = True
-  # Currently won't run the else statement due to the while loop in the reciever
-  # Leaving here in case of future refactoring, but commented out so the unreachable
-  # code isn't flagged by tests
-  # else:
-  #     receiver_failed = False
+    # Currently won't run the else statement due to the while loop in the reciever
+    # Leaving here in case of future refactoring, but commented out so the unreachable
+    # code isn't flagged by tests
+    # else:
+    #   receiver_failed = False
 
     log.info('Receiving SSM has shut down.')
     log.info(LOG_BREAK)
