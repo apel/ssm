@@ -43,8 +43,8 @@ class StompBrokerGetter(object):
     def __init__(self, bdii_url):
         """Set up the LDAP connection and strings which are re-used."""
         # Set up the LDAP connection
-        logging.warning('LDAP is deprecated and will be removed in an upcoming version, ' +
-                        'migrate to AMS.')
+        logging.warning('LDAP is deprecated and will be removed in an upcoming version, '
+                        'please set host locally in SSM config.')
         log.debug('Connecting to %s...', bdii_url)
         self._ldap_conn = ldap.initialize(bdii_url)
 
