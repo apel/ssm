@@ -208,8 +208,8 @@ add your messages using the `add` method.
  ```
  docker run \
      -d --entrypoint ssmreceive \
-     -v /path/to/downloaded/config/sender.cfg:/etc/apel/sender.cfg \
-     -v /path/to/read/messages:/var/spool/apel/outgoing \
+     -v /path/to/downloaded/config/receiver.cfg:/etc/apel/receiver.cfg \
+     -v /path/to/read/messages:/var/spool/apel/ \
      -v /path/to/dns/file:/etc/apel/dns \
      -v /etc/grid-security:/etc/grid-security \
      -v /path/to/persistently/log:/var/log/apel \
