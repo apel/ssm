@@ -397,7 +397,6 @@ class Ssm2(stomp.ConnectionListener):
             # (STOMP did require empty messages to keep the connection alive.)
             return None
 
-
     def pull_msg_ams(self):
         """Pull 1 message from the AMS and acknowledge it."""
         if self._protocol != Ssm2.AMS_MESSAGING:
