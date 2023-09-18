@@ -392,6 +392,10 @@ class Ssm2(stomp.ConnectionListener):
 
             argo_response = self._ams.publish(self._dest, message, retry=3)
             return argo_response['messageIds'][0]
+        else:
+            # We ignore empty messages as there is no point sending them.
+            # (STOMP did require empty messages to keep the connection alive.)
+            return None
 
     def pull_msg_ams(self):
         """Pull 1 message from the AMS and acknowledge it."""
