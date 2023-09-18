@@ -262,7 +262,7 @@ def run_sender(protocol, brokers, project, token, cp, log):
 
     log.info('SSM has shut down.')
     log.info(LOG_BREAK)
-    if sender_failed is True:
+    if sender_failed:
         sys.exit(1)
 
 
@@ -358,13 +358,14 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
         dc.close()
         receiver_failed = True
     # Currently won't run the else statement due to the while loop in the reciever 
-    # Leaving in in case of future refactoring
-    else:
-        receiver_failed = False
+    # Leaving here in case of future refactoring, but commented out so the unreachable 
+    # code isn't flagged by tests
+    #else:
+    #    receiver_failed = False
 
     log.info('Receiving SSM has shut down.')
     log.info(LOG_BREAK)
-    if receiver_failed is True:
+    if receiver_failed:
         sys.exit(1)
 
 
