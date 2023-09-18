@@ -250,6 +250,9 @@ def run_sender(protocol, brokers, project, token, cp, log):
         print('SSM failed to complete successfully.  See log file for details.')
         log.error('Unexpected exception in SSM: %s', e)
         log.error('Exception type: %s', e.__class__)
+        sender_failed = True
+    else:
+        sender_failed = False
 
     try:
         sender.close_connection()
@@ -259,6 +262,8 @@ def run_sender(protocol, brokers, project, token, cp, log):
 
     log.info('SSM has shut down.')
     log.info(LOG_BREAK)
+    if sender_failed:
+        sys.exit(1)
 
 
 def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
@@ -344,15 +349,24 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
         log.info('Received the shutdown signal: %s', e)
         ssm.shutdown()
         dc.close()
+        receiver_failed = True
     except Exception as e:
         log.error('Unexpected exception: %s', e)
         log.error('Exception type: %s', e.__class__)
         log.error('The SSM will exit.')
         ssm.shutdown()
         dc.close()
+        receiver_failed = True
+    # Currently won't run the else statement due to the while loop in the reciever
+    # Leaving here in case of future refactoring, but commented out so the unreachable
+    # code isn't flagged by tests
+    # else:
+    #   receiver_failed = False
 
     log.info('Receiving SSM has shut down.')
     log.info(LOG_BREAK)
+    if receiver_failed:
+        sys.exit(1)
 
 
 def get_dns(dn_file, log):
