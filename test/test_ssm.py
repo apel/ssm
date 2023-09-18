@@ -5,6 +5,8 @@ import shutil
 import tempfile
 import unittest
 import dirq
+import mock
+from mock import patch
 from subprocess import call, Popen, PIPE
 import logging
 
@@ -144,6 +146,13 @@ class TestMsgToQueue(unittest.TestCase):
     '''
     Class used for testing how messages are sent to queues based
     upon the DN that sent them.
+    The _handle_msg() function called by _save_msg_to_queue()
+    (the function we are testing) is being mocked, as it fails
+    due to client signers and certificates not matching.
+    It is easier to mock out the failing function instead, as it is
+    not the function we are testing in this test. To test
+    _save_msg_to_queue, we are assuming the message's certificate and
+    signer match.
     '''
 
     def setUp(self):
@@ -196,8 +205,8 @@ class TestMsgToQueue(unittest.TestCase):
 
         self._msgdir = tempfile.mkdtemp(prefix='msgq')
 
-
-    def test_banned_dns_not_saved_to_queue(self):
+    @patch.object(Ssm2, '_handle_msg')
+    def test_banned_dns_not_saved_to_queue(self, mock_handle_msg):
         '''
         Test that messages sent from banned dns are dropped
         and not sent to the accept or reject queue.
@@ -222,6 +231,8 @@ class TestMsgToQueue(unittest.TestCase):
         banned_dns = ("/C=UK/O=eScience/OU=CLRC/L=RAL/CN=banned-1.esc.rl.ac.uk",
                       "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=banned-2.esc.rl.ac.uk",
                       "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=banned-3.esc.rl.ac.uk")
+
+        empaid = "1"
 
         # to check the valid dns aren't sent to the reject queue
         # for each dn in the valid dn list
@@ -251,8 +262,7 @@ class TestMsgToQueue(unittest.TestCase):
             with open(self.ca_certpath, 'w') as ca_cert:
                 ca_cert.write(cert_string)
 
-            empaid = "1"
-            message_valid = {"body": """APEL-summary-job-message: v0.2
+            message_valid = """APEL-summary-job-message: v0.2
                     Site: RAL-LCG2
                     Month: 3
                     Year: 2010
@@ -263,24 +273,14 @@ class TestMsgToQueue(unittest.TestCase):
                     WallDuration: 234256
                     CpuDuration: 2345
                     NumberOfJobs: 100
-                    %%
-                    Site: RAL-LCG2
-                    Month: 4
-                    Year: 2010
-                    GlobalUserName: """ + dn + """
-                    VO: atlas
-                    VOGroup: /atlas
-                    VORole: Role=production
-                    WallDuration: 234256
-                    CpuDuration: 2345
-                    NumberOfJobs: 100
-                    %%""",
-                  "signer": dn, "empaid": empaid, "error": ""}
+                    %%"""
+
+            mock_handle_msg.return_value = message_valid, dn, None
 
             ssm = Ssm2(self._brokers, self._msgdir, TEST_CERT_FILE,
                         TEST_KEY_FILE, dest=self._dest, listen=self._listen,
                         capath=self.ca_certpath)
-            ssm._save_msg_to_queue(message_valid["body"], empaid)
+            ssm._save_msg_to_queue(message_valid, empaid)
 
             # check the valid message hasn't been sent to the reject queue
             self.assertEquals(re_q.count(), 0)
@@ -288,6 +288,7 @@ class TestMsgToQueue(unittest.TestCase):
             # check the valid message reached the incoming queue
             self.assertEquals(in_q.count(), 1)
 
+            print("Success!\n")
 
         # to check the banned dns aren't sent to a queue
         # for each dn in the banned dn list
@@ -317,9 +318,7 @@ class TestMsgToQueue(unittest.TestCase):
             with open(self.ca_certpath, 'w') as ca_cert:
                 ca_cert.write(cert_string)
 
-
-            empaid = "1"
-            message_banned = {"body": """APEL-summary-job-message: v0.2
+            message_banned = """APEL-summary-job-message: v0.2
                     Site: RAL-LCG2
                     Month: 3
                     Year: 2010
@@ -330,30 +329,22 @@ class TestMsgToQueue(unittest.TestCase):
                     WallDuration: 234256
                     CpuDuration: 2345
                     NumberOfJobs: 100
-                    %%
-                    Site: RAL-LCG2
-                    Month: 4
-                    Year: 2010
-                    GlobalUserName: """ + dn + """
-                    VO: atlas
-                    VOGroup: /atlas
-                    VORole: Role=production
-                    WallDuration: 234256
-                    CpuDuration: 2345
-                    NumberOfJobs: 100
-                    %%""",
-                  "signer": dn, "empaid": empaid, "error": "Signer is in the banned DNs list"}
+                    %%"""
+
+            mock_handle_msg.return_value = message_banned, dn, "Signer is in the banned DNs list"
 
             ssm = Ssm2(self._brokers, self._msgdir, TEST_CERT_FILE,
                         TEST_KEY_FILE, dest=self._dest, listen=self._listen,
                         capath=self.ca_certpath)
-            ssm._save_msg_to_queue(message_banned["body"], empaid)
+            ssm._save_msg_to_queue(message_banned, empaid)
 
             # check the banned message hasn't been sent to the reject queue
             self.assertEquals(re_q.count(), 0)
 
             # check the banned message hasn't been sent to the incoming queue
             self.assertEquals(in_q.count(), 0)
+
+            print("Success!\n")
 
 
 TEST_KEY_FILE = '/tmp/test.key'

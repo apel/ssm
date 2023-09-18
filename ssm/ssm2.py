@@ -344,7 +344,7 @@ class Ssm2(stomp.ConnectionListener):
             # don't send the message to the reject queue.
             # Instead, drop the message (don't send it to any queue)
             if err_msg == "Signer is in the banned DNs list":
-                log.info("Message dropped as was sent from a banned dn: %s", signer)
+                log.warning("Message dropped as was sent from a banned dn: %s", signer)
 
             # If the message is empty or the error message is not empty
             # then reject the message.
