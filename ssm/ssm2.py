@@ -380,7 +380,7 @@ class Ssm2(stomp.ConnectionListener):
         encrypted.
         """
         log.info('Sending message: %s', msgid)
-        if text is not None:
+        if text is not None and len(text) > 0:
             # First we sign the message
             to_send = crypto.sign(text, self._cert, self._key)
             # Possibly encrypt the message.
@@ -496,8 +496,8 @@ class Ssm2(stomp.ConnectionListener):
             elif self._protocol == Ssm2.AMS_MESSAGING:
                 # Then we are sending to an Argo Messaging Service instance.
                 argo_id = self._send_msg_ams(text, msgid)
-
-                log_string = "Sent %s, Argo ID: %s" % (msgid, argo_id)
+                if argo_id is not None:
+                    log_string = "Sent %s, Argo ID: %s" % (msgid, argo_id)
 
             else:
                 # The SSM has been improperly configured
@@ -505,7 +505,10 @@ class Ssm2(stomp.ConnectionListener):
                                     self._protocol)
 
             # log that the message was sent
-            log.info(log_string)
+            if 'log_string' in locals():
+                log.info(log_string)
+            else:
+                log.warning("Message %s is empty and returns a None type.", msgid)
 
             self._last_msg = None
             self._outq.remove(msgid)
