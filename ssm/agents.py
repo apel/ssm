@@ -102,7 +102,6 @@ def get_ssm_args(protocol, cp, log):
         project = None
         token = ''
 
-        # If we can't get a broker to connect to, we have to give up.
         try:
             host = cp.get('broker', 'host')
             port = cp.get('broker', 'port')

@@ -21,7 +21,7 @@ BuildArch:      noarch
 BuildRequires:  python-devel
 %endif
 
-Requires:       stomppy < 5.0.0, python-ldap < 3.4.0, python-setuptools, openssl
+Requires:       stomppy < 5.0.0, python-setuptools, openssl
 Requires(pre):  shadow-utils
 
 %define ssmconf %_sysconfdir/apel
@@ -99,7 +99,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %doc %_defaultdocdir/%{name}
 
-%changelog
 * Thu Jun 29 2023 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.3.0-1
  - Added destination queue to the log during startup to aid troubleshooting.
  - Added check that the config file exists to allow for better error messages.
