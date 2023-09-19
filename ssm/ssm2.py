@@ -498,6 +498,8 @@ class Ssm2(stomp.ConnectionListener):
                 argo_id = self._send_msg_ams(text, msgid)
                 if argo_id is not None:
                     log_string = "Sent %s, Argo ID: %s" % (msgid, argo_id)
+                else:
+                    log_string = "Message %s is empty and returns a None type." % (msgid)
 
             else:
                 # The SSM has been improperly configured
@@ -505,10 +507,10 @@ class Ssm2(stomp.ConnectionListener):
                                     self._protocol)
 
             # log that the message was sent
-            if 'log_string' in locals():
-                log.info(log_string)
+            if log_string[0] == 'M':
+                log.warning(log_string)
             else:
-                log.warning("Message %s is empty and returns a None type.", msgid)
+                log.info(log_string)
 
             self._last_msg = None
             self._outq.remove(msgid)
