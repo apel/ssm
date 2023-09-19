@@ -4,8 +4,6 @@ import os
 import shutil
 import tempfile
 import unittest
-import dirq
-import mock
 from mock import patch
 from subprocess import call, Popen, PIPE
 import logging
@@ -14,9 +12,6 @@ from ssm.message_directory import MessageDirectory
 from ssm.ssm2 import Ssm2, Ssm2Exception
 
 logging.basicConfig(level=logging.INFO)
-
-schema = {"body": "string", "signer": "string",
-          "empaid": "string?", "error": "string?"}
 
 class TestSsm(unittest.TestCase):
     '''
@@ -153,47 +148,16 @@ class TestMsgToQueue(unittest.TestCase):
     not the function we are testing in this test. To test
     _save_msg_to_queue, we are assuming the message's certificate and
     signer match.
+    We then use the log output from ssm2.py to see if the messages
+    are sent to the queues we expect them to be.
     '''
 
     def setUp(self):
         # Create temporary directory for message queues and pidfiles
         self.dir_path = tempfile.mkdtemp()
 
-        """Set up a test directory and certificates."""
+        # Set up a test directory and certificates
         self._tmp_dir = tempfile.mkdtemp(prefix='ssm')
-
-        # Below is not currently being used, and was an alternate method
-        # I would like to keep it until the test is working
-        """
-        # Some functions require the hardcoded expired certificate and
-        # key to be files.
-        key_fd, self._key_path = tempfile.mkstemp(prefix='key',
-                                                  dir=self._tmp_dir)
-        os.close(key_fd)
-        with open(self._key_path, 'w') as key:
-            key.write(TEST_KEY)
-
-        cert_fd, self._expired_cert_path = tempfile.mkstemp(prefix='cert',
-                                                            dir=self._tmp_dir)
-        os.close(cert_fd)
-        with open(self._expired_cert_path, 'w') as cert:
-            cert.write(TEST_CERT_FILE)
-
-        valid_dn_file, self.valid_dn_path = tempfile.mkstemp(
-            prefix='valid', dir=self._tmp_dir)
-        os.close(valid_dn_file)
-        with open(self.valid_dn_path, 'w') as dn:
-            dn.write('/test/dn')
-
-        # Create a new certificate using the hardcoded key.
-        # The subject has been hardcoded so that the generated
-        # certificate subject matches the subject of the hardcoded,
-        # expired, certificate at the bottom of this file.
-        # 2 days used so that verify_cert_date doesn't think it expires soon.
-        call(['openssl', 'req', '-x509', '-nodes', '-days', '2', '-new',
-              '-key', self._key_path, '-out', TEST_CERT_FILE,
-              '-subj', '/C=UK/O=STFC/OU=SC/CN=Test Cert'])
-        """
 
         self._brokers = [('not.a.broker', 123)]
         self._capath = '/not/a/path'
@@ -216,7 +180,7 @@ class TestMsgToQueue(unittest.TestCase):
         '''
 
         # create a list of fake valid dns that will send the messages
-        # to make sure these aren't sent to the reject queue
+        # these should be sent to the incoming queue
         valid_dns = ("/C=UK/O=eScience/OU=CLRC/L=RAL/CN=valid-1.esc.rl.ac.uk",
                      "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=valid-2.esc.rl.ac.uk",
                      "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=valid-3.esc.rl.ac.uk")
@@ -273,12 +237,6 @@ class TestMsgToQueue(unittest.TestCase):
 
             ssm._save_msg_to_queue(message_valid, empaid)
 
-            # check the valid message hasn't been sent to the reject queue
-            #self.assertEquals(re_q.count(), 0)
-
-            # check the valid message reached the incoming queue
-            #self.assertEquals(in_q.count(), 1)
-
             print("")
 
         # For each dn in the banned dns list,
@@ -307,12 +265,6 @@ class TestMsgToQueue(unittest.TestCase):
                         capath=self.ca_certpath)
 
             ssm._save_msg_to_queue(message_banned, empaid)
-
-            # check the banned message hasn't been sent to the reject queue
-            #self.assertEquals(re_q.count(), 0)
-
-            # check the banned message hasn't been sent to the incoming queue
-            #self.assertEquals(in_q.count(), 0)
 
             print("")
 
