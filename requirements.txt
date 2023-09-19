@@ -6,7 +6,6 @@ pyopenssl >=19.1.0, <=21.0.0  # 22.0.0 dropped support for Python 2
 cryptography==3.3.2  # Crypto dropped support for Python 2 after 3.3
 stomp.py<5.0.0
 python-daemon<=2.3.0  # 2.3.1 dropped support for Python 2
-python-ldap<3.4.0  # python-ldap-3.4.0 dropped support for Python 2
 setuptools  # Required for pkg_resources (also happens to be a dependency of python-ldap)
 
 # Dependencies for optional dirq based sending
