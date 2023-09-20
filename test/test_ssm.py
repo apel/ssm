@@ -174,24 +174,36 @@ class TestMsgToQueue(unittest.TestCase):
 
         self._msgdir = tempfile.mkdtemp(prefix='msgq')
 
+        # create a key/cert pair
+        call(['openssl', 'req', '-x509', '-nodes', '-days', '2',
+              '-newkey', 'rsa:2048', '-keyout', TEST_KEY_FILE,
+              '-out', TEST_CERT_FILE, '-subj',
+              '/C=UK/O=STFC/OU=SC/CN=Test Cert'])
+
     @patch.object(Ssm2, '_handle_msg')
-    def test_banned_dns_not_saved_to_queue(self, mock_handle_msg):
+    def test_dns_saved_to_queue(self, mock_handle_msg):
         '''
-        Test that messages sent from banned dns are dropped
-        and not sent to the accept or reject queue.
-        The logging output will tell us if the message
+        Test that messages sent from different dns are sent
+        to the correct queue or dropped, depending on their dn.
+        The logging output is checked to tell us if the message
         was sent to the correct queue, or dropped completely.
-        Therefore we don't need to create incoming or reject queues
+        Therefore we don't need to create incoming or reject queues.
         '''
 
-        # create a list of fake valid dns that will send the messages
-        # these should be sent to the incoming queue
+        # Create a list of fake valid dns that will send the messages
+        # These should be sent to the incoming queue
         valid_dns = ("/C=UK/O=eScience/OU=CLRC/L=RAL/CN=valid-1.esc.rl.ac.uk",
                      "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=valid-2.esc.rl.ac.uk",
                      "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=valid-3.esc.rl.ac.uk")
 
-        # create a list of fake banned dns that feature in the dn list
-        # these should be dropped, and not sent to a queue
+        # Create a list of fake dns that will result in a rejected message
+        # These should be sent to the rejected queue
+        rejected_dns = ("/C=UK/O=eScience/OU=CLRC/L=RAL/CN=rejected-1.esc.rl.ac.uk",
+                        "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=rejected-2.esc.rl.ac.uk",
+                        "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=rejected-3.esc.rl.ac.uk")
+
+        # Create a list of fake banned dns that feature in the dn list
+        # These should be dropped, and not sent to a queue
         banned_dns = ("/C=UK/O=eScience/OU=CLRC/L=RAL/CN=banned-1.esc.rl.ac.uk",
                       "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=banned-2.esc.rl.ac.uk",
                       "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=banned-3.esc.rl.ac.uk")
@@ -249,6 +261,52 @@ class TestMsgToQueue(unittest.TestCase):
                 self.assertIn('Message saved to incoming queue', str(log))
 
                 print("Test Passed.\n")
+
+        # As there are several different ways messages can be rejected,
+        # Keep a count to test a different method for each dn
+        dnCount = 1
+        for dn in rejected_dns:
+            # Capture the log output so we can use it in assertions
+            with LogCapture() as log:
+                print("Testing dn:", dn)
+
+                message_rejected = """APEL-summary-job-message: v0.2
+                        Site: RAL-LCG2
+                        Month: 3
+                        Year: 2010
+                        GlobalUserName: """ + dn + """
+                        VO: atlas
+                        VOGroup: /atlas
+                        VORole: Role=production
+                        WallDuration: 234256
+                        CpuDuration: 2345
+                        NumberOfJobs: 100
+                        %%"""
+
+                # Change the reason for method rejection for each dn
+                if dnCount == 1:
+                    # Pass no message, which will also need an error message
+                    mock_handle_msg.return_value = None, dn, "Empty text passed to _handle_msg"
+                elif dnCount == 2:
+                    # Pass an error message
+                    mock_handle_msg.return_value = message_rejected, dn, "Signer not in valid DNs list"
+                else:
+                    # Pass a different error message
+                    mock_handle_msg.return_value = message_rejected, dn, "Failed to verify message"
+
+                ssm = Ssm2(self._brokers, self._msgdir, TEST_CERT_FILE,
+                            TEST_KEY_FILE, dest=self._dest, listen=self._listen,
+                            capath=self.ca_certpath)
+
+                ssm._save_msg_to_queue(message_rejected, empaid)
+
+                print(str(log))
+
+                self.assertIn('Message saved to reject queue', str(log))
+
+                print("Test Passed.\n")
+
+                dnCount = dnCount + 1
 
         # For each dn in the banned dns list,
         # Pass it and the message to ssm and use the log output to
