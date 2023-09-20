@@ -8,6 +8,11 @@ from mock import patch
 from subprocess import call, Popen, PIPE
 import logging
 
+# For Python 2.7, make sure testfixtures version is < 7.0.0
+# testfixtures version 6.18.5 works fine
+# run: pip install testfixtures==6.18.5
+from testfixtures import LogCapture
+
 from ssm.message_directory import MessageDirectory
 from ssm.ssm2 import Ssm2, Ssm2Exception
 
@@ -214,59 +219,71 @@ class TestMsgToQueue(unittest.TestCase):
         # Pass it and the message to ssm and use the log output to
         # make sure it was dealt with correctly
         for dn in valid_dns:
-            print("Testing dn:", dn)
+            # Capture the log output so we can use it in assertions
+            with LogCapture() as log:
+                print("Testing dn:", dn)
 
-            message_valid = """APEL-summary-job-message: v0.2
-                    Site: RAL-LCG2
-                    Month: 3
-                    Year: 2010
-                    GlobalUserName: """ + dn + """
-                    VO: atlas
-                    VOGroup: /atlas
-                    VORole: Role=production
-                    WallDuration: 234256
-                    CpuDuration: 2345
-                    NumberOfJobs: 100
-                    %%"""
+                message_valid = """APEL-summary-job-message: v0.2
+                        Site: RAL-LCG2
+                        Month: 3
+                        Year: 2010
+                        GlobalUserName: """ + dn + """
+                        VO: atlas
+                        VOGroup: /atlas
+                        VORole: Role=production
+                        WallDuration: 234256
+                        CpuDuration: 2345
+                        NumberOfJobs: 100
+                        %%"""
 
-            mock_handle_msg.return_value = message_valid, dn, None
+                mock_handle_msg.return_value = message_valid, dn, None
 
-            ssm = Ssm2(self._brokers, self._msgdir, TEST_CERT_FILE,
-                        TEST_KEY_FILE, dest=self._dest, listen=self._listen,
-                        capath=self.ca_certpath)
+                ssm = Ssm2(self._brokers, self._msgdir, TEST_CERT_FILE,
+                            TEST_KEY_FILE, dest=self._dest, listen=self._listen,
+                            capath=self.ca_certpath)
 
-            ssm._save_msg_to_queue(message_valid, empaid)
+                ssm._save_msg_to_queue(message_valid, empaid)
 
-            print("")
+                print(str(log))
+
+                self.assertIn('Message saved to incoming queue', str(log))
+
+                print("Test Passed.\n")
 
         # For each dn in the banned dns list,
         # Pass it and the message to ssm and use the log output to
         # make sure it was dealt with correctly
         for dn in banned_dns:
-            print("Testing dn:", dn)
+            # Capture the log output so we can use it in assertions
+            with LogCapture() as log:
+                print("Testing dn:", dn)
 
-            message_banned = """APEL-summary-job-message: v0.2
-                    Site: RAL-LCG2
-                    Month: 3
-                    Year: 2010
-                    GlobalUserName: """ + dn + """
-                    VO: atlas
-                    VOGroup: /atlas
-                    VORole: Role=production
-                    WallDuration: 234256
-                    CpuDuration: 2345
-                    NumberOfJobs: 100
-                    %%"""
+                message_banned = """APEL-summary-job-message: v0.2
+                        Site: RAL-LCG2
+                        Month: 3
+                        Year: 2010
+                        GlobalUserName: """ + dn + """
+                        VO: atlas
+                        VOGroup: /atlas
+                        VORole: Role=production
+                        WallDuration: 234256
+                        CpuDuration: 2345
+                        NumberOfJobs: 100
+                        %%"""
 
-            mock_handle_msg.return_value = message_banned, dn, "Signer is in the banned DNs list"
+                mock_handle_msg.return_value = message_banned, dn, "Signer is in the banned DNs list"
 
-            ssm = Ssm2(self._brokers, self._msgdir, TEST_CERT_FILE,
-                        TEST_KEY_FILE, dest=self._dest, listen=self._listen,
-                        capath=self.ca_certpath)
+                ssm = Ssm2(self._brokers, self._msgdir, TEST_CERT_FILE,
+                            TEST_KEY_FILE, dest=self._dest, listen=self._listen,
+                            capath=self.ca_certpath)
 
-            ssm._save_msg_to_queue(message_banned, empaid)
+                ssm._save_msg_to_queue(message_banned, empaid)
 
-            print("")
+                print(str(log))
+
+                self.assertIn('Message dropped as was sent from a banned dn', str(log))
+
+                print("Test Passed.\n")
 
 
 TEST_KEY_FILE = '/tmp/test.key'
