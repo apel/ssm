@@ -491,26 +491,21 @@ class Ssm2(stomp.ConnectionListener):
                     # Small sleep to avoid hammering the CPU
                     time.sleep(0.01)
 
-                log_string = "Sent %s" % msgid
+                log.info("Sent %s" % msgid)
 
             elif self._protocol == Ssm2.AMS_MESSAGING:
                 # Then we are sending to an Argo Messaging Service instance.
                 argo_id = self._send_msg_ams(text, msgid)
+
                 if argo_id is not None:
-                    log_string = "Sent %s, Argo ID: %s" % (msgid, argo_id)
+                    log.info("Sent %s, Argo ID: %s" % (msgid, argo_id))
                 else:
-                    log_string = "Message %s is empty and returns a None type." % (msgid)
+                    log.warning("Message %s is empty and returns a None type." % (msgid))
 
             else:
                 # The SSM has been improperly configured
                 raise Ssm2Exception('Unknown messaging protocol: %s' %
                                     self._protocol)
-
-            # log that the message was sent
-            if log_string[0] == 'M':
-                log.warning(log_string)
-            else:
-                log.info(log_string)
 
             self._last_msg = None
             self._outq.remove(msgid)
