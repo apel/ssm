@@ -465,6 +465,33 @@ class Ssm2(stomp.ConnectionListener):
     def has_msgs(self):
         """Return True if there are any messages in the outgoing queue."""
         return self._outq.count() > 0
+    
+    def send_via_stomp(self, text, msgid):
+        """
+        Sending message via STOMP message broker.
+        """
+        self._send_msg(text, msgid)
+
+        log.info('Waiting for broker to accept message.')
+        while self._last_msg is None:
+            if not self.connected:
+                raise Ssm2Exception('Lost connection.')
+            # Small sleep to avoid hammering the CPU
+            time.sleep(0.01)
+
+        log.info("Sent %s" % msgid)
+
+    def send_via_ams(self, text, msgid):
+        """
+        Sending message via HTTPS (to Argo message broker.)
+        """
+        argo_id = self._send_msg_ams(text, msgid)
+
+        if argo_id is not None:
+            log.info("Sent %s, Argo ID: %s" % (msgid, argo_id))
+        else:
+            log.warning("Message %s is empty and "
+                        "returns a None type." % (msgid))
 
     def send_all(self):
         """
@@ -482,25 +509,11 @@ class Ssm2(stomp.ConnectionListener):
 
             if self._protocol == Ssm2.STOMP_MESSAGING:
                 # Then we are sending to a STOMP message broker.
-                self._send_msg(text, msgid)
-
-                log.info('Waiting for broker to accept message.')
-                while self._last_msg is None:
-                    if not self.connected:
-                        raise Ssm2Exception('Lost connection.')
-                    # Small sleep to avoid hammering the CPU
-                    time.sleep(0.01)
-
-                log.info("Sent %s" % msgid)
+                self.send_via_stomp(text, msgid)
 
             elif self._protocol == Ssm2.AMS_MESSAGING:
                 # Then we are sending to an Argo Messaging Service instance.
-                argo_id = self._send_msg_ams(text, msgid)
-
-                if argo_id is not None:
-                    log.info("Sent %s, Argo ID: %s" % (msgid, argo_id))
-                else:
-                    log.warning("Message %s is empty and returns a None type." % (msgid))
+                self.send_via_ams(text, msgid)
 
             else:
                 # The SSM has been improperly configured
