@@ -233,8 +233,6 @@ class TestMsgToQueue(unittest.TestCase):
         for dn in valid_dns:
             # Capture the log output so we can use it in assertions
             with LogCapture() as log:
-                print("Testing dn:", dn)
-
                 message_valid = """APEL-summary-job-message: v0.2
                         Site: RAL-LCG2
                         Month: 3
@@ -260,16 +258,12 @@ class TestMsgToQueue(unittest.TestCase):
 
                 self.assertIn('Message saved to incoming queue', str(log))
 
-                print("Test Passed.\n")
-
         # As there are several different ways messages can be rejected,
         # Keep a count to test a different method for each dn
         dnCount = 1
         for dn in rejected_dns:
             # Capture the log output so we can use it in assertions
             with LogCapture() as log:
-                print("Testing dn:", dn)
-
                 message_rejected = """APEL-summary-job-message: v0.2
                         Site: RAL-LCG2
                         Month: 3
@@ -304,8 +298,6 @@ class TestMsgToQueue(unittest.TestCase):
 
                 self.assertIn('Message saved to reject queue', str(log))
 
-                print("Test Passed.\n")
-
                 dnCount = dnCount + 1
 
         # For each dn in the banned dns list,
@@ -314,8 +306,6 @@ class TestMsgToQueue(unittest.TestCase):
         for dn in banned_dns:
             # Capture the log output so we can use it in assertions
             with LogCapture() as log:
-                print("Testing dn:", dn)
-
                 message_banned = """APEL-summary-job-message: v0.2
                         Site: RAL-LCG2
                         Month: 3
@@ -340,8 +330,6 @@ class TestMsgToQueue(unittest.TestCase):
                 print(str(log))
 
                 self.assertIn('Message dropped as was sent from a banned dn', str(log))
-
-                print("Test Passed.\n")
 
 
 TEST_KEY_FILE = '/tmp/test.key'

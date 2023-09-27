@@ -299,7 +299,7 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
         ssm.set_dns(dns)
 
         log.info('Fetching banned DNs.')
-        banned_dns = get_banned_dns(log)
+        banned_dns = get_banned_dns(log, cp)
         ssm.set_banned_dns(banned_dns)
 
     except Exception as e:
@@ -385,28 +385,29 @@ def get_dns(dn_file, log):
     return dns
 
 
-def get_banned_dns(log):
+def get_banned_dns(log, cp):
     """Retrieve the list of banned dns"""
-    banned_dns_list = []
+    banned_dns = []
     try:
         banned_dns_path = cp.get('auth', 'banned-dns')
-        banned_dns_file = os.path.normpath(os.path.expandvars(banned_dns_path))
+        banned_dns_file = os.path.normpath(
+            os.path.expandvars(banned_dns_path))
     except ConfigParser.NoOptionError:
         banned_dns_file = None
     f = None
     try:
-        f = open(banned_dns_file, 'r')
-        lines = f.readlines()
-        for line in lines:
-            if line.isspace() or line.strip().startswith('#'):
-                continue
-            elif line.strip().startswith('/'):
-                banned_dns_list.append(line.strip())
-            else:
-                log.warning('DN in banned dns list is not in correct format: %s', line)
+        with open(banned_dns_file, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                if line.isspace() or line.strip().startswith('#'):
+                    continue
+                elif line.strip().startswith('/'):
+                    banned_dns.append(line.strip())
+                else:
+                    log.warning('DN in banned dns list is not in '
+                                'the correct format: %s', line)
     finally:
         if f is not None:
             f.close()
 
-    return banned_dns_list
-
+    return banned_dns
