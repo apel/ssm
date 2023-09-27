@@ -416,8 +416,12 @@ class Ssm2(stomp.ConnectionListener):
             message = AmsMessage(data=to_send,
                                  attributes={'empaid': msgid}).dict()
 
-            argo_response = self._ams.publish(self._dest, message, retry=3)
+            argo_response = self._ams.publish(self._dest, message, retry=3, timeout=10)
             return argo_response['messageIds'][0]
+        else:
+            # We ignore empty messages as there is no point sending them.
+            # (STOMP did require empty messages to keep the connection alive.)
+            return None
 
     def pull_msg_ams(self):
         """Pull 1 message from the AMS and acknowledge it."""
@@ -437,7 +441,8 @@ class Ssm2(stomp.ConnectionListener):
 
         for msg_ack_id, msg in self._ams.pull_sub(self._listen,
                                                   messages_to_pull,
-                                                  retry=3):
+                                                  retry=3,
+                                                  timeout=10):
             # Get the AMS message id
             msgid = msg.get_msgid()
             # Get the SSM dirq id
@@ -466,7 +471,7 @@ class Ssm2(stomp.ConnectionListener):
         # it can move the offset for the next subscription pull
         # (basically acknowledging pulled messages)
         if ackids:
-            self._ams.ack_sub(self._listen, ackids, retry=3)
+            self._ams.ack_sub(self._listen, ackids, retry=3, timeout=10)
 
     def send_ping(self):
         """Perform connection stay-alive steps.

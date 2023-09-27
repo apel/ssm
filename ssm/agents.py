@@ -37,7 +37,8 @@ except ImportError:
 
 from stomp.exception import NotConnectedException
 try:
-    from argo_ams_library import AmsConnectionException
+    from argo_ams_library import (AmsConnectionException, AmsTimeoutException,
+                                  AmsBalancerException)
 except ImportError:
     # ImportError is raised when Ssm2 initialised if AMS is requested but lib
     # not installed.
@@ -140,10 +141,6 @@ def get_ssm_args(protocol, cp, log):
     elif protocol == Ssm2.AMS_MESSAGING:
         # Then we are setting up an SSM to connect to a AMS.
 
-        # TODO: See if setting use_ssl directly in Ssm2 constructor is ok.
-        # 'use_ssl' isn't checked when using AMS (SSL is always used), but it
-        # is needed for the call to the Ssm2 constructor below.
-        use_ssl = None
         try:
             # We only need a hostname, not a port
             host = cp.get('broker', 'host')
@@ -253,6 +250,9 @@ def run_sender(protocol, brokers, project, token, cp, log):
         print('SSM failed to complete successfully.  See log file for details.')
         log.error('Unexpected exception in SSM: %s', e)
         log.error('Exception type: %s', e.__class__)
+        sender_failed = True
+    else:
+        sender_failed = False
 
     try:
         sender.close_connection()
@@ -262,6 +262,8 @@ def run_sender(protocol, brokers, project, token, cp, log):
 
     log.info('SSM has shut down.')
     log.info(LOG_BREAK)
+    if sender_failed:
+        sys.exit(1)
 
 
 def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
@@ -332,7 +334,9 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
                     if protocol == Ssm2.STOMP_MESSAGING:
                         ssm.send_ping()
 
-            except (NotConnectedException, AmsConnectionException) as error:
+            except (NotConnectedException, AmsConnectionException,
+                    AmsTimeoutException, AmsBalancerException) as error:
+
                 log.warning('Connection lost.')
                 log.debug(error)
                 ssm.shutdown()
@@ -349,15 +353,24 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
         log.info('Received the shutdown signal: %s', e)
         ssm.shutdown()
         dc.close()
+        receiver_failed = True
     except Exception as e:
         log.error('Unexpected exception: %s', e)
         log.error('Exception type: %s', e.__class__)
         log.error('The SSM will exit.')
         ssm.shutdown()
         dc.close()
+        receiver_failed = True
+    # Currently won't run the else statement due to the while loop in the reciever
+    # Leaving here in case of future refactoring, but commented out so the unreachable
+    # code isn't flagged by tests
+    # else:
+    #   receiver_failed = False
 
     log.info('Receiving SSM has shut down.')
     log.info(LOG_BREAK)
+    if receiver_failed:
+        sys.exit(1)
 
 
 def get_dns(dn_file, log):
