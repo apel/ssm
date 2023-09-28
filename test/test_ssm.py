@@ -174,11 +174,21 @@ class TestMsgToQueue(unittest.TestCase):
 
         self._msgdir = tempfile.mkdtemp(prefix='msgq')
 
-        # create a key/cert pair
+        # Create a key/cert pair
         call(['openssl', 'req', '-x509', '-nodes', '-days', '2',
               '-newkey', 'rsa:2048', '-keyout', TEST_KEY_FILE,
               '-out', TEST_CERT_FILE, '-subj',
               '/C=UK/O=STFC/OU=SC/CN=Test Cert'])
+
+    def tearDown(self):
+        # Remove test directory and all contents
+        try:
+            shutil.rmtree(self._msgdir)
+            shutil.rmtree(self._tmp_dir)
+        except OSError as e:
+            print('Error removing temporary directory %s' % self._tmp_dir)
+            print(e)
+
 
     @patch.object(Ssm2, '_handle_msg')
     def test_dns_saved_to_queue(self, mock_handle_msg):
@@ -202,13 +212,13 @@ class TestMsgToQueue(unittest.TestCase):
                         "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=rejected-2.esc.rl.ac.uk",
                         "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=rejected-3.esc.rl.ac.uk")
 
-        # Create a list of fake banned dns that feature in the dn list
+        # Create a list of fake banned dns that feature in the banned dn list
         # These should be dropped, and not sent to a queue
         banned_dns = ("/C=UK/O=eScience/OU=CLRC/L=RAL/CN=banned-1.esc.rl.ac.uk",
                       "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=banned-2.esc.rl.ac.uk",
                       "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=banned-3.esc.rl.ac.uk")
 
-        # a custom empaid isn't necessary, and can just be 1
+        # A custom empaid isn't necessary, and can just be 1
         empaid = "1"
 
         # Set up an openssl-style CA directory, containing the
@@ -228,8 +238,8 @@ class TestMsgToQueue(unittest.TestCase):
             ca_cert.write(cert_string)
 
         # For each dn in the valid dns list,
-        # Pass it and the message to ssm and use the log output to
-        # make sure it was dealt with correctly
+        # pass it and the message to ssm and use the log output to
+        # make sure it was dealt with correctly.
         for dn in valid_dns:
             # Capture the log output so we can use it in assertions
             with LogCapture() as log:
@@ -254,12 +264,13 @@ class TestMsgToQueue(unittest.TestCase):
 
                 ssm._save_msg_to_queue(message_valid, empaid)
 
-                print(str(log))
-
                 self.assertIn('Message saved to incoming queue', str(log))
 
+        # For each dn in the rejected dns list,
+        # pass it and the message to ssm and use the log output to
+        # make sure it was dealt with correctly.
         # As there are several different ways messages can be rejected,
-        # Keep a count to test a different method for each dn
+        # keep a count to test a different method for each dn
         dnCount = 1
         for dn in rejected_dns:
             # Capture the log output so we can use it in assertions
@@ -294,15 +305,13 @@ class TestMsgToQueue(unittest.TestCase):
 
                 ssm._save_msg_to_queue(message_rejected, empaid)
 
-                print(str(log))
-
                 self.assertIn('Message saved to reject queue', str(log))
 
                 dnCount = dnCount + 1
 
         # For each dn in the banned dns list,
-        # Pass it and the message to ssm and use the log output to
-        # make sure it was dealt with correctly
+        # pass it and the message to ssm and use the log output to
+        # make sure it was dealt with correctly.
         for dn in banned_dns:
             # Capture the log output so we can use it in assertions
             with LogCapture() as log:
@@ -326,8 +335,6 @@ class TestMsgToQueue(unittest.TestCase):
                             capath=self.ca_certpath)
 
                 ssm._save_msg_to_queue(message_banned, empaid)
-
-                print(str(log))
 
                 self.assertIn('Message dropped as was sent from a banned dn', str(log))
 
