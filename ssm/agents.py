@@ -407,20 +407,16 @@ def get_banned_dns(log, cp):
             os.path.expandvars(banned_dns_path))
     except ConfigParser.NoOptionError:
         banned_dns_file = None
-    f = None
-    try:
-        with open(banned_dns_file, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                if line.isspace() or line.strip().startswith('#'):
-                    continue
-                elif line.strip().startswith('/'):
-                    banned_dns.append(line.strip())
-                else:
-                    log.warning('DN in banned dns list is not in '
-                                'the correct format: %s', line)
-    finally:
-        if f is not None:
-            f.close()
+
+    with open(banned_dns_file, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            if line.isspace() or line.strip().startswith('#'):
+                continue
+            elif line.strip().startswith('/'):
+                banned_dns.append(line.strip())
+            else:
+                log.warning('DN in banned dns list is not in '
+                            'the correct format: %s', line)
 
     return banned_dns
