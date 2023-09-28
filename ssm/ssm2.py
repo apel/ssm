@@ -504,19 +504,19 @@ class Ssm2(stomp.ConnectionListener):
             log.warning('OSError raised while purging message queue: %s', e)
 
     def _send_via_stomp(self, text, msgid):
-            """
-            Sending message via STOMP message broker.
-            """
-            self._send_msg(text, msgid)
+        """
+        Sending message via STOMP message broker.
+        """
+        self._send_msg(text, msgid)
 
-            log.info('Waiting for broker to accept message.')
-            while self._last_msg is None:
-                if not self.connected:
-                    raise Ssm2Exception('Lost connection.')
-                # Small sleep to avoid hammering the CPU
-                time.sleep(0.01)
+        log.info('Waiting for broker to accept message.')
+        while self._last_msg is None:
+            if not self.connected:
+                raise Ssm2Exception('Lost connection.')
+            # Small sleep to avoid hammering the CPU
+            time.sleep(0.01)
 
-            log.info("Sent %s" % msgid)
+        log.info("Sent %s" % msgid)
 
     def _send_via_ams(self, text, msgid):
         """
