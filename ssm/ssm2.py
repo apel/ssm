@@ -318,6 +318,13 @@ class Ssm2(stomp.ConnectionListener):
 
     def _save_msg_to_queue(self, body, empaid):
         """Extract message contents and add to the accept or reject queue."""
+        try:
+            # if not bytes will fail with "'str' obj has no attribute decode"
+            body = body.decode('utf-8')
+        except (AttributeError):
+            # Message type is something string related
+            pass
+
         extracted_msg, signer, err_msg = self._handle_msg(body)
         try:
             # If the message is empty or the error message is not empty
@@ -332,7 +339,6 @@ class Ssm2(stomp.ConnectionListener):
                     body = extracted_msg
 
                 log.warning("Message rejected: %s", err_msg)
-
                 name = self._rejectq.add({'body': body,
                                           'signer': signer,
                                           'empaid': empaid,
