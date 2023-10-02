@@ -23,6 +23,7 @@
 from __future__ import print_function
 
 from subprocess import Popen, PIPE
+import OpenSSL
 import quopri
 import base64
 import logging
@@ -295,20 +296,30 @@ def verify_cert_path(certpath, capath, check_crls=True):
     certstring = _from_file(certpath)
     return verify_cert(certstring, capath, check_crls)
 
+def get_subject_components(subject_x509name):
+
+    # Undergoing testing
+    subject = "".join("/{:s}={:s}".format(name.decode(), value.decode())
+                      for name, value in subject_x509name.get_components())
+
+    return subject
 
 def get_certificate_subject(certstring):
-    """Return the certificate subject's DN, in legacy openssl format."""
-    p1 = Popen(['openssl', 'x509', '-noout', '-subject'],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+    """Return the certificate subject's DN, in legacy openssl format.
 
-    subject, error = p1.communicate(certstring)
-
-    if (error != ''):
+    In 3.4.0, this was updated to use PyOpenSSL to maintain compatibility with
+    Python 3.6 and later versions, along with OpenSSL 1.0.2 and 1.1.1.
+    """
+    try:
+        subject_x509name = OpenSSL.crypto.load_certificate(
+            type=OpenSSL.crypto.FILETYPE_PEM,
+            buffer=certstring
+            ).get_subject()
+    except Exception as error:
         log.error(error)
-        raise CryptoException('Failed to get subject: %s' % error)
+        raise CryptoException(error)
 
-    subject = subject.strip()[9:]  # remove 'subject= ' from the front
-    return subject
+    return get_subject_components(subject_x509name)
 
 
 def get_signer_cert(signed_text):
