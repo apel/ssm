@@ -14,6 +14,7 @@
 """This module contains test cases for the MessageDirectory class."""
 from __future__ import print_function
 
+import os
 import shutil
 import tempfile
 import time
@@ -141,10 +142,14 @@ class TestMessageDirectory(unittest.TestCase):
         """Check that directories inside the queue are being ignored."""
         self.longMessage = True  # Include normal unittest output before custom message.
 
-        with tempfile.TemporaryFile(dir=self.tmp_dir):
-            tempfile.mkdtemp(prefix='extra_directory_', dir=self.tmp_dir)
-            self.assertEqual(self.message_directory.count(), 1, "Expected just one file, "
-                             "but greater result implies that directory is being counted.")
+        # Add a single test file (closing it to ensure this works on Unix)
+        handle, _path = tempfile.mkstemp(dir=self.tmp_dir)
+        os.close(handle)
+        # Add a directory (to ignore)
+        tempfile.mkdtemp(prefix='extra_directory_', dir=self.tmp_dir)
+
+        self.assertEqual(self.message_directory.count(), 1, "Expected just one file, "
+                         "but greater result implies that directory is being counted.")
 
     def tearDown(self):
         """Remove test directory and all contents."""
