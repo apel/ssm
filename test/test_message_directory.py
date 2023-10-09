@@ -27,7 +27,7 @@ class TestMessageDirectory(unittest.TestCase):
 
     def setUp(self):
         """Create a MessageDirectory class on top of a temporary directory."""
-        self.tmp_dir = tempfile.mkdtemp(prefix='message_directory')
+        self.tmp_dir = tempfile.mkdtemp(prefix='message_directory_')
         self.message_directory = MessageDirectory(self.tmp_dir)
 
     def test_add_and_get(self):
