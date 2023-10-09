@@ -110,10 +110,7 @@ class MessageDirectory(object):
                 for (file_name, _mtime) in sorted(unsorted_messages,
                                                   key=lambda tup: tup[1]):
                     # Store the sorted file paths in a class element.
-                    if os.path.isfile(file_name):
-                        sorted_messages.append(file_name)
-                    else:
-                        continue
+                    sorted_messages.append(file_name)
 
                 # Return the sorted list.
                 return sorted_messages
