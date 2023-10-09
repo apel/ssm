@@ -100,6 +100,15 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Mon Oct 09 2023 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.3.0-1
+ - Added warning that BDII broker fetching will be deprecated in a future version.
+ - Added non-zero exit status if sender or receiver crash.
+ - Fixed SSM hanging if TCP connection drops by adding timeout.
+ - Fixed directory queue system picking up sub-directories.
+ - Fixed AMS messaging library dependency issue.
+ - Fixed documentation for running a containerised receiver.
+ - Fixed a few minor code issues.
+
 * Thu Jun 29 2023 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.3.0-1
  - Added destination queue to the log during startup to aid troubleshooting.
  - Added check that the config file exists to allow for better error messages.
