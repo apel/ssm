@@ -137,6 +137,15 @@ class TestMessageDirectory(unittest.TestCase):
         # Check the count method returns the expected value.
         self.assertEqual(self.message_directory.count(), 0)
 
+    def test_dir_in_dir(self):
+        """Check that directories inside the queue are being ignored."""
+        self.longMessage = True  # Include normal unittest output before custom message.
+
+        with tempfile.TemporaryFile(dir=self.tmp_dir):
+            tempfile.mkdtemp(prefix='extra_directory_', dir=self.tmp_dir)
+            self.assertEqual(self.message_directory.count(), 1, "Expected just one file, "
+                             "but greater result implies that directory is being counted.")
+
     def tearDown(self):
         """Remove test directory and all contents."""
         try:
