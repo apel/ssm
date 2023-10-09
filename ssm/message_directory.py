@@ -87,8 +87,9 @@ class MessageDirectory(object):
         """
         try:
             # Get a list of files under self.directory_path
-            # in an arbitrary order.
-            file_name_list = os.listdir(self.directory_path)
+            # in an arbitrary order (ignoring directories).
+            file_name_list = [file for file in os.listdir(self.directory_path)
+                              if os.path.isfile(os.path.join(self.directory_path, file))]
 
             if sort_by_mtime:
                 # Working space to hold the unsorted messages
