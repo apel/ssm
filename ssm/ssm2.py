@@ -37,7 +37,7 @@ import time
 from logging import getLogger, INFO, WARNING, DEBUG
 
 try:
-    from argo_ams_library import ArgoMessagingService, AmsMessage
+    from argo_ams_library import AmsMessage, ArgoMessagingService, AmsServiceException
 except ImportError:
     # ImportError is raised later on if AMS is requested but lib not installed.
     ArgoMessagingService = None
@@ -113,16 +113,21 @@ class Ssm2(stomp.ConnectionListener):
 
         # create the filesystem queues for accepted and rejected messages
         if dest is not None and listen is None:
+            outqpath = os.path.join(qpath, 'outgoing')
+            rejectqpath = os.path.join(qpath, 'reject')
+
             # Determine what sort of outgoing structure to make
             if path_type == 'dirq':
                 if QueueSimple is None:
                     raise ImportError("dirq path_type requested but the dirq "
                                       "module wasn't found.")
 
-                self._outq = QueueSimple(qpath)
+                self._outq = QueueSimple(outqpath)
+                self._rejectq = QueueSimple(rejectqpath)
 
             elif path_type == 'directory':
-                self._outq = MessageDirectory(qpath)
+                self._outq = MessageDirectory(outqpath)
+                self._rejectq = MessageDirectory(rejectqpath)
             else:
                 raise Ssm2Exception('Unsupported path_type variable.')
 
@@ -495,9 +500,27 @@ class Ssm2(stomp.ConnectionListener):
 
             elif self._protocol == Ssm2.AMS_MESSAGING:
                 # Then we are sending to an Argo Messaging Service instance.
-                argo_id = self._send_msg_ams(text, msgid)
+                try:
+                    argo_id = self._send_msg_ams(text, msgid)
+                    log_string = "Sent %s, Argo ID: %s" % (msgid, argo_id)
 
-                log_string = "Sent %s, Argo ID: %s" % (msgid, argo_id)
+                except AmsServiceException as e:
+                    # Catch specific 'message too large' exception, raise otherwise.
+                    if "Message size is too large" not in str(e):
+                        raise
+                    else:
+                        log.warning('Message %s could not be sent as its larger than 1MB', msgid)
+
+                        # Add the message to the rejected queue
+                        name = self._rejectq.add(text)
+                        log.info("Message %s saved to reject queue as %s", msgid, name)
+
+                        # Remove the message from the outgoing queue
+                        self._last_msg = None
+                        self._outq.remove(msgid)
+
+                        # Exit out of loop iteration so that message is not removed.
+                        continue
 
             else:
                 # The SSM has been improperly configured
