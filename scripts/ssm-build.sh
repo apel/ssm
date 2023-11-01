@@ -104,3 +104,74 @@ echo $BUILD_DIR
 PY_VERSION=$(basename $PYTHON_ROOT_DIR)
 PY_NUM=${PY_VERSION#python}
 echo $PY_NUM
+
+# One fpm call for python 2, one for python 3
+# Check for each based on minimum versioning
+# May have to vary by debian and RPM too :/
+# add in commands?
+
+# Create two sections, tack them together, render with eval command
+# Section 1: Python Version specific
+# Section 2: RPM or DEB?
+# Eval
+
+if (( ${PY_NUM:0:1} == 2 )) ; then
+    if (( ${PY_NUM:2:3} < 7 )) ; then # or version is later than 4.0.0
+        echo "Python version is insufficient, you supplied $PY_NUM when you need 2.7.  Python 2 will be removed in 4.0.0."
+        usage;
+    fi
+    # py2 FPM call CURRENTLY DEBIAN
+    # adapt for RPM and for generalism
+    # eval 
+
+    echo "Building $VERSION iteration $ITERATION for Python $PY_NUM as $PACK_TYPE."
+
+
+    fpm -s python -t deb \
+    -n apel-ssm \
+    -v $VERSION \
+    --iteration $ITERATION \
+    -m "Apel Administrators <apel-admins@stfc.ac.uk>" \
+    --description "Secure Stomp Messenger (SSM)." \
+    --no-auto-depends \
+    --depends python2.7 \
+    --depends python-pip \
+    --depends 'python-stomp < 5.0.0' \
+    --depends python-ldap \
+    --depends libssl-dev \
+    --depends libsasl2-dev \
+    --depends openssl \
+    --deb-changelog $SOURCE_DIR/ssm-$TAG/CHANGELOG \
+    --python-install-bin /usr/bin \
+    --python-install-lib $PYTHON_INSTALL_LIB \
+    --exclude *.pyc \
+    --package $BUILD_DIR \
+    $SOURCE_DIR/ssm-$TAG/setup.py
+
+elif (( ${PY_NUM:0:1} == 3 )) ; then
+    if (( ${PY_NUM:2:3} < 6 )) ; then
+        echo "Python version is insufficient, you supplied $PY_NUM when you need above 3.5."
+        usage;
+    fi
+    #py3 fpm call
+    echo "Building $VERSION iteration $ITERATION for Python $PY_NUM as $PACK_TYPE."
+
+fi
+
+# Create pleaserun command
+# Section 1: RPM or DEB ?
+# Don't need to eval, just change deb
+
+eval build_package
+
+fpm -s pleaserun -t $PACK_TYPE \
+    -n apel-ssm-service \
+    -v $VERSION \
+    --iteration $ITERATION \
+    -m "Apel Administrators <apel-admins@stfc.ac.uk>" \
+    --description "Secure Stomp Messenger (SSM) Service Daemon files." \
+    --architecture all \
+    --no-auto-depends \
+    --depends apel-ssm \
+    --package $BUILD_DIR \
+    /usr/bin/ssmreceive
