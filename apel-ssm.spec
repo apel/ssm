@@ -99,6 +99,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %doc %_defaultdocdir/%{name}
 
+%changelog
 * Thu Jun 29 2023 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.3.0-1
  - Added destination queue to the log during startup to aid troubleshooting.
  - Added check that the config file exists to allow for better error messages.
