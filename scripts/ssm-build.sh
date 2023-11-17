@@ -93,7 +93,7 @@ rm -rf $BUILD_DIR/*
 
 # Get and extract the source
 TAR_FILE=${VERSION}-${ITERATION}.tar.gz
-TAR_URL=https://github.com/apel/ssm/archive/$TAR_FILE
+TAR_URL=https://github.com/RedProkofiev/ssm/archive/$TAR_FILE
 wget --no-check-certificate $TAR_URL -O $TAR_FILE
 tar xvf $TAR_FILE -C $SOURCE_DIR
 rm -f $TAR_FILE
@@ -157,7 +157,7 @@ fi
 # Place changelog in specs.
 
 
-FPM_VERSION="--$PACK_TYPE-changelog $SOURCE_DIR/ssm-$VERSION-$ITERATION/CHANGELOG \
+PACKAGE_VERSION="--$PACK_TYPE-changelog $SOURCE_DIR/ssm-$VERSION-$ITERATION/CHANGELOG \
     --python-install-bin /usr/bin \
     --python-install-lib $PYTHON_ROOT_DIR$LIB_EXTENSION \
     --exclude *.pyc \
@@ -165,11 +165,11 @@ FPM_VERSION="--$PACK_TYPE-changelog $SOURCE_DIR/ssm-$VERSION-$ITERATION/CHANGELO
     $SOURCE_DIR/ssm-$VERSION-$ITERATION/setup.py"
 
 
-# Spaces betwixt verbose and FPM_VERSION for --rpm-changelog, space here command not found renders fpm_version as sep command
+# Spaces betwixt verbose and package_version for --rpm-changelog, space here command not found renders package_version as sep command
 # probably bash string handling issue, add handled string
-BUILD_PACKAGE=${FPM_CORE}${FPM_PYTHON}${VERBOSE}${FPM_VERSION}
-echo $BUILD_PACKAGE
-eval $BUILD_PACKAGE
+BUILD_PACKAGE_COMMAND=${FPM_CORE}${FPM_PYTHON}${VERBOSE}${PACKAGE_VERSION}
+echo $BUILD_PACKAGE_COMMAND
+eval $BUILD_PACKAGE_COMMAND
 
 
 # fpm -s pleaserun -t $PACK_TYPE \
