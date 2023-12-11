@@ -14,6 +14,9 @@ RUN yum -y install python-pip
 # Install the system requirements of python-ldap
 RUN yum -y install gcc python-devel openldap-devel
 
+# Install libffi, a requirement of openssl
+RUN yum -y install libffi-devel
+
 # Install the system requirements of ssm
 RUN yum -y install openssl
 
