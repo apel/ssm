@@ -297,8 +297,7 @@ def verify_cert_path(certpath, capath, check_crls=True):
     return verify_cert(certstring, capath, check_crls)
 
 def get_subject_components(subject_x509name):
-
-    # Undergoing testing
+    """RegEx to strip a keyname into a separated list."""
     subject = "".join("/{:s}={:s}".format(name.decode(), value.decode())
                       for name, value in subject_x509name.get_components())
 
