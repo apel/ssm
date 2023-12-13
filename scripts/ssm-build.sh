@@ -10,6 +10,7 @@ usage() {
     echo "Usage: $0 (deb | rpm) <version> <iteration> <python_root_dir> [options]"
     echo -e "Build script for Apel-SSM.\n"
     echo "  -h                    Displays help."
+    echo "  -v                    Verbose FPM output."
     echo "  -s <source_dir>       Directory of source files.  Defaults to /debbuild/source or SOME RPM DIR." 
     echo -e "  -b <build_dir>        Directory of build files.  Defaults to /debbuild/build or SOME RPM DIR.\n" 1>&2;
     exit 1; 
@@ -22,9 +23,10 @@ usage() {
 
 SOURCE_ASSIGNED=0
 BUILD_ASSIGNED=0
+BIN_DIR="/usr/bin/python3.8 " \
 
 # Configurable options
-while getopts ":hs:b:v" o; do
+while getopts ":hs:b:v:e" o; do
     case "${o}" in
         h)  echo "SSM Help"
             usage;
@@ -39,6 +41,9 @@ while getopts ":hs:b:v" o; do
             ;;
         v)  v=${OPTARG}
             VERBOSE="--verbose " \
+            ;;
+        e)  e=${OPTARG}
+            BIN_DIR="$b " \
             ;;
         *)  usage;
             ;;
@@ -93,7 +98,7 @@ rm -rf $BUILD_DIR/*
 
 # Get and extract the source
 TAR_FILE=${VERSION}-${ITERATION}.tar.gz
-TAR_URL=https://github.com/RedProkofiev/ssm/archive/$TAR_FILE
+TAR_URL=https://github.com/apel/ssm/archive/$TAR_FILE
 wget --no-check-certificate $TAR_URL -O $TAR_FILE
 tar xvf $TAR_FILE -C $SOURCE_DIR
 rm -f $TAR_FILE
@@ -150,6 +155,9 @@ elif (( ${PY_NUM:0:1} == 3 )) ; then
 
 fi
 
+if [ "$PACK_TYPE" == "deb" ]; then 
+    FPM_PYTHON="${FPM_PYTHON} --python-bin ${BIN_DIR}"
+fi
 
 # FPM Version Specific End
 # Change pythoninstall lib?
@@ -172,14 +180,14 @@ echo $BUILD_PACKAGE_COMMAND
 eval $BUILD_PACKAGE_COMMAND
 
 
-# fpm -s pleaserun -t $PACK_TYPE \
-#     -n apel-ssm-service \
-#     -v $VERSION \
-#     --iteration $ITERATION \
-#     -m "Apel Administrators <apel-admins@stfc.ac.uk>" \
-#     --description "Secure Stomp Messenger (SSM) Service Daemon files." \
-#     --architecture all \
-#     --no-auto-depends \
-#     --depends apel-ssm \
-#     --package $BUILD_DIR \
-#     /usr/bin/ssmreceive
+fpm -s pleaserun -t $PACK_TYPE \
+    -n apel-ssm-service \
+    -v $VERSION \
+    --iteration $ITERATION \
+    -m "Apel Administrators <apel-admins@stfc.ac.uk>" \
+    --description "Secure Stomp Messenger (SSM) Service Daemon files." \
+    --architecture all \
+    --no-auto-depends \
+    --depends apel-ssm \
+    --package $BUILD_DIR \
+    /usr/bin/ssmreceive
