@@ -5,11 +5,17 @@
 # @Author: Nicholas Whyatt (RedProkofiev@github.com)
 
 # Script runs well with FPM 1.14.2 on ruby 2.7.1, setuptools 51.3.3 on RHEL and Deb platforms
+# Download ruby (if you're locked to 2.5, use RVM) and then run:
+# sudo gem install fpm -v 1.14.2
+# ./ssm-build-dual.sh (deb | rpm) <version> <iteration> <python_root_dir> e.g.
+# ./ssm-build.dual.sh deb 3.4.0 1 /usr/lib/python3.6
+# For SSM 3.4.0 and up.  Versions before that would technically work, but the changelog
+# then was in a Debian format that doesn't parse and fails hard if you want to build RPM.
 
-set -ex
+set -e
 
 usage() { 
-    echo "Usage: $0 (deb | rpm) <version> <iteration> <python_root_dir> [options]"
+    echo "[options] Usage: $0 (deb | rpm) <version> <iteration> <python_root_dir> "
     echo -e "Build script for Apel-SSM.\n"
     echo "  -h                    Displays help."
     echo "  -v                    Verbose FPM output."
@@ -18,6 +24,7 @@ usage() {
     exit 1; 
 }
 
+# Bool flags to prevent automatic overwrite of input
 SOURCE_ASSIGNED=0
 BUILD_ASSIGNED=0
 
@@ -55,6 +62,7 @@ VERSION=$2
 ITERATION=$3
 PYTHON_ROOT_DIR=$4 # i.e. /usr/lib/python3.6
 
+# Alter library, build and source directories depending on the package
 if [[ "$PACK_TYPE" = "deb" ]]; then 
     LIB_EXTENSION="/dist-packages"
     if [[ "$SOURCE_ASSIGNED" = 0 ]]; then
@@ -87,7 +95,7 @@ rm -rf $BUILD_DIR/*
 
 # Get and extract the source
 TAR_FILE=${VERSION}-${ITERATION}.tar.gz
-TAR_URL=https://github.com/RedProkofiev/ssm/archive/$TAR_FILE
+TAR_URL=https://github.com/apel/ssm/archive/$TAR_FILE
 wget --no-check-certificate $TAR_URL -O $TAR_FILE
 tar xvf $TAR_FILE -C $SOURCE_DIR
 rm -f $TAR_FILE
@@ -107,6 +115,7 @@ FPM_CORE="fpm -s python \
     --description \"Secure Stomp Messenger (SSM).\" \
     --no-auto-depends "
 
+# Simple Python filter for version specific FPM
 if [[ ${PY_NUM:0:1} == "3" ]]; then
     echo "Building $VERSION iteration $ITERATION for Python $PY_NUM as $PACK_TYPE."
 
@@ -132,7 +141,7 @@ elif [[ ${PY_NUM:0:1} == "2" ]]; then
         --depends openssl " 
 fi
 
-# python-bin from python-install-bin
+# python-bin must always be specified in modern linux
 PACKAGE_VERSION="--$PACK_TYPE-changelog $SOURCE_DIR/ssm-$VERSION-$ITERATION/CHANGELOG \
     --python-bin /usr/bin/$PY_VERSION \
     --python-install-lib $PYTHON_ROOT_DIR$LIB_EXTENSION \
@@ -140,10 +149,11 @@ PACKAGE_VERSION="--$PACK_TYPE-changelog $SOURCE_DIR/ssm-$VERSION-$ITERATION/CHAN
     --package $BUILD_DIR \
     $SOURCE_DIR/ssm-$VERSION-$ITERATION/setup.py"
 
+# Construct and evaluate the primary FPM call
 BUILD_PACKAGE_COMMAND=${FPM_CORE}${FPM_PYTHON}${VERBOSE}${PACKAGE_VERSION}
-echo "$BUILD_PACKAGE_COMMAND"
 eval "$BUILD_PACKAGE_COMMAND"
 
+# When installed, use pleaserun to perform system specific service setup
 fpm -s pleaserun -t $PACK_TYPE \
 -n apel-ssm-service \
 -v $VERSION \
