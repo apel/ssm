@@ -14,14 +14,14 @@
 
 set -e
 
-usage() { 
+usage() {
     echo "Usage: $0 [options] (deb | rpm) <version> <iteration> <python_root_dir> "
     echo -e "Build script for Apel-SSM.\n"
     echo "  -h                    Displays help."
     echo "  -v                    Verbose FPM output."
-    echo "  -s <source_dir>       Directory of source files.  Defaults to /debbuild/source or SOME RPM DIR." 
+    echo "  -s <source_dir>       Directory of source files.  Defaults to /debbuild/source or SOME RPM DIR."
     echo -e "  -b <build_dir>        Directory of build files.  Defaults to /debbuild/build or SOME RPM DIR.\n" 1>&2;
-    exit 1; 
+    exit 1;
 }
 
 # Bool flags to prevent automatic overwrite of input
@@ -62,7 +62,7 @@ ITERATION=$3
 PYTHON_ROOT_DIR=$4 # i.e. /usr/lib/python3.6
 
 # Alter library, build and source directories depending on the package
-if [[ "$PACK_TYPE" = "deb" ]]; then 
+if [[ "$PACK_TYPE" = "deb" ]]; then
     LIB_EXTENSION="/dist-packages"
     if [[ "$SOURCE_ASSIGNED" = 0 ]]; then
         SOURCE_DIR=~/debbuild/source
@@ -136,7 +136,7 @@ elif [[ ${PY_NUM:0:1} == "2" ]]; then
         --depends python-ldap \
         --depends libssl-dev \
         --depends libsasl2-dev \
-        --depends openssl " 
+        --depends openssl "
 fi
 
 # python-bin must always be specified in modern linux
