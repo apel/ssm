@@ -15,7 +15,7 @@
 set -e
 
 usage() { 
-    echo "[options] Usage: $0 (deb | rpm) <version> <iteration> <python_root_dir> "
+    echo "Usage: $0 [options] (deb | rpm) <version> <iteration> <python_root_dir> "
     echo -e "Build script for Apel-SSM.\n"
     echo "  -h                    Displays help."
     echo "  -v                    Verbose FPM output."
@@ -42,8 +42,7 @@ while getopts ":hs:b:v" o; do
             BUILD_DIR=$b
             BUILD_ASSIGNED=1
             ;;
-        v)  v=${OPTARG}
-            VERBOSE="--verbose "
+        v)  VERBOSE="--verbose "
             ;;
         *)  usage;
             ;;
@@ -86,24 +85,23 @@ fi
 
 # Directory cleaning and repository management
 # Create SSM and DEB dir (if not present)
-mkdir -p $SOURCE_DIR
-mkdir -p $BUILD_DIR
+mkdir -p "$SOURCE_DIR"
+mkdir -p "$BUILD_DIR"
 
 # Clean up any previous build
-rm -rf $SOURCE_DIR/*
-rm -rf $BUILD_DIR/*
+rm -rf "${SOURCE_DIR:?}"/*
+rm -rf "${BUILD_DIR:?}"/*
 
 # Get and extract the source
 TAR_FILE=${VERSION}-${ITERATION}.tar.gz
 TAR_URL=https://github.com/apel/ssm/archive/$TAR_FILE
-wget --no-check-certificate $TAR_URL -O $TAR_FILE
-tar xvf $TAR_FILE -C $SOURCE_DIR
-rm -f $TAR_FILE
+wget --no-check-certificate "$TAR_URL" -O "$TAR_FILE"
+tar xvf "$TAR_FILE" -C "$SOURCE_DIR"
+rm -f "$TAR_FILE"
 
 # Get supplied Python version
-PY_VERSION=$(basename $PYTHON_ROOT_DIR)
+PY_VERSION="$(basename "$PYTHON_ROOT_DIR")"
 PY_NUM=${PY_VERSION#python}
-echo $PY_NUM
 
 # Universal FPM Call
 FPM_CORE="fpm -s python \
@@ -154,14 +152,14 @@ BUILD_PACKAGE_COMMAND=${FPM_CORE}${FPM_PYTHON}${VERBOSE}${PACKAGE_VERSION}
 eval "$BUILD_PACKAGE_COMMAND"
 
 # When installed, use pleaserun to perform system specific service setup
-fpm -s pleaserun -t $PACK_TYPE \
+fpm -s pleaserun -t "$PACK_TYPE" \
 -n apel-ssm-service \
--v $VERSION \
---iteration $ITERATION \
+-v "$VERSION" \
+--iteration "$ITERATION" \
 -m "Apel Administrators <apel-admins@stfc.ac.uk>" \
 --description "Secure Stomp Messenger (SSM) Service Daemon files." \
 --architecture all \
 --no-auto-depends \
 --depends apel-ssm \
---package $BUILD_DIR \
+--package "$BUILD_DIR" \
 /usr/bin/ssmreceive
