@@ -22,11 +22,12 @@
 """
 from __future__ import print_function
 
-from subprocess import Popen, PIPE
-import OpenSSL
-import quopri
 import base64
 import logging
+import OpenSSL
+import quopri
+from subprocess import Popen, PIPE
+
 
 # logging configuration
 log = logging.getLogger(__name__)

@@ -1,23 +1,25 @@
 from __future__ import print_function
 
-import unittest
 import logging
-import os
 import OpenSSL
+import os
+import quopri
 from subprocess import call, Popen, PIPE
 import tempfile
-import quopri
+import unittest
 
-from ssm.crypto import check_cert_key, \
-    get_certificate_subject, \
-    get_signer_cert, \
-    sign, \
-    encrypt, \
-    decrypt, \
-    verify, \
-    verify_cert, \
-    get_subject_components, \
+from ssm.crypto import (check_cert_key,
+    get_certificate_subject,
+    get_signer_cert,
+    sign,
+    encrypt,
+    decrypt,
+    verify,
+    verify_cert,
+    get_subject_components,
     CryptoException
+)
+
 
 logging.basicConfig()
 
