@@ -177,20 +177,17 @@ class TestEncryptUtils(unittest.TestCase):
         self.assertRaises(CryptoException, verify, None, 'not a path', False)
 
     def test_get_subject_components(self):
-        '''
-        Check that the correct DN is extracted from the certstring.
-        '''
+        """Check that the correct DN is extracted from the certstring."""
         # Still a valid certificate
         with open(TEST_CERT_FILE, 'r') as test_cert:
             cert_string = test_cert.read()
 
         subject_x509name = OpenSSL.crypto.load_certificate(
-            OpenSSL.crypto.FILETYPE_PEM,
-            cert_string
-            ).get_subject()
+                OpenSSL.crypto.FILETYPE_PEM, cert_string
+        ).get_subject()
 
-        if not get_subject_components(subject_x509name) == TEST_CERT_DN:
-            self.fail("Didn't retrieve correct DN from cert.")
+        self.assertEqual(get_subject_components(subject_x509name), TEST_CERT_DN,
+                         msg="Didn't retrieve correct DN from cert.")
 
     def test_get_certificate_subject(self):
         '''

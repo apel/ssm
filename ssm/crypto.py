@@ -299,22 +299,22 @@ def verify_cert_path(certpath, capath, check_crls=True):
 
 def get_subject_components(subject_x509name):
     """RegEx to strip a keyname into a separated list."""
-    subject = "".join("/{:s}={:s}".format(name.decode(), value.decode())
-                      for name, value in subject_x509name.get_components())
-
+    subject = "".join(
+        "/{:s}={:s}".format(name.decode(), value.decode())
+        for name, value in subject_x509name.get_components()
+    )
     return subject
 
 def get_certificate_subject(certstring):
     """Return the certificate subject's DN, in legacy openssl format.
 
-    In 3.4.0, this was updated to use PyOpenSSL to maintain compatibility with
+    This was updated to use PyOpenSSL to maintain compatibility with
     Python 3.6 and later versions, along with OpenSSL 1.0.2 and 1.1.1.
     """
     try:
         subject_x509name = OpenSSL.crypto.load_certificate(
-            type=OpenSSL.crypto.FILETYPE_PEM,
-            buffer=certstring
-            ).get_subject()
+            type=OpenSSL.crypto.FILETYPE_PEM, buffer=certstring
+        ).get_subject()
     except Exception as error:
         log.error(error)
         raise CryptoException(error)
