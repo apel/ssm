@@ -297,7 +297,7 @@ def verify_cert_path(certpath, capath, check_crls=True):
     certstring = _from_file(certpath)
     return verify_cert(certstring, capath, check_crls)
 
-def get_subject_components(subject_x509name):
+def _get_subject_components(subject_x509name):
     """RegEx to strip a keyname into a separated list."""
     subject = "".join(
         "/{:s}={:s}".format(name.decode(), value.decode())
@@ -319,7 +319,7 @@ def get_certificate_subject(certstring):
         log.error(error)
         raise CryptoException(error)
 
-    return get_subject_components(subject_x509name)
+    return _get_subject_components(subject_x509name)
 
 
 def get_signer_cert(signed_text):

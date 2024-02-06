@@ -16,7 +16,7 @@ from ssm.crypto import (check_cert_key,
     decrypt,
     verify,
     verify_cert,
-    get_subject_components,
+    _get_subject_components,
     CryptoException
 )
 
@@ -186,7 +186,7 @@ class TestEncryptUtils(unittest.TestCase):
                 OpenSSL.crypto.FILETYPE_PEM, cert_string
         ).get_subject()
 
-        self.assertEqual(get_subject_components(subject_x509name), TEST_CERT_DN,
+        self.assertEqual(_get_subject_components(subject_x509name), TEST_CERT_DN,
                          msg="Didn't retrieve correct DN from cert.")
 
     def test_get_certificate_subject(self):
