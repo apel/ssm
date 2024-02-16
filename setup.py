@@ -51,7 +51,7 @@ def main():
           download_url='https://github.com/apel/ssm/releases',
           license='Apache License, Version 2.0',
           install_requires=[
-              'cryptography==3.3.0',
+              'cryptography==3.2.0',
               'stomp.py<5.0.0',
               'python-ldap<3.4.0',
               'setuptools',
