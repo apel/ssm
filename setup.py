@@ -51,11 +51,11 @@ def main():
           download_url='https://github.com/apel/ssm/releases',
           license='Apache License, Version 2.0',
           install_requires=[
-              'cryptography==3.3.0',
+              'cryptography==3.3.2',
               'stomp.py<5.0.0',
               'python-ldap<3.4.0',
               'setuptools',
-              'pyopenssl<=21.0.0',
+              'pyopenssl >=19.1.0, <=21.0.0',
           ],
           extras_require={
               'AMS': ['argo-ams-library', 'certifi<2020.4.5.2', ],

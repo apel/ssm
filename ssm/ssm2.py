@@ -318,6 +318,9 @@ class Ssm2(stomp.ConnectionListener):
 
     def _save_msg_to_queue(self, body, empaid):
         """Extract message contents and add to the accept or reject queue."""
+        if isinstance(body, bytes):
+            body = body.decode('ascii')
+
         extracted_msg, signer, err_msg = self._handle_msg(body)
         try:
             # If the message is empty or the error message is not empty
@@ -332,7 +335,6 @@ class Ssm2(stomp.ConnectionListener):
                     body = extracted_msg
 
                 log.warning("Message rejected: %s", err_msg)
-
                 name = self._rejectq.add({'body': body,
                                           'signer': signer,
                                           'empaid': empaid,
@@ -479,6 +481,8 @@ class Ssm2(stomp.ConnectionListener):
                 continue
 
             text = self._outq.get(msgid)
+            if isinstance(text, bytes):
+                text = text.decode('ascii')
 
             if self._protocol == Ssm2.STOMP_MESSAGING:
                 # Then we are sending to a STOMP message broker.
