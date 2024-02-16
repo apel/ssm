@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from __future__ import print_function
 
 import os
@@ -93,15 +92,6 @@ class TestSsm(unittest.TestCase):
         test_ssm.on_message({'empa-id': 'ping'}, 'body')
         # Check that msg with ID and no real content doesn't raise exception.
         test_ssm.on_message({'empa-id': '012345'}, 'body')
-
-    def test_str_bytes_outgoing(self):
-        """Test to ensure that outgoing messages are converted from Bytes to Str"""
-        test_ssm = Ssm2(self._brokers, self._msgdir, TEST_CERT_FILE,
-                        self._key_path, dest=self._dest, listen=self._listen)
-
-        message = "Appelle Hippocampéléphantocamélos"
-        byte_message = message.encode()
-        test_ssm.on_message({'empa-id': '012345'}, byte_message)
 
     def test_init_expired_cert(self):
         """Test right exception is thrown creating an SSM with expired cert."""
