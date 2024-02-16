@@ -318,12 +318,8 @@ class Ssm2(stomp.ConnectionListener):
 
     def _save_msg_to_queue(self, body, empaid):
         """Extract message contents and add to the accept or reject queue."""
-        try:
-            # if not bytes will fail with "'str' obj has no attribute decode"
-            body = body.decode('utf-8')
-        except (AttributeError):
-            # Message type is something string related
-            pass
+        if isinstance(body, bytes):
+            body = body.decode('ascii')
 
         extracted_msg, signer, err_msg = self._handle_msg(body)
         try:
@@ -485,6 +481,8 @@ class Ssm2(stomp.ConnectionListener):
                 continue
 
             text = self._outq.get(msgid)
+            if isinstance(text, bytes):
+                text = text.decode('ascii')
 
             if self._protocol == Ssm2.STOMP_MESSAGING:
                 # Then we are sending to a STOMP message broker.
