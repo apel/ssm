@@ -9,7 +9,8 @@
 # sudo gem install fpm -v 1.14.2
 # for RPM builds, you will also need:
 # sudo yum install rpm-build | sudo apt-get install rpm
-# ./ssm-build.sh (deb | rpm) <version> <iteration> <python_root_dir> e.g.
+# ./ssm-build.sh (deb | rpm) <version> <iteration> <python_root_dir>
+# e.g.
 # ./ssm-build.sh deb 3.4.0 1 /usr/lib/python3.6
 # If you're struggling finding the right version of Python to use, consider opening interpreter and:
 # import site; site.getsitepackages()
