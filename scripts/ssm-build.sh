@@ -163,9 +163,9 @@ elif [[ ${PY_NUM:0:1} == "2" ]]; then
 
     # el7 and below, due to yum package versions
     elif [[ "$PACK_TYPE" = "rpm" ]]; then
-        FPM_PYTHON="--depends python2.7 \
+        FPM_PYTHON="--depends python2 \
         --depends python2-pip \
-        --depends 'python-stomp < 5.0.0' \
+        --depends stomppy \
         --depends python-ldap \
         --depends openssl \
         --depends openssl-devel "
