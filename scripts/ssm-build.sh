@@ -187,7 +187,8 @@ PACKAGE_VERSION="--$PACK_TYPE-changelog $SOURCE_DIR/ssm-$VERSION-$ITERATION/CHAN
 # Construct and evaluate the primary FPM call
 BUILD_PACKAGE_COMMAND=${FPM_CORE}${FPM_PYTHON}${VERBOSE}${PACKAGE_VERSION}
 eval "$BUILD_PACKAGE_COMMAND"
-echo "== BEGINNING PLEASERUN SETUP =="
+
+echo "== Generating pleaserun package =="
 
 # When installed, use pleaserun to perform system specific service setup
 fpm -s pleaserun -t "$PACK_TYPE" \
