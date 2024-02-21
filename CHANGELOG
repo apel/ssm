@@ -1,5 +1,10 @@
-Changelog for ssm
-=================
+* Wed Feb 21 2024 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.4.0-1
+ - Fixed compatability with newer versions of OpenSSL that only provide comma separated DNs.
+ - Fixed Python 3 compatability (indirectly fixing EL8+ compatability) by performing explicit
+   decoding. Note that this limits messages to ASCII as this is the current behaviour.
+ - Added new build script that handles both RPM and DEB pacakging and later OSes.
+ - Changed default config file values to bring in line with AMS usage.
+
 * Mon Oct 09 2023 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.3.0-1
  - Added warning that BDII broker fetching will be deprecated in a future version.
  - Added non-zero exit status if sender or receiver crash.

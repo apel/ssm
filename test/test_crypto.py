@@ -1,21 +1,25 @@
 from __future__ import print_function
 
-import unittest
 import logging
+import OpenSSL
 import os
+import quopri
 from subprocess import call, Popen, PIPE
 import tempfile
-import quopri
+import unittest
 
-from ssm.crypto import check_cert_key, \
-    get_certificate_subject, \
-    get_signer_cert, \
-    sign, \
-    encrypt, \
-    decrypt, \
-    verify, \
-    verify_cert, \
+from ssm.crypto import (check_cert_key,
+    get_certificate_subject,
+    get_signer_cert,
+    sign,
+    encrypt,
+    decrypt,
+    verify,
+    verify_cert,
+    _get_subject_components,
     CryptoException
+)
+
 
 logging.basicConfig()
 
@@ -171,6 +175,19 @@ class TestEncryptUtils(unittest.TestCase):
         # Try None arguments
         self.assertRaises(CryptoException, verify, 'Bibbly bobbly', None, False)
         self.assertRaises(CryptoException, verify, None, 'not a path', False)
+
+    def test_get_subject_components(self):
+        """Check that the correct DN is extracted from the certstring."""
+        # Still a valid certificate
+        with open(TEST_CERT_FILE, 'r') as test_cert:
+            cert_string = test_cert.read()
+
+        subject_x509name = OpenSSL.crypto.load_certificate(
+                OpenSSL.crypto.FILETYPE_PEM, cert_string
+        ).get_subject()
+
+        self.assertEqual(_get_subject_components(subject_x509name), TEST_CERT_DN,
+                         msg="Didn't retrieve correct DN from cert.")
 
     def test_get_certificate_subject(self):
         '''

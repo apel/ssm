@@ -7,15 +7,18 @@ COPY . /tmp/ssm
 WORKDIR /tmp/ssm
 
 # Add the EPEL repo so we can get pip
-RUN yum -y install epel-release
+RUN yum -y install epel-release && yum clean all
 # Then get pip
-RUN yum -y install python-pip
+RUN yum -y install python-pip && yum clean all
 
 # Install the system requirements of python-ldap
-RUN yum -y install gcc python-devel openldap-devel
+RUN yum -y install gcc python-devel openldap-devel && yum clean all
+
+# Install libffi, a requirement of openssl
+RUN yum -y install libffi-devel && yum clean all
 
 # Install the system requirements of ssm
-RUN yum -y install openssl
+RUN yum -y install openssl && yum clean all
 
 # Install the python requirements of SSM
 RUN pip install -r requirements.txt
