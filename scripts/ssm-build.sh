@@ -7,8 +7,13 @@
 # Script runs well with FPM 1.14.2 on ruby 2.7.1, setuptools 51.3.3 on RHEL and Deb platforms
 # Download ruby (if you're locked to 2.5, use RVM) and then run:
 # sudo gem install fpm -v 1.14.2
-# ./ssm-build-dual.sh (deb | rpm) <version> <iteration> <python_root_dir> e.g.
-# ./ssm-build.dual.sh deb 3.4.0 1 /usr/lib/python3.6
+# for RPM builds, you will also need:
+# sudo yum install rpm-build | sudo apt-get install rpm
+# ./ssm-build.sh (deb | rpm) <version> <iteration> <python_root_dir>
+# e.g.
+# ./ssm-build.sh deb 3.4.0 1 /usr/lib/python3.6
+# If you're struggling finding the right version of Python to use, consider opening interpreter and:
+# import site; site.getsitepackages()
 # For SSM 3.4.0 and up.  Versions before that would technically work, but the changelog
 # then was in a Debian format that doesn't parse and fails hard if you want to build RPM.
 
@@ -116,10 +121,12 @@ FPM_CORE="fpm -s python \
 # Simple Python filter for version specific FPM
 if [[ ${PY_NUM:0:1} == "3" ]]; then
     echo "Building $VERSION iteration $ITERATION for Python $PY_NUM as $PACK_TYPE."
-
     # python-stomp < 5.0.0 to python-stomp, python to python3/pip3
     # edited python-pip3 to python-pip
-    FPM_PYTHON="--depends python3 \
+    # slight spelling inconsistencites betwixt OS's
+
+    if [[ "$PACK_TYPE" = "deb" ]]; then
+        FPM_PYTHON="--depends python3 \
         --depends python-pip3 \
         --depends 'python-stomp' \
         --depends python-ldap \
@@ -127,20 +134,50 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
         --depends libsasl2-dev \
         --depends openssl "
 
+        OS_EXTENSION="_all"
+
+    # Currently builds for el8
+    elif [[ "$PACK_TYPE" = "rpm" ]]; then
+        FPM_PYTHON="--depends python3 \
+        --depends python3-stomppy \
+        --depends python3-pip \
+        --depends python3-ldap \
+        --depends openssl \
+        --depends openssl-devel "
+
+        OS_EXTENSION="el8"
+    fi
+
 elif [[ ${PY_NUM:0:1} == "2" ]]; then
     echo "Building $VERSION iteration $ITERATION for Python $PY_NUM as $PACK_TYPE."
 
-    FPM_PYTHON="--depends python2.7 \
+    if [[ "$PACK_TYPE" = "deb" ]]; then
+        FPM_PYTHON="--depends python2.7 \
         --depends python-pip \
         --depends 'python-stomp < 5.0.0' \
         --depends python-ldap \
         --depends libssl-dev \
         --depends libsasl2-dev \
         --depends openssl "
+
+        OS_EXTENSION="_all"
+
+    # el7 and below, due to yum package versions
+    elif [[ "$PACK_TYPE" = "rpm" ]]; then
+        FPM_PYTHON="--depends python2 \
+        --depends python2-pip \
+        --depends stomppy \
+        --depends python-ldap \
+        --depends openssl \
+        --depends openssl-devel "
+
+        OS_EXTENSION="el7"
+    fi
 fi
 
 # python-bin must always be specified in modern linux
 PACKAGE_VERSION="--$PACK_TYPE-changelog $SOURCE_DIR/ssm-$VERSION-$ITERATION/CHANGELOG \
+    --$PACK_TYPE-dist $OS_EXTENSION \
     --python-bin /usr/bin/$PY_VERSION \
     --python-install-lib $PYTHON_ROOT_DIR$LIB_EXTENSION \
     --exclude *.pyc \
@@ -151,11 +188,14 @@ PACKAGE_VERSION="--$PACK_TYPE-changelog $SOURCE_DIR/ssm-$VERSION-$ITERATION/CHAN
 BUILD_PACKAGE_COMMAND=${FPM_CORE}${FPM_PYTHON}${VERBOSE}${PACKAGE_VERSION}
 eval "$BUILD_PACKAGE_COMMAND"
 
+echo "== Generating pleaserun package =="
+
 # When installed, use pleaserun to perform system specific service setup
 fpm -s pleaserun -t "$PACK_TYPE" \
 -n apel-ssm-service \
 -v "$VERSION" \
 --iteration "$ITERATION" \
+--"$PACK_TYPE"-dist "$OS_EXTENSION" \
 -m "Apel Administrators <apel-admins@stfc.ac.uk>" \
 --description "Secure Stomp Messenger (SSM) Service Daemon files." \
 --architecture all \
