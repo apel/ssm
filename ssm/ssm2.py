@@ -90,6 +90,7 @@ class Ssm2(stomp.ConnectionListener):
         self._dest = dest
 
         self._valid_dns = []
+        self._banned_dns = []
         self._pidfile = pidfile
 
         # Used to differentiate between STOMP and AMS methods
@@ -189,6 +190,10 @@ class Ssm2(stomp.ConnectionListener):
         """Set the list of DNs which are allowed to sign incoming messages."""
         self._valid_dns = dn_list
 
+    def set_banned_dns(self, banned_dn_list):
+        """Set the list of banned dns, so their messages can be dropped."""
+        self._banned_dns = banned_dn_list
+
     ##########################################################################
     # Methods called by stomppy
     ##########################################################################
@@ -283,8 +288,10 @@ class Ssm2(stomp.ConnectionListener):
         Namely:
         - decrypt if necessary
         - verify signature
+        - send an error message if the message wasn't sent from a valid DN
         - Return plain-text message, signer's DN and an error/None.
         """
+
         if text is None or text == '':
             warning = 'Empty text passed to _handle_msg.'
             log.warning(warning)
@@ -307,10 +314,23 @@ class Ssm2(stomp.ConnectionListener):
             log.error(error)
             return None, None, error
 
-        if signer not in self._valid_dns:
+        # If the message has been sent from a banned DN,
+        # set a specific error message that can be
+        # checked for later.
+        if signer in self._banned_dns:
+            warning = 'Signer is in the banned DNs list'
+            log.warning(warning)
+            return None, signer, warning
+
+        # Else, if the signer is not in valid DNs list,
+        # but also not a banned dn,
+        # set a specific error message
+        elif signer not in self._valid_dns:
             warning = 'Signer not in valid DNs list: %s' % signer
             log.warning(warning)
             return None, signer, warning
+
+        # Else, the message has been sent from a valid DN
         else:
             log.info('Valid signer: %s', signer)
 
@@ -323,9 +343,15 @@ class Ssm2(stomp.ConnectionListener):
 
         extracted_msg, signer, err_msg = self._handle_msg(body)
         try:
+            # If the warning states the message was sent from a banned DN,
+            # don't send the message to the reject queue.
+            # Instead, drop the message (don't send it to any queue)
+            if err_msg == "Signer is in the banned DNs list":
+                log.warning("Message dropped as was sent from a banned dn: %s", signer)
+
             # If the message is empty or the error message is not empty
             # then reject the message.
-            if extracted_msg is None or err_msg is not None:
+            elif extracted_msg is None or err_msg is not None:
                 if signer is None:  # crypto failed
                     signer = 'Not available.'
                 elif extracted_msg is not None:
