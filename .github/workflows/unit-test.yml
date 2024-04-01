@@ -31,4 +31,4 @@ jobs:
     - name: Run unit tests
       run: coverage run --branch --source=ssm,bin -m unittest discover --buffer
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3.1.4
+      uses: codecov/codecov-action@v4.1.1
