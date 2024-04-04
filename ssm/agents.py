@@ -248,8 +248,7 @@ def run_sender(protocol, brokers, project, token, cp, log):
         log.error('SSM failed to complete successfully: %s', e)
     except Exception as e:
         print('SSM failed to complete successfully.  See log file for details.')
-        log.error('Unexpected exception in SSM: %s', e)
-        log.error('Exception type: %s', e.__class__)
+        log.exception('Unexpected exception in SSM. See traceback below.')
         sender_failed = True
     else:
         sender_failed = False
@@ -351,8 +350,7 @@ def run_receiver(protocol, brokers, project, token, cp, log, dn_file):
         dc.close()
         receiver_failed = True
     except Exception as e:
-        log.error('Unexpected exception: %s', e)
-        log.error('Exception type: %s', e.__class__)
+        log.exception('Unexpected exception in SSM. See traceback below.')
         log.error('The SSM will exit.')
         ssm.shutdown()
         dc.close()
