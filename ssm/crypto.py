@@ -72,13 +72,13 @@ def check_cert_key(certpath, keypath):
         public_key_bytes = OpenSSL.crypto.dump_publickey(
             OpenSSL.crypto.FILETYPE_PEM, crypto_public_key
         )
-        
+
         certificate_public_key = public_key_bytes.decode("utf-8")
 
     except Exception as error:
         log.error(error)
         return False
-    
+
     try:
         private_key = OpenSSL.crypto.load_privatekey(
             OpenSSL.crypto.FILETYPE_PEM, key
@@ -86,14 +86,13 @@ def check_cert_key(certpath, keypath):
         public_key_bytes = OpenSSL.crypto.dump_publickey(
             OpenSSL.crypto.FILETYPE_PEM, private_key
         )
-        
+
         private_public_key = public_key_bytes.decode("utf-8")
 
     except Exception as error:
         log.error(error)
         return False
-    
-    
+
     return certificate_public_key.strip() == private_public_key.strip()
 
 def sign(text, certpath, keypath):
