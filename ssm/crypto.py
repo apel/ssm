@@ -64,23 +64,37 @@ def check_cert_key(certpath, keypath):
     if cert == key:
         return False
 
-    p1 = Popen(['openssl', 'x509', '-pubkey', '-noout'],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
-    pubkey1, error = p1.communicate(cert)
+    try:
+        certificate = OpenSSL.crypto.load_certificate(
+            OpenSSL.crypto.FILETYPE_PEM, cert
+        )
+        crypto_public_key = certificate.get_pubkey()
+        public_key_bytes = OpenSSL.crypto.dump_publickey(
+            OpenSSL.crypto.FILETYPE_PEM, crypto_public_key
+        )
+        
+        certificate_public_key = public_key_bytes.decode("utf-8")
 
-    if error != '':
+    except Exception as error:
         log.error(error)
         return False
+    
+    try:
+        private_key = OpenSSL.crypto.load_privatekey(
+            OpenSSL.crypto.FILETYPE_PEM, key
+        )
+        public_key_bytes = OpenSSL.crypto.dump_publickey(
+            OpenSSL.crypto.FILETYPE_PEM, private_key
+        )
+        
+        private_public_key = public_key_bytes.decode("utf-8")
 
-    p2 = Popen(['openssl', 'pkey', '-pubout'],
-               stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
-    pubkey2, error = p2.communicate(key)
-
-    if error != '':
+    except Exception as error:
         log.error(error)
         return False
-
-    return pubkey1.strip() == pubkey2.strip()
+    
+    
+    return certificate_public_key.strip() == private_public_key.strip()
 
 def sign(text, certpath, keypath):
     """Sign the message using the certificate and key in the files specified.
