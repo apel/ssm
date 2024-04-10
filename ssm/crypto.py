@@ -49,10 +49,7 @@ def _from_file(filename):
 
 
 def check_cert_key(certpath, keypath):
-    """Check that a certificate and a key match.
-
-    Uses openssl directly to fetch the modulus of each, which must be the same.
-    """
+    """Check that a certificate and a key match."""
     try:
         cert = _from_file(certpath)
         key = _from_file(keypath)
@@ -74,7 +71,7 @@ def check_cert_key(certpath, keypath):
         )
 
     except OpenSSL.crypto.Error as error:
-        log.exception(error)
+        log.error(error)
         return False
 
     try:
@@ -86,7 +83,7 @@ def check_cert_key(certpath, keypath):
         )
 
     except OpenSSL.crypto.Error as error:
-        log.exception(error)
+        log.error(error)
         return False
 
     return certificate_public_key.strip() == private_public_key.strip()
