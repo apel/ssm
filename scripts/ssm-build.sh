@@ -172,6 +172,7 @@ fi
 PACKAGE_VERSION="--$PACK_TYPE-changelog $SOURCE_DIR/ssm-$VERSION-$ITERATION/CHANGELOG \
     --$PACK_TYPE-dist $OS_EXTENSION \
     --python-bin /usr/bin/$PY_VERSION \
+    --python-install-bin /usr/bin \
     --python-install-lib $PYTHON_ROOT_DIR$LIB_EXTENSION \
     --exclude *.pyc \
     --package $BUILD_DIR \
