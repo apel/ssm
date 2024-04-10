@@ -222,6 +222,12 @@ def run_sender(protocol, brokers, project, token, cp, log):
         host_dn = get_certificate_subject(_from_file(host_cert))
         log.info('Messages will be signed using %s', host_dn)
 
+        if server_cert == host_cert:
+            raise Ssm2Exception(
+                "server certificate is the same as host certificate in config file. "
+                "Do you really mean to encrypt messages with this certificate?"
+            )
+
         sender = Ssm2(brokers,
                       cp.get('messaging', 'path'),
                       path_type=path_type,
@@ -246,6 +252,7 @@ def run_sender(protocol, brokers, project, token, cp, log):
     except (Ssm2Exception, CryptoException) as e:
         print('SSM failed to complete successfully.  See log file for details.')
         log.error('SSM failed to complete successfully: %s', e)
+        sender_failed = True
     except Exception as e:
         print('SSM failed to complete successfully.  See log file for details.')
         log.exception('Unexpected exception in SSM. See traceback below.')
