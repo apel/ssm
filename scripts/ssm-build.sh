@@ -107,6 +107,7 @@ rm -f "$TAR_FILE"
 # Get supplied Python version
 PY_VERSION="$(basename "$PYTHON_ROOT_DIR")"
 PY_NUM=${PY_VERSION#python}
+OS_EXTENSION="$(uname -r | grep -o 'el[7-9]' || echo '_all')"
 
 # Universal FPM Call
 FPM_CORE="fpm -s python \
@@ -134,8 +135,6 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
         --depends libsasl2-dev \
         --depends openssl "
 
-        OS_EXTENSION="_all"
-
     # Currently builds for el8
     elif [[ "$PACK_TYPE" = "rpm" ]]; then
         FPM_PYTHON="--depends python3 \
@@ -144,8 +143,6 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
         --depends python3-ldap \
         --depends openssl \
         --depends openssl-devel "
-
-        OS_EXTENSION="el8"
     fi
 
 elif [[ ${PY_NUM:0:1} == "2" ]]; then
@@ -160,8 +157,6 @@ elif [[ ${PY_NUM:0:1} == "2" ]]; then
         --depends libsasl2-dev \
         --depends openssl "
 
-        OS_EXTENSION="_all"
-
     # el7 and below, due to yum package versions
     elif [[ "$PACK_TYPE" = "rpm" ]]; then
         FPM_PYTHON="--depends python2 \
@@ -170,8 +165,6 @@ elif [[ ${PY_NUM:0:1} == "2" ]]; then
         --depends python-ldap \
         --depends openssl \
         --depends openssl-devel "
-
-        OS_EXTENSION="el7"
     fi
 fi
 
