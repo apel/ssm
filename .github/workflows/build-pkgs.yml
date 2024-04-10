@@ -42,7 +42,7 @@ jobs:
 
     - name: Build RPM package
       id: rpm
-      uses: naveenrajm7/rpmbuild@v1.0.0
+      uses: naveenrajm7/rpmbuild@v1.0
       with:
         spec_file: "apel-ssm.spec"
 
@@ -51,7 +51,7 @@ jobs:
       run: rpmlint ${{ steps.rpm.outputs.rpm_dir_path }}
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4.3.1
+      uses: actions/upload-artifact@v4.3
       with:
         name: Binary and Source RPMs
         path: |
