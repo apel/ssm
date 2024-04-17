@@ -5,10 +5,13 @@
 # @Author: Nicholas Whyatt (RedProkofiev@github.com)
 
 # Script runs well with FPM 1.14.2 on ruby 2.7.1, setuptools 51.3.3 on RHEL and Deb platforms
+
 # Download ruby (if you're locked to 2.5, use RVM) and then run:
 # sudo gem install fpm -v 1.14.2
+# (may need to be ran without the 'sudo')
+
 # for RPM builds, you will also need:
-# sudo yum install rpm-build | sudo apt-get install rpm
+# sudo yum install rpm-build rpmlint | sudo apt-get install rpm lintian
 # ./ssm-build.sh (deb | rpm) <version> <iteration> <python_root_dir>
 # e.g.
 # ./ssm-build.sh deb 3.4.0 1 /usr/lib/python3.6
@@ -197,3 +200,16 @@ fpm -s pleaserun -t "$PACK_TYPE" \
 --depends apel-ssm \
 --package "$BUILD_DIR" \
 /usr/bin/ssmreceive
+
+if [ "$OS_EXTENSION" == "_all" ]
+then
+    # Check the resultant debs for 'lint'
+    echo "Possible Issues to Fix:"
+    TAG="$VERSION-$ITERATION"
+    lintian $BUILD_DIR/apel-ssm_${TAG}_all.deb
+    lintian $BUILD_DIR/apel-ssm-service_${TAG}_all.deb
+else
+    # Check for errors in SPEC and built packages
+    echo "Possible Issues to Fix:"
+    rpmlint ~/rpmbuild
+fi
