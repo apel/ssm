@@ -206,8 +206,8 @@ if [ "$OS_EXTENSION" == "_all" ]
 then
     # Check the resultant debs for 'lint'
     TAG="$VERSION-$ITERATION"
-    lintian $BUILD_DIR/apel-ssm_${TAG}_all.deb
-    lintian $BUILD_DIR/apel-ssm-service_${TAG}_all.deb
+    lintian "$BUILD_DIR"/apel-ssm_"${TAG}"_all.deb
+    lintian "$BUILD_DIR"/apel-ssm-service_"${TAG}"_all.deb
 else
     # Check for errors in SPEC and built packages
     rpmlint ~/rpmbuild
