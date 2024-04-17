@@ -8,7 +8,7 @@
 
 # Download ruby (if you're locked to 2.5, use RVM) and then run:
 # sudo gem install fpm -v 1.14.2
-# (may need to be ran without the 'sudo')
+# (may need to be run without the 'sudo')
 
 # for RPM builds, you will also need:
 # sudo yum install rpm-build rpmlint | sudo apt-get install rpm lintian
@@ -201,15 +201,14 @@ fpm -s pleaserun -t "$PACK_TYPE" \
 --package "$BUILD_DIR" \
 /usr/bin/ssmreceive
 
+echo "Possible Issues to Fix:"
 if [ "$OS_EXTENSION" == "_all" ]
 then
     # Check the resultant debs for 'lint'
-    echo "Possible Issues to Fix:"
     TAG="$VERSION-$ITERATION"
     lintian $BUILD_DIR/apel-ssm_${TAG}_all.deb
     lintian $BUILD_DIR/apel-ssm-service_${TAG}_all.deb
 else
     # Check for errors in SPEC and built packages
-    echo "Possible Issues to Fix:"
     rpmlint ~/rpmbuild
 fi
