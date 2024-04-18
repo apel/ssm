@@ -1,0 +1,12 @@
+# Base requirements for ssm
+
+argo-ams-library
+pyopenssl
+cryptography
+stomp.py
+python-daemon
+python-ldap
+setuptools  # Required for pkg_resources (also happens to be a dependency of python-ldap)
+
+# Dependencies for optional dirq based sending
+dirq
