@@ -210,5 +210,6 @@ then
     lintian "$BUILD_DIR"/apel-ssm-service_"${TAG}"_all.deb
 else
     # Check for errors in SPEC and built packages
-    rpmlint ~/rpmbuild
+    # For instance; Given $(dirname /root/rpmb/rpmbuild/source) will output "/root/rpmb/rpmbuild".
+    rpmlint $(dirname $SOURCE_DIR)
 fi
