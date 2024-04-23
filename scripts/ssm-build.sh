@@ -211,5 +211,5 @@ then
 else
     # Check for errors in SPEC and built packages
     # For instance; Given $(dirname /root/rpmb/rpmbuild/source) will output "/root/rpmb/rpmbuild".
-    rpmlint $(dirname $SOURCE_DIR)
+    rpmlint "$(dirname "$SOURCE_DIR")"
 fi
