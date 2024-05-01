@@ -143,6 +143,9 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
         FPM_PYTHON="--depends python3 \
         --depends python3-stomppy \
         --depends python3-pip \
+        --depends python3-cryptography \
+        --depends python3-pyOpenSSL \
+        --depends python3-daemon \
         --depends python3-ldap \
         --depends openssl \
         --depends openssl-devel "
