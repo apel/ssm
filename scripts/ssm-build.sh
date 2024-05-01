@@ -132,6 +132,9 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
     if [[ "$PACK_TYPE" = "deb" ]]; then
         FPM_PYTHON="--depends python3 \
         --depends python3-pip \
+        --depends python3-cryptography \
+        --depends python3-openssl \
+        --depends python3-daemon \
         --depends 'python3-stomp' \
         --depends python3-ldap \
         --depends libssl-dev \
