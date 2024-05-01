@@ -162,6 +162,9 @@ elif [[ ${PY_NUM:0:1} == "2" ]]; then
         --depends python-pip \
         --depends 'python-stomp < 5.0.0' \
         --depends python-ldap \
+        --depends python-cryptography \
+        --depends python-openssl \
+        --depends python-daemon \
         --depends libssl-dev \
         --depends libsasl2-dev \
         --depends openssl "
@@ -170,6 +173,9 @@ elif [[ ${PY_NUM:0:1} == "2" ]]; then
     elif [[ "$PACK_TYPE" = "rpm" ]]; then
         FPM_PYTHON="--depends python2 \
         --depends python2-pip \
+        --depends python2-cryptography \
+        --depends python2-pyOpenSSL \
+        --depends python2-daemon \
         --depends stomppy \
         --depends python-ldap \
         --depends openssl \
