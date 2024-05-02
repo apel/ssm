@@ -1,9 +1,9 @@
 FROM rockylinux:9
-LABEL org.opencontainers.image.authors="apel-admins@stfc.ac.uk" \
-        org.opencontainers.image.title="APEL SSM" \
-        org.opencontainers.image.description="Secure STOMP Messenger (SSM) is designed to simply send messages using the STOMP protocol or via the ARGO Messaging Service (AMS)." \
-        org.opencontainers.image.source="https://github.com/apel/ssm" \
-        org.opencontainers.image.licenses="Apache License, Version 2.0"
+LABEL org.opencontainers.image.authors="apel-admins@stfc.ac.uk"
+LABEL org.opencontainers.image.title="APEL SSM"
+LABEL org.opencontainers.image.description="Secure STOMP Messenger (SSM) is designed to simply send messages using the STOMP protocol or via the ARGO Messaging Service (AMS)."
+LABEL org.opencontainers.image.source="https://github.com/apel/ssm"
+LABEL org.opencontainers.image.licenses="Apache License, Version 2.0"
 
 # Copy the SSM Git repository to /tmp/ssm
 COPY . /tmp/ssm
