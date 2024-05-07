@@ -132,6 +132,9 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
     if [[ "$PACK_TYPE" = "deb" ]]; then
         FPM_PYTHON="--depends python3 \
         --depends python3-pip \
+        --depends python3-cryptography \
+        --depends python3-openssl \
+        --depends python3-daemon \
         --depends 'python3-stomp' \
         --depends python3-ldap \
         --depends libssl-dev \
@@ -143,6 +146,9 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
         FPM_PYTHON="--depends python3 \
         --depends python3-stomppy \
         --depends python3-pip \
+        --depends python3-cryptography \
+        --depends python3-pyOpenSSL \
+        --depends python3-daemon \
         --depends python3-ldap \
         --depends openssl \
         --depends openssl-devel "
@@ -156,6 +162,9 @@ elif [[ ${PY_NUM:0:1} == "2" ]]; then
         --depends python-pip \
         --depends 'python-stomp < 5.0.0' \
         --depends python-ldap \
+        --depends python-cryptography \
+        --depends python-openssl \
+        --depends python-daemon \
         --depends libssl-dev \
         --depends libsasl2-dev \
         --depends openssl "
@@ -164,6 +173,9 @@ elif [[ ${PY_NUM:0:1} == "2" ]]; then
     elif [[ "$PACK_TYPE" = "rpm" ]]; then
         FPM_PYTHON="--depends python2 \
         --depends python2-pip \
+        --depends python2-cryptography \
+        --depends python2-pyOpenSSL \
+        --depends python2-daemon \
         --depends stomppy \
         --depends python-ldap \
         --depends openssl \
@@ -206,8 +218,10 @@ if [ "$OS_EXTENSION" == "_all" ]
 then
     # Check the resultant debs for 'lint'
     TAG="$VERSION-$ITERATION"
-    lintian "$BUILD_DIR"/apel-ssm_"${TAG}"_all.deb
-    lintian "$BUILD_DIR"/apel-ssm-service_"${TAG}"_all.deb
+    DEBDIR="$(dirname "$BUILD_DIR")"
+
+    lintian "$DEBDIR"/apel-ssm_"${TAG}"_all.deb
+    lintian "$DEBDIR"/apel-ssm-service_"${TAG}"_all.deb
 else
     # Check for errors in SPEC and built packages
     # For instance; Given $(dirname /root/rpmb/rpmbuild/source) will output "/root/rpmb/rpmbuild".
