@@ -6,7 +6,7 @@
 
 # Script runs well with FPM 1.14.2 on ruby 2.7.1, setuptools 51.3.3 on RHEL and Deb platforms
 
-# Download ruby (if you're locked to 2.5, use RVM) and then run:
+# Download ruby (if you're locked to 2.5, use RVM, https://www.tecmint.com/install-ruby-on-centos-rhel-8/#installrubyrvm) and then run:
 # sudo gem install fpm -v 1.14.2
 # (may need to be run without the 'sudo')
 
