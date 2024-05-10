@@ -22,14 +22,30 @@ from setuptools import setup, find_packages
 from ssm import __version__
 
 
+def setup_temp_files():
+    """Create temporary files with deployment names. """
+    copyfile('bin/receiver.py', 'bin/ssmreceive')
+    copyfile('bin/sender.py', 'bin/ssmsend')
+    copyfile('scripts/apel-ssm.logrotate', 'conf/apel-ssm')
+    copyfile('README.md', 'apel-ssm')
+
+
 def main():
     """Called when run as script, e.g. 'python setup.py install'."""
-    # Create temporary files with deployment names
-    if 'install' in sys.argv:
-        copyfile('bin/receiver.py', 'bin/ssmreceive')
-        copyfile('bin/sender.py', 'bin/ssmsend')
-        copyfile('scripts/apel-ssm.logrotate', 'conf/apel-ssm')
-        copyfile('README.md', 'apel-ssm')
+    supported_commands = {
+        "install",
+        "build",
+        "bdist",
+        "develop",
+        "build_scripts",
+        "install_scripts",
+        "install_data",
+        "bdist_dumb",
+        "bdist_egg",
+    }
+
+    if supported_commands.intersection(sys.argv):
+        setup_temp_files()
 
     # conf_files will later be copied to conf_dir
     conf_dir = '/etc/apel/'
@@ -79,7 +95,7 @@ def main():
           )
 
     # Remove temporary files with deployment names
-    if 'install' in sys.argv:
+    if supported_commands.intersection(sys.argv):
         remove('bin/ssmreceive')
         remove('bin/ssmsend')
         remove('conf/apel-ssm')
