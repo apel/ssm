@@ -111,11 +111,12 @@ rm -f "$TAR_FILE"
 PY_VERSION="$(basename "$PYTHON_ROOT_DIR")"
 PY_NUM=${PY_VERSION#python}
 OS_EXTENSION="$(uname -r | grep -o 'el[7-9]' || echo '_all')"
+APPEND_PY_VERSION_FOR_NAMING="$(echo $PY_VERSION | sed 's/\.//g')"
 
 # Universal FPM Call
 FPM_CORE="fpm -s python \
     -t $PACK_TYPE \
-    -n apel-ssm \
+    -n apel-ssm-"$APPEND_PY_VERSION_FOR_NAMING" \
     -v $VERSION \
     --iteration $ITERATION \
     -m \"Apel Administrators <apel-admins@stfc.ac.uk>\" \
