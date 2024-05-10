@@ -116,7 +116,7 @@ APPEND_PY_VERSION_FOR_NAMING="$(echo $PY_VERSION | sed 's/\.//g')"
 # Universal FPM Call
 FPM_CORE="fpm -s python \
     -t $PACK_TYPE \
-    -n apel-ssm-"$APPEND_PY_VERSION_FOR_NAMING" \
+    -n apel-ssm \
     -v $VERSION \
     --iteration $ITERATION \
     -m \"Apel Administrators <apel-admins@stfc.ac.uk>\" \
