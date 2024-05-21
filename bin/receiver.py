@@ -66,7 +66,7 @@ def main():
         cp.read(options.config)
     else:
         print("Config file not found at", options.config)
-        exit(1)
+        sys.exit(1)
 
     # Check for pidfile
     pidfile = cp.get('daemon', 'pidfile')

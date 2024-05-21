@@ -24,6 +24,7 @@ from ssm import __version__, LOG_BREAK
 import logging
 from optparse import OptionParser
 import os
+import sys
 
 try:
     import ConfigParser
@@ -57,7 +58,7 @@ def main():
         cp.read(options.config)
     else:
         print("Config file not found at", options.config)
-        exit(1)
+        sys.exit(1)
 
     ssm.agents.logging_helper(cp)
 
