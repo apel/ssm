@@ -1,7 +1,7 @@
 # See https://pre-commit.com for more information
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v2.5.0
+  rev: v4.1.0  # Python 3.6 compatible
   hooks:
   # Python related checks
   - id: check-ast
@@ -13,9 +13,13 @@ repos:
     files: 'test/.*'
   # Other checks
   - id: check-added-large-files
+  - id: check-case-conflict
   - id: check-merge-conflict
   - id: check-yaml
   - id: debug-statements
+  - id: detect-private-key
+    # This file has a test cert and key
+    exclude: 'test_ssm.py'
   - id: end-of-file-fixer
   - id: mixed-line-ending
     name: Force line endings to LF
