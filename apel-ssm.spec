@@ -100,6 +100,13 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Fri Aug 30 2024 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.4.1-1
+ - Improved error logging to store full traceback on unexpected exceptions.
+ - Changed more code to use pyOpenSSL to improve compatibility with newer OpenSSL versions.
+ - Added a check to prevent a host certificate being to used for target server encryption.
+ - Changed which version of exit function is used to avoid edge case.
+ - Various changes and improvements to build scripts and processes.
+
 * Wed Feb 21 2024 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.4.0-1
  - Fixed compatability with newer versions of OpenSSL that only provide comma separated DNs.
  - Fixed Python 3 compatability (indirectly fixing EL8+ compatability) by performing explicit
