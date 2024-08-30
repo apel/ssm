@@ -100,6 +100,14 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Fri Aug 30 2024 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.4.1-1
+ - Make use of pyOpenSSL to fix OpenSSL compatibility.
+ - Add a new FPM build script for RPM and DEB on EL8+.
+ - Remove title from CHANGELOG for FPM script compatibility.
+ - Update default options in config files for AMS usage and clarify comments.
+ - Character vs. byte strings fix for Python 3.
+ - Fix dependencies in FPM build script.
+
 * Wed Feb 21 2024 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.4.0-1
  - Fixed compatability with newer versions of OpenSSL that only provide comma separated DNs.
  - Fixed Python 3 compatability (indirectly fixing EL8+ compatability) by performing explicit
