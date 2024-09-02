@@ -22,14 +22,30 @@ from setuptools import setup, find_packages
 from ssm import __version__
 
 
+def setup_temp_files():
+    """Create temporary files with deployment names. """
+    copyfile('bin/receiver.py', 'bin/ssmreceive')
+    copyfile('bin/sender.py', 'bin/ssmsend')
+    copyfile('scripts/apel-ssm.logrotate', 'conf/apel-ssm')
+    copyfile('README.md', 'apel-ssm')
+
+
 def main():
     """Called when run as script, e.g. 'python setup.py install'."""
-    # Create temporary files with deployment names
-    if 'install' in sys.argv:
-        copyfile('bin/receiver.py', 'bin/ssmreceive')
-        copyfile('bin/sender.py', 'bin/ssmsend')
-        copyfile('scripts/apel-ssm.logrotate', 'conf/apel-ssm')
-        copyfile('README.md', 'apel-ssm')
+    supported_commands = {
+        "install",
+        "build",
+        "bdist",
+        "develop",
+        "build_scripts",
+        "install_scripts",
+        "install_data",
+        "bdist_dumb",
+        "bdist_egg",
+    }
+
+    if supported_commands.intersection(sys.argv):
+        setup_temp_files()
 
     # conf_files will later be copied to conf_dir
     conf_dir = '/etc/apel/'
@@ -51,15 +67,15 @@ def main():
           download_url='https://github.com/apel/ssm/releases',
           license='Apache License, Version 2.0',
           install_requires=[
-              'cryptography==3.3.2',
-              'stomp.py<5.0.0',
-              'python-ldap<3.4.0',
+              'cryptography',
+              'stomp.py',
+              'python-ldap',
               'setuptools',
-              'pyopenssl >=19.1.0, <=21.0.0',
+              'pyopenssl',
           ],
           extras_require={
-              'AMS': ['argo-ams-library', 'certifi<2020.4.5.2', ],
-              'daemon': ['python-daemon<=2.3.0', ],
+              'AMS': ['argo-ams-library', ],
+              'daemon': ['python-daemon', ],
               'dirq': ['dirq'],
           },
           packages=find_packages(exclude=['bin', 'test']),
@@ -79,7 +95,7 @@ def main():
           )
 
     # Remove temporary files with deployment names
-    if 'install' in sys.argv:
+    if supported_commands.intersection(sys.argv):
         remove('bin/ssmreceive')
         remove('bin/ssmsend')
         remove('conf/apel-ssm')

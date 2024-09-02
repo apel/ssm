@@ -5,10 +5,13 @@
 # @Author: Nicholas Whyatt (RedProkofiev@github.com)
 
 # Script runs well with FPM 1.14.2 on ruby 2.7.1, setuptools 51.3.3 on RHEL and Deb platforms
-# Download ruby (if you're locked to 2.5, use RVM) and then run:
+
+# Download ruby (if you're locked to 2.5, use RVM, https://www.tecmint.com/install-ruby-on-centos-rhel-8/#installrubyrvm) and then run:
 # sudo gem install fpm -v 1.14.2
+# (may need to be run without the 'sudo')
+
 # for RPM builds, you will also need:
-# sudo yum install rpm-build | sudo apt-get install rpm
+# sudo yum install rpm-build rpmlint | sudo apt-get install rpm lintian
 # ./ssm-build.sh (deb | rpm) <version> <iteration> <python_root_dir>
 # e.g.
 # ./ssm-build.sh deb 3.4.0 1 /usr/lib/python3.6
@@ -107,6 +110,7 @@ rm -f "$TAR_FILE"
 # Get supplied Python version
 PY_VERSION="$(basename "$PYTHON_ROOT_DIR")"
 PY_NUM=${PY_VERSION#python}
+OS_EXTENSION="$(uname -r | grep -o 'el[7-9]' || echo '_all')"
 
 # Universal FPM Call
 FPM_CORE="fpm -s python \
@@ -127,25 +131,27 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
 
     if [[ "$PACK_TYPE" = "deb" ]]; then
         FPM_PYTHON="--depends python3 \
-        --depends python-pip3 \
-        --depends 'python-stomp' \
-        --depends python-ldap \
+        --depends python3-pip \
+        --depends python3-cryptography \
+        --depends python3-openssl \
+        --depends python3-daemon \
+        --depends 'python3-stomp' \
+        --depends python3-ldap \
         --depends libssl-dev \
         --depends libsasl2-dev \
         --depends openssl "
-
-        OS_EXTENSION="_all"
 
     # Currently builds for el8
     elif [[ "$PACK_TYPE" = "rpm" ]]; then
         FPM_PYTHON="--depends python3 \
         --depends python3-stomppy \
         --depends python3-pip \
+        --depends python3-cryptography \
+        --depends python3-pyOpenSSL \
+        --depends python3-daemon \
         --depends python3-ldap \
         --depends openssl \
         --depends openssl-devel "
-
-        OS_EXTENSION="el8"
     fi
 
 elif [[ ${PY_NUM:0:1} == "2" ]]; then
@@ -156,22 +162,24 @@ elif [[ ${PY_NUM:0:1} == "2" ]]; then
         --depends python-pip \
         --depends 'python-stomp < 5.0.0' \
         --depends python-ldap \
+        --depends python-cryptography \
+        --depends python-openssl \
+        --depends python-daemon \
         --depends libssl-dev \
         --depends libsasl2-dev \
         --depends openssl "
-
-        OS_EXTENSION="_all"
 
     # el7 and below, due to yum package versions
     elif [[ "$PACK_TYPE" = "rpm" ]]; then
         FPM_PYTHON="--depends python2 \
         --depends python2-pip \
+        --depends python2-cryptography \
+        --depends python2-pyOpenSSL \
+        --depends python2-daemon \
         --depends stomppy \
         --depends python-ldap \
         --depends openssl \
         --depends openssl-devel "
-
-        OS_EXTENSION="el7"
     fi
 fi
 
@@ -179,6 +187,7 @@ fi
 PACKAGE_VERSION="--$PACK_TYPE-changelog $SOURCE_DIR/ssm-$VERSION-$ITERATION/CHANGELOG \
     --$PACK_TYPE-dist $OS_EXTENSION \
     --python-bin /usr/bin/$PY_VERSION \
+    --python-install-bin /usr/bin \
     --python-install-lib $PYTHON_ROOT_DIR$LIB_EXTENSION \
     --exclude *.pyc \
     --package $BUILD_DIR \
@@ -203,3 +212,18 @@ fpm -s pleaserun -t "$PACK_TYPE" \
 --depends apel-ssm \
 --package "$BUILD_DIR" \
 /usr/bin/ssmreceive
+
+echo "Possible Issues to Fix:"
+if [ "$OS_EXTENSION" == "_all" ]
+then
+    # Check the resultant debs for 'lint'
+    TAG="$VERSION-$ITERATION"
+    DEBDIR="$(dirname "$BUILD_DIR")"
+
+    lintian "$DEBDIR"/apel-ssm_"${TAG}"_all.deb
+    lintian "$DEBDIR"/apel-ssm-service_"${TAG}"_all.deb
+else
+    # Check for errors in SPEC and built packages
+    # For instance; Given $(dirname /root/rpmb/rpmbuild/source) will output "/root/rpmb/rpmbuild".
+    rpmlint "$(dirname "$SOURCE_DIR")"
+fi
