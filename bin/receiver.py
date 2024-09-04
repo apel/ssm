@@ -24,7 +24,7 @@ from ssm import __version__, LOG_BREAK
 import logging
 import os
 import sys
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 try:
     import ConfigParser
@@ -37,35 +37,39 @@ def main():
     ver = "SSM %s.%s.%s" % __version__
     default_conf_location = '/etc/apel/receiver.cfg'
     default_dns_location = '/etc/apel/dns'
-    op = OptionParser(description=__doc__, version=ver)
-    op.add_option('-c', '--config',
-                  help=('location of config file, '
-                        'default path: ' + default_conf_location),
-                  default=default_conf_location)
-    op.add_option('-l', '--log_config',
-                  help='DEPRECATED - location of logging config file (optional)',
-                  default=None)
-    op.add_option('-d', '--dn_file',
-                  help=('location of the file containing valid DNs, '
-                        'default path: ' + default_dns_location),
-                  default=default_dns_location)
+    op = ArgumentParser(description=__doc__)
+    op.add_argument('-c', '--config',
+                    help=('location of config file, '
+                    'default path: %s' % default_conf_location),
+                    default=default_conf_location)
+    op.add_argument('-l', '--log_config',
+                    help='DEPRECATED - location of logging config file (optional)',
+                    default=None)
+    op.add_argument('-d', '--dn_file',
+                    help=('location of the file containing valid DNs, '
+                    'default path: %s' % default_dns_location),
+                    default=default_dns_location)
+    op.add_argument('-v', '--version',
+                    help=('current version number, default: %s' % ver),
+                    default=ver)
 
-    options, unused_args = op.parse_args()
+    # Using the vars function to output a dict-like view rather than Namespace object. 
+    options = vars(op.parse_args())
 
     # Deprecating functionality.
     old_log_config_default_path = '/etc/apel/logging.cfg'
-    if (os.path.exists(old_log_config_default_path) or options.log_config is not None):
+    if (os.path.exists(old_log_config_default_path) or options['log_config'] is not None):
         logging.warning('Separate logging config file option has been deprecated.')
 
     # Absolute file path required when refreshing dn_file, relative path resulted in an error.
-    options.dn_file = os.path.abspath(options.dn_file)
+    options['dn_file'] = os.path.abspath(options['dn_file'])
 
     # Check if config file exists using os.path.isfile function.
-    if os.path.isfile(options.config):
+    if os.path.isfile(options['config']):
         cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
-        cp.read(options.config)
+        cp.read(options['config'])
     else:
-        print("Config file not found at", options.config)
+        print("Config file not found at", options['config'])
         sys.exit(1)
 
     # Check for pidfile
@@ -88,7 +92,7 @@ def main():
     brokers, project, token = ssm.agents.get_ssm_args(protocol, cp, log)
 
     ssm.agents.run_receiver(protocol, brokers, project, token,
-                            cp, log, options.dn_file)
+                            cp, log, options['dn_file'])
 
 
 if __name__ == '__main__':

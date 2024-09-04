@@ -22,9 +22,9 @@ import ssm.agents
 from ssm import __version__, LOG_BREAK
 
 import logging
-from optparse import OptionParser
 import os
 import sys
+from argparse import ArgumentParser
 
 try:
     import ConfigParser
@@ -36,28 +36,33 @@ def main():
     """Set up connection, send all messages and quit."""
     ver = "SSM %s.%s.%s" % __version__
     default_conf_location = '/etc/apel/sender.cfg'
-    op = OptionParser(description=__doc__, version=ver)
-    op.add_option('-c', '--config',
+
+    op = ArgumentParser(description=__doc__)
+    op.add_argument('-c', '--config',
                   help=('location of config file, '
-                        'default path: ' + default_conf_location),
+                        'default path: %s' % default_conf_location),
                   default=default_conf_location)
-    op.add_option('-l', '--log_config',
+    op.add_argument('-l', '--log_config',
                   help='DEPRECATED - location of logging config file (optional)',
                   default=None)
+    op.add_argument('-v', '--version',
+                    help='current version number, default: %s' % ver,
+                    default=ver)
 
-    options, unused_args = op.parse_args()
+    # Using the vars function to output a dict-like view rather than Namespace object.
+    options = vars(op.parse_args())
 
     # Deprecating functionality.
     old_log_config_default_path = '/etc/apel/logging.cfg'
-    if (os.path.exists(old_log_config_default_path) or options.log_config is not None):
+    if (os.path.exists(old_log_config_default_path) or options['log_config'] is not None):
         logging.warning('Separate logging config file option has been deprecated.')
 
     # Check if config file exists using os.path.isfile function.
-    if os.path.isfile(options.config):
+    if os.path.isfile(options['config']):
         cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
-        cp.read(options.config)
+        cp.read(options['config'])
     else:
-        print("Config file not found at", options.config)
+        print("Config file not found at", options['config'])
         sys.exit(1)
 
     ssm.agents.logging_helper(cp)
