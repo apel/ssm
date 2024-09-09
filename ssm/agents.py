@@ -19,7 +19,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging
-import ldap
 import sys
 import time
 
@@ -49,7 +48,6 @@ except ImportError:
 from ssm import set_up_logging, LOG_BREAK
 from ssm.ssm2 import Ssm2, Ssm2Exception
 from ssm.crypto import CryptoException, get_certificate_subject, _from_file
-from ssm.brokers import StompBrokerGetter, STOMP_SERVICE, STOMP_SSL_SERVICE
 
 # How often (in seconds) to read the list of valid DNs.
 REFRESH_DNS = 600
@@ -104,35 +102,13 @@ def get_ssm_args(protocol, cp, log):
         project = None
         token = ''
 
-        use_ssl = cp.getboolean('broker', 'use_ssl')
-        if use_ssl:
-            service = STOMP_SSL_SERVICE
-        else:
-            service = STOMP_SERVICE
-
-        # If we can't get a broker to connect to, we have to give up.
         try:
-            bdii_url = cp.get('broker', 'bdii')
-            log.info('Retrieving broker details from %s ...', bdii_url)
-            bg = StompBrokerGetter(bdii_url)
-            brokers = bg.get_broker_hosts_and_ports(service, cp.get('broker',
-                                                                    'network'))
-            log.info('Found %s brokers.', len(brokers))
-        except ConfigParser.NoOptionError as e:
-            try:
-                host = cp.get('broker', 'host')
-                port = cp.get('broker', 'port')
-                brokers = [(host, int(port))]
-            except ConfigParser.NoOptionError:
-                log.error('Options incorrectly supplied for either single '
-                          'broker or broker network. '
-                          'Please check configuration')
-                log.error('System will exit.')
-                log.info(LOG_BREAK)
-                print('SSM failed to start.  See log file for details.')
-                sys.exit(1)
-        except ldap.LDAPError as e:
-            log.error('Could not connect to LDAP server: %s', e)
+            host = cp.get('broker', 'host')
+            port = cp.get('broker', 'port')
+            brokers = [(host, int(port))]
+        except ConfigParser.NoOptionError:
+            log.error('Host options incorrectly supplied for message broker '
+                      'or AMS endpoint. Please check configuration.')
             log.error('System will exit.')
             log.info(LOG_BREAK)
             print('SSM failed to start.  See log file for details.')

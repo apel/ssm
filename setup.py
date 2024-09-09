@@ -69,7 +69,6 @@ def main():
           install_requires=[
               'cryptography',
               'stomp.py',
-              'python-ldap',
               'setuptools',
               'pyopenssl',
           ],

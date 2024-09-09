@@ -21,7 +21,7 @@ BuildArch:      noarch
 BuildRequires:  python-devel
 %endif
 
-Requires:       stomppy < 5.0.0, python-ldap < 3.4.0, python-setuptools, openssl
+Requires:       stomppy < 5.0.0, python-setuptools, openssl
 Requires(pre):  shadow-utils
 
 %define ssmconf %_sysconfdir/apel
