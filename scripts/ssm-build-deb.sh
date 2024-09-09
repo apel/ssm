@@ -55,9 +55,6 @@ fpm -s python -t deb \
 --depends python2.7 \
 --depends python-pip \
 --depends 'python-stomp < 5.0.0' \
---depends python-ldap \
---depends libssl-dev \
---depends libsasl2-dev \
 --depends openssl \
 --deb-changelog $SOURCE_DIR/ssm-$TAG/CHANGELOG \
 --python-install-bin /usr/bin \

@@ -136,9 +136,6 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
         --depends python3-openssl \
         --depends python3-daemon \
         --depends 'python3-stomp' \
-        --depends python3-ldap \
-        --depends libssl-dev \
-        --depends libsasl2-dev \
         --depends openssl "
 
     # Currently builds for el8
@@ -149,7 +146,6 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
         --depends python3-cryptography \
         --depends python3-pyOpenSSL \
         --depends python3-daemon \
-        --depends python3-ldap \
         --depends openssl \
         --depends openssl-devel "
     fi
@@ -161,12 +157,9 @@ elif [[ ${PY_NUM:0:1} == "2" ]]; then
         FPM_PYTHON="--depends python2.7 \
         --depends python-pip \
         --depends 'python-stomp < 5.0.0' \
-        --depends python-ldap \
         --depends python-cryptography \
         --depends python-openssl \
         --depends python-daemon \
-        --depends libssl-dev \
-        --depends libsasl2-dev \
         --depends openssl "
 
     # el7 and below, due to yum package versions
@@ -177,7 +170,6 @@ elif [[ ${PY_NUM:0:1} == "2" ]]; then
         --depends python2-pyOpenSSL \
         --depends python2-daemon \
         --depends stomppy \
-        --depends python-ldap \
         --depends openssl \
         --depends openssl-devel "
     fi

@@ -20,9 +20,6 @@ jobs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
 
-    - name: Set up dependencies for python-ldap
-      run: sudo apt-get install libsasl2-dev libldap2-dev libssl-dev
-
     - name: Base requirements for SSM
       run: pip install -r requirements.txt
 
