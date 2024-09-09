@@ -15,9 +15,6 @@ RUN yum -y install epel-release && yum clean all
 # Then get pip
 RUN yum -y install python3-pip && yum clean all
 
-# Install the system requirements of python-ldap
-RUN yum -y install gcc python3-devel openldap-devel && yum clean all
-
 # Install libffi, a requirement of openssl
 RUN yum -y install libffi-devel && yum clean all
 
