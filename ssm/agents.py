@@ -107,9 +107,8 @@ def get_ssm_args(protocol, cp, log):
             port = cp.get('broker', 'port')
             brokers = [(host, int(port))]
         except ConfigParser.NoOptionError:
-            log.error('Options incorrectly supplied for either single '
-                      'broker or broker network. '
-                      'Please check configuration')
+            log.error('Host options incorrectly supplied for message broker '
+                      'or AMS endpoint. Please check configuration.')
             log.error('System will exit.')
             log.info(LOG_BREAK)
             print('SSM failed to start.  See log file for details.')
