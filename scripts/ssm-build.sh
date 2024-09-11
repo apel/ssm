@@ -67,7 +67,7 @@ fi
 PACK_TYPE=$1
 VERSION=$2
 ITERATION=$3
-PYTHON_ROOT_DIR=$4 # i.e. /usr/lib/python3.6
+PYTHON_ROOT_DIR=$4  # i.e. /usr/lib/python3.6
 
 # Alter library, build and source directories depending on the package
 if [[ "$PACK_TYPE" = "deb" ]]; then
@@ -86,7 +86,7 @@ elif [[ "$PACK_TYPE" = "rpm" ]]; then
     if [[ "$BUILD_ASSIGNED" = 0 ]]; then
         BUILD_DIR=~/rpmbuild/BUILD
     fi
-else # If package type is neither deb nor rpm, show an error message and exit
+else  # If package type is neither deb nor rpm, show an error message and exit
     echo "$0 currently only supports 'deb' and 'rpm' packages."
     usage;
 fi
@@ -125,9 +125,6 @@ FPM_CORE="fpm -s python \
 # Simple Python filter for version specific FPM
 if [[ ${PY_NUM:0:1} == "3" ]]; then
     echo "Building $VERSION iteration $ITERATION for Python $PY_NUM as $PACK_TYPE."
-    # python-stomp < 5.0.0 to python-stomp, python to python3/pip3
-    # edited python-pip3 to python-pip
-    # slight spelling inconsistencites betwixt OS's
 
     if [[ "$PACK_TYPE" = "deb" ]]; then
         FPM_PYTHON="--depends python3 \
@@ -149,30 +146,6 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
         --depends openssl \
         --depends openssl-devel "
     fi
-
-elif [[ ${PY_NUM:0:1} == "2" ]]; then
-    echo "Building $VERSION iteration $ITERATION for Python $PY_NUM as $PACK_TYPE."
-
-    if [[ "$PACK_TYPE" = "deb" ]]; then
-        FPM_PYTHON="--depends python2.7 \
-        --depends python-pip \
-        --depends 'python-stomp < 5.0.0' \
-        --depends python-cryptography \
-        --depends python-openssl \
-        --depends python-daemon \
-        --depends openssl "
-
-    # el7 and below, due to yum package versions
-    elif [[ "$PACK_TYPE" = "rpm" ]]; then
-        FPM_PYTHON="--depends python2 \
-        --depends python2-pip \
-        --depends python2-cryptography \
-        --depends python2-pyOpenSSL \
-        --depends python2-daemon \
-        --depends stomppy \
-        --depends openssl \
-        --depends openssl-devel "
-    fi
 fi
 
 # python-bin must always be specified in modern linux
@@ -189,6 +162,7 @@ PACKAGE_VERSION="--$PACK_TYPE-changelog $SOURCE_DIR/ssm-$VERSION-$ITERATION/CHAN
 BUILD_PACKAGE_COMMAND=${FPM_CORE}${FPM_PYTHON}${VERBOSE}${PACKAGE_VERSION}
 eval "$BUILD_PACKAGE_COMMAND"
 
+echo
 echo "== Generating pleaserun package =="
 
 # When installed, use pleaserun to perform system specific service setup
@@ -205,7 +179,8 @@ fpm -s pleaserun -t "$PACK_TYPE" \
 --package "$BUILD_DIR" \
 /usr/bin/ssmreceive
 
-echo "Possible Issues to Fix:"
+echo
+echo "== Possible Issues to Fix =="
 if [ "$OS_EXTENSION" == "_all" ]
 then
     # Check the resultant debs for 'lint'
