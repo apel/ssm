@@ -22,7 +22,7 @@ RUN yum -y install libffi-devel && yum clean all
 RUN yum -y install openssl && yum clean all
 
 # Install the python requirements of SSM
-RUN pip install -r requirements-docker.txt
+RUN pip install -r requirements.txt
 # Then install the SSM
 RUN python3 setup.py install
 
