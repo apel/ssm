@@ -41,8 +41,7 @@ def main():
                                   '%s' % default_conf_location,
                             default=default_conf_location)
     arg_parser.add_argument('-l', '--log_config',
-                            help='DEPRECATED - location of logging config '
-                                 'file (optional)',
+                            help='DEPRECATED - location of logging config file',
                             default=None)
     arg_parser.add_argument('-d', '--dn_file',
                             help='location of the file containing valid DNs, '
@@ -50,7 +49,7 @@ def main():
                             default=default_dns_location)
     arg_parser.add_argument('-v', '--version',
                             action='version',
-                            version='ver: %s' % ver)
+                            version=ver)
 
     # Using the vars function to output a dict-like view rather than Namespace object.
     options = vars(arg_parser.parse_args())

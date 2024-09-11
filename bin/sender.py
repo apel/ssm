@@ -36,16 +36,15 @@ def main():
     arg_parser = ArgumentParser(description=__doc__)
 
     arg_parser.add_argument('-c', '--config',
-                            help=('location of config file, default path: '
-                                  '%s' % default_conf_location),
+                            help='location of config file, default path: '
+                                  '%s' % default_conf_location,
                             default=default_conf_location)
     arg_parser.add_argument('-l', '--log_config',
-                            help='DEPRECATED - location of logging config'
-                                 'file (optional)',
+                            help='DEPRECATED - location of logging config file',
                             default=None)
     arg_parser.add_argument('-v', '--version',
                             action='version',
-                            version='ver: %s' % ver)
+                            version=ver)
 
     # Using the vars function to output a dict-like view rather than Namespace object.
     options = vars(arg_parser.parse_args())
