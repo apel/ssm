@@ -22,10 +22,7 @@ import logging
 import sys
 import time
 
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 
 try:
     from daemon import DaemonContext
@@ -61,7 +58,7 @@ def logging_helper(cp):
             cp.get('logging', 'level'),
             cp.getboolean('logging', 'console')
         )
-    except (ConfigParser.Error, ValueError, IOError) as err:
+    except (configparser.Error, ValueError, IOError) as err:
         print('Error configuring logging: %s' % err)
         print('The system will exit.')
         sys.exit(1)
@@ -75,12 +72,12 @@ def get_protocol(cp, log):
         elif 'receiver' in cp.sections():
             protocol = cp.get('receiver', 'protocol')
         else:
-            raise ConfigParser.NoSectionError('sender or receiver')
+            raise configparser.NoSectionError('sender or receiver')
 
         if protocol not in (Ssm2.STOMP_MESSAGING, Ssm2.AMS_MESSAGING):
             raise ValueError
 
-    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+    except (configparser.NoSectionError, configparser.NoOptionError):
         # If the newer configuration setting 'protocol' is not set, use 'STOMP'
         # for backwards compatability.
         protocol = Ssm2.STOMP_MESSAGING
@@ -106,7 +103,7 @@ def get_ssm_args(protocol, cp, log):
             host = cp.get('broker', 'host')
             port = cp.get('broker', 'port')
             brokers = [(host, int(port))]
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             log.error('Host options incorrectly supplied for message broker '
                       'or AMS endpoint. Please check configuration.')
             log.error('System will exit.')
@@ -124,7 +121,7 @@ def get_ssm_args(protocol, cp, log):
             # the exact destination type.
             brokers = [host]
 
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             log.error('The host must be specified when connecting to AMS, '
                       'please check your configuration')
             log.error('System will exit.')
@@ -136,7 +133,7 @@ def get_ssm_args(protocol, cp, log):
         try:
             project = cp.get('messaging', 'ams_project')
 
-        except (ConfigParser.Error, ValueError, IOError) as err:
+        except (configparser.Error, ValueError, IOError) as err:
             # A project is needed to successfully send to an
             # AMS instance, so log and then exit on an error.
             log.error('Error configuring AMS values: %s', err)
@@ -146,7 +143,7 @@ def get_ssm_args(protocol, cp, log):
 
         try:
             token = cp.get('messaging', 'token')
-        except (ConfigParser.Error, ValueError, IOError) as err:
+        except (configparser.Error, ValueError, IOError) as err:
             # A token is not necessarily needed, if the cert and key can be
             # used by the underlying auth system to get a suitable token.
             log.info('No AMS token provided, using cert/key pair instead.')
@@ -173,24 +170,24 @@ def run_sender(protocol, brokers, project, token, cp, log):
             log.info('Messages will be encrypted using %s', server_dn)
             try:
                 verify_server_cert = cp.getboolean('certificates', 'verify_server_cert')
-            except ConfigParser.NoOptionError:
+            except configparser.NoOptionError:
                 # If option not set, resort to value of verify_server_cert set above.
                 pass
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             log.info('No server certificate supplied.  Will not encrypt messages.')
 
         try:
             destination = cp.get('messaging', 'destination')
             if destination == '':
                 raise Ssm2Exception('No destination queue is configured.')
-        except ConfigParser.NoOptionError as e:
+        except configparser.NoOptionError as e:
             raise Ssm2Exception(e)
 
         # Determine what type of message store we are interacting with,
         # i.e. a dirq QueueSimple object or a plain MessageDirectory directory.
         try:
             path_type = cp.get('messaging', 'path_type')
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             log.info('No path type defined, assuming dirq.')
             path_type = 'dirq'
 
