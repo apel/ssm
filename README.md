@@ -7,10 +7,10 @@
 
 Secure STOMP Messenger (SSM) is designed to simply send messages
 using the [STOMP protocol](http://stomp.github.io/) or via the ARGO Messaging Service (AMS).
-Messages are signed and may be encrypted during transit.
+Messages are signed and may additionally be encrypted during transit.
 Persistent queues should be used to guarantee delivery.
 
-SSM is written in Python. Packages are available for RHEL 7, and Ubuntu Trusty.
+SSM is written in Python 3. Packages are available for EL 8 and 9, and Ubuntu.
 
 For more information about SSM, see the [EGI wiki](https://wiki.egi.eu/wiki/APEL/SSM).
 
@@ -31,8 +31,7 @@ the RPM for your version of SL, which is available on this page:
 http://fedoraproject.org/wiki/EPEL
 You will also need to have the OpenSSL library installed. Other prerequisites are listed below.
 
-The Python STOMP library (N.B. versions between 3.1.1 (inclusive) and 5.0.0
-(exclusive) are currently supported)
+The Python STOMP library
 * `yum install stomppy`
 
 The Python AMS library. This is only required if you want to use AMS. See here for details on obtaining an RPM: https://github.com/ARGOeu/argo-ams-library/
@@ -96,7 +95,7 @@ Install any missing system packages needed for the SSM:
 * `apt-get -f install`
 
 Install any missing Python requirements that don't have system packages:
-* `pip install "stomp.py<5.0.0" dirq`
+* `pip install stomp.py dirq`
 
 If you wish to run the SSM as a receiver, you will also need to install the python-daemon system package:
 * `apt-get install python-daemon`
