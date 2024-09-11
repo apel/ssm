@@ -26,10 +26,7 @@ import os
 import sys
 from optparse import OptionParser
 
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 
 
 def main():
@@ -62,7 +59,7 @@ def main():
 
     # Check if config file exists using os.path.isfile function.
     if os.path.isfile(options.config):
-        cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
+        cp = configparser.ConfigParser({'use_ssl': 'true'})
         cp.read(options.config)
     else:
         print("Config file not found at", options.config)
