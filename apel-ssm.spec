@@ -1,3 +1,5 @@
+%define __python /usr/bin/python3
+
 # Conditionally define python_sitelib
 %if ! (0%{?fedora} > 12 || 0%{?rhel} > 5)
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")}
@@ -21,7 +23,7 @@ BuildArch:      noarch
 BuildRequires:  python-devel
 %endif
 
-Requires:       stomppy < 5.0.0, python-setuptools, openssl
+Requires:       stomppy < 8.1.1, python-setuptools, openssl
 Requires(pre):  shadow-utils
 
 %define ssmconf %_sysconfdir/apel
