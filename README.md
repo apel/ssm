@@ -1,6 +1,5 @@
 # Secure STOMP Messenger
 
-[![Build Status](https://travis-ci.org/apel/ssm.svg?branch=dev)](https://travis-ci.org/apel/ssm)
 [![Coverage Status](https://coveralls.io/repos/github/apel/ssm/badge.svg?branch=dev)](https://coveralls.io/github/apel/ssm?branch=dev)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/9d2b1c88ab844f0081e5fafab49b269d)](https://www.codacy.com/gh/apel/ssm/dashboard)
 [![Maintainability](https://api.codeclimate.com/v1/badges/34aa04f3583afce2ceb2/maintainability)](https://codeclimate.com/github/apel/ssm/maintainability)
