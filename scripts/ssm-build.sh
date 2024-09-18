@@ -131,7 +131,6 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
         --depends python3-pip \
         --depends python3-cryptography \
         --depends python3-openssl \
-        --depends python3-daemon \
         --depends 'python3-stomp' \
         --depends openssl "
 
@@ -142,7 +141,6 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
         --depends python3-pip \
         --depends python3-cryptography \
         --depends python3-pyOpenSSL \
-        --depends python3-daemon \
         --depends openssl \
         --depends openssl-devel "
     fi
@@ -176,6 +174,7 @@ fpm -s pleaserun -t "$PACK_TYPE" \
 --architecture all \
 --no-auto-depends \
 --depends apel-ssm \
+--depends python3-daemon \
 --package "$BUILD_DIR" \
 /usr/bin/ssmreceive
 
