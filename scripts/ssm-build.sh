@@ -175,6 +175,7 @@ fpm -s pleaserun -t "$PACK_TYPE" \
 --no-auto-depends \
 --depends apel-ssm \
 --depends python3-daemon \
+--depends python3-dirq \
 --package "$BUILD_DIR" \
 /usr/bin/ssmreceive
 
