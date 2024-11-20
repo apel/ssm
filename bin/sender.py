@@ -21,7 +21,7 @@ from __future__ import print_function
 import ssm.agents
 from ssm import __version__, LOG_BREAK
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 import logging
 import os
 import sys
@@ -46,20 +46,20 @@ def main():
                             action='version',
                             version=ver)
 
-    # Using the vars function to output a dict-like view rather than Namespace object.
-    options = vars(arg_parser.parse_args())
+    # Parsing arguments into an argparse.Namespace object for structured access.
+    options: Namespace = arg_parser.parse_args()
 
     # Deprecating functionality.
     old_log_config_default_path = '/etc/apel/logging.cfg'
-    if (os.path.exists(old_log_config_default_path) or options['log_config'] is not None):
+    if (os.path.exists(old_log_config_default_path) or options.log_config is not None):
         logging.warning('Separate logging config file option has been deprecated.')
 
     # Check if config file exists using os.path.isfile function.
-    if os.path.isfile(options['config']):
+    if os.path.isfile(options.config):
         cp = configparser.ConfigParser({'use_ssl': 'true'})
-        cp.read(options['config'])
+        cp.read(options.config)
     else:
-        print("Config file not found at", options['config'])
+        print("Config file not found at", options.config)
         sys.exit(1)
 
     ssm.agents.logging_helper(cp)
