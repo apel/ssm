@@ -21,7 +21,7 @@ from __future__ import print_function
 import ssm.agents
 from ssm import __version__, LOG_BREAK
 
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 import logging
 import os
 import sys
@@ -52,7 +52,7 @@ def main():
                             version=ver)
 
     # Parsing arguments into an argparse.Namespace object for structured access.
-    options: Namespace = arg_parser.parse_args()
+    options = arg_parser.parse_args()
 
     # Deprecating functionality.
     old_log_config_default_path = '/etc/apel/logging.cfg'
