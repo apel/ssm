@@ -1,5 +1,5 @@
 # Additional requirements for the unit and coverage tests
 
-coveralls<=1.2.0
+coveralls<=3.3.1  # Last Python 3.6 version
 codecov
 pre-commit
