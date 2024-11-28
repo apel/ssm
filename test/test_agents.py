@@ -4,8 +4,7 @@ import os
 import tempfile
 from textwrap import dedent
 import unittest
-
-import mock
+import unittest.mock as mock
 
 import ssm.agents
 from ssm.ssm2 import Ssm2Exception
