@@ -110,12 +110,13 @@ rm -f "$TAR_FILE"
 # Get supplied Python version
 PY_VERSION="$(basename "$PYTHON_ROOT_DIR")"
 PY_NUM=${PY_VERSION#python}
+PY_NUM_FOR_BUILD_NAMING=${PY_NUM/./}
 OS_EXTENSION="$(uname -r | grep -o 'el[7-9]' || echo '_all')"
 
 # Universal FPM Call
 FPM_CORE="fpm -s python \
     -t $PACK_TYPE \
-    -n apel-ssm \
+    -n apel-ssm-py${PY_NUM_FOR_BUILD_NAMING} \
     -v $VERSION \
     --iteration $ITERATION \
     -m \"Apel Administrators <apel-admins@stfc.ac.uk>\" \
@@ -165,7 +166,7 @@ echo "== Generating pleaserun package =="
 
 # When installed, use pleaserun to perform system specific service setup
 fpm -s pleaserun -t "$PACK_TYPE" \
--n apel-ssm-service \
+-n apel-ssm-service-py"${PY_NUM_FOR_BUILD_NAMING}" \
 -v "$VERSION" \
 --iteration "$ITERATION" \
 --"$PACK_TYPE"-dist "$OS_EXTENSION" \
@@ -173,7 +174,7 @@ fpm -s pleaserun -t "$PACK_TYPE" \
 --description "Secure Stomp Messenger (SSM) Service Daemon files." \
 --architecture all \
 --no-auto-depends \
---depends apel-ssm \
+--depends apel-ssm-py"${PY_NUM_FOR_BUILD_NAMING}" \
 --depends python3-daemon \
 --depends python3-dirq \
 --package "$BUILD_DIR" \
@@ -187,8 +188,8 @@ then
     TAG="$VERSION-$ITERATION"
     DEBDIR="$(dirname "$BUILD_DIR")"
 
-    lintian "$DEBDIR"/apel-ssm_"${TAG}"_all.deb
-    lintian "$DEBDIR"/apel-ssm-service_"${TAG}"_all.deb
+    lintian "$DEBDIR"/apel-ssm-py"${PY_NUM_FOR_BUILD_NAMING}"_"${TAG}"_all.deb
+    lintian "$DEBDIR"/apel-ssm-service-py"${PY_NUM_FOR_BUILD_NAMING}"_"${TAG}"_all.deb
 else
     # Check for errors in SPEC and built packages
     # For instance; Given $(dirname /root/rpmb/rpmbuild/source) will output "/root/rpmb/rpmbuild".
