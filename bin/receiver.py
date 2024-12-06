@@ -21,15 +21,12 @@ from __future__ import print_function
 import ssm.agents
 from ssm import __version__, LOG_BREAK
 
+from argparse import ArgumentParser
 import logging
 import os
 import sys
-from optparse import OptionParser
 
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 
 
 def main():
@@ -37,20 +34,25 @@ def main():
     ver = "SSM %s.%s.%s" % __version__
     default_conf_location = '/etc/apel/receiver.cfg'
     default_dns_location = '/etc/apel/dns'
-    op = OptionParser(description=__doc__, version=ver)
-    op.add_option('-c', '--config',
-                  help=('location of config file, '
-                        'default path: ' + default_conf_location),
-                  default=default_conf_location)
-    op.add_option('-l', '--log_config',
-                  help='DEPRECATED - location of logging config file (optional)',
-                  default=None)
-    op.add_option('-d', '--dn_file',
-                  help=('location of the file containing valid DNs, '
-                        'default path: ' + default_dns_location),
-                  default=default_dns_location)
+    arg_parser = ArgumentParser(description=__doc__)
 
-    options, unused_args = op.parse_args()
+    arg_parser.add_argument('-c', '--config',
+                            help='location of config file, default path: '
+                                  '%s' % default_conf_location,
+                            default=default_conf_location)
+    arg_parser.add_argument('-l', '--log_config',
+                            help='DEPRECATED - location of logging config file',
+                            default=None)
+    arg_parser.add_argument('-d', '--dn_file',
+                            help='location of the file containing valid DNs, '
+                                  'default path: %s' % default_dns_location,
+                            default=default_dns_location)
+    arg_parser.add_argument('-v', '--version',
+                            action='version',
+                            version=ver)
+
+    # Parsing arguments into an argparse.Namespace object for structured access.
+    options = arg_parser.parse_args()
 
     # Deprecating functionality.
     old_log_config_default_path = '/etc/apel/logging.cfg'
@@ -62,11 +64,11 @@ def main():
 
     # Check if config file exists using os.path.isfile function.
     if os.path.isfile(options.config):
-        cp = ConfigParser.ConfigParser({'use_ssl': 'true'})
+        cp = configparser.ConfigParser({'use_ssl': 'true'})
         cp.read(options.config)
     else:
         print("Config file not found at", options.config)
-        exit(1)
+        sys.exit(1)
 
     # Check for pidfile
     pidfile = cp.get('daemon', 'pidfile')
