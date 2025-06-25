@@ -153,6 +153,7 @@ PACKAGE_VERSION="--$PACK_TYPE-changelog $SOURCE_DIR/ssm-$VERSION-$ITERATION/CHAN
     --python-install-bin /usr/bin \
     --python-install-lib $PYTHON_ROOT_DIR$LIB_EXTENSION \
     --exclude *.pyc \
+    --exclude usr/local \
     --package $BUILD_DIR \
     $SOURCE_DIR/ssm-$VERSION-$ITERATION/setup.py"
 
