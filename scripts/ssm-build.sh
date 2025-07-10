@@ -131,7 +131,7 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
         --depends python3-pip \
         --depends python3-cryptography \
         --depends python3-openssl \
-        --depends 'python3-stomp' \
+        --depends python3-stomp \
         --depends openssl "
 
     # Currently builds for el8
