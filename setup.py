@@ -73,7 +73,7 @@ def main():
               'pyopenssl',
           ],
           extras_require={
-              'AMS': ['argo-ams-library>=0.5.1', ],
+              'AMS': ['argo-ams-library>=0.5.5', ],
               'daemon': ['python-daemon', ],
               'dirq': ['dirq'],
           },
