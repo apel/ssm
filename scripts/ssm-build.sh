@@ -131,13 +131,14 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
         --depends python3-pip \
         --depends python3-cryptography \
         --depends python3-openssl \
-        --depends 'python3-stomp' \
+        --depends python3-stomp \
         --depends openssl "
 
     # Currently builds for el8
     elif [[ "$PACK_TYPE" = "rpm" ]]; then
         FPM_PYTHON="--depends python3 \
         --depends python3-stomppy \
+        --depends python3-argo-ams-library \
         --depends python3-pip \
         --depends python3-cryptography \
         --depends python3-pyOpenSSL \

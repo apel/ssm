@@ -1,6 +1,6 @@
 # Base requirements for ssm
 
-argo-ams-library>=0.5.1  # 0.4.x series no longer works with SSM
+argo-ams-library>=0.5.5  # 0.5.5 changed auth method to put token in header
 pyopenssl<23.3.0  # 23.3.0 dropped support for Python 3.6
 cryptography<41.0.0  # 41.0.0 dropped support for Python 3.6
 stomp.py<8.1.1  # 8.1.1 dropped suppot for Python 3.6
