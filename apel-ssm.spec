@@ -102,6 +102,14 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Fri Jul 18 2025 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 4.0.0-1
+ - Removed LDAP as a dependency as broker information is now set locally.
+ - Replaced optparse with argparse for command line parsing.
+ - Removed Python 2 specific code.
+ - Fixed compatability with newer versions of stomp.py.
+ - Updated sender config file to remove devel AMS as default.
+ - Fixed issue with dir conflict during package installation on EL8.
+
 * Fri Aug 30 2024 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.4.1-1
  - Improved error logging to store full traceback on unexpected exceptions.
  - Changed more code to use pyOpenSSL to improve compatibility with newer OpenSSL versions.
