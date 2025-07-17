@@ -6,7 +6,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        3.4.1
+Version:        4.0.0
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
