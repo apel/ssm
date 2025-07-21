@@ -1,10 +1,12 @@
+%define __python /usr/bin/python3
+
 # Conditionally define python_sitelib
 %if ! (0%{?fedora} > 12 || 0%{?rhel} > 5)
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")}
 %endif
 
 Name:           apel-ssm
-Version:        3.4.1
+Version:        4.0.0
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -21,7 +23,7 @@ BuildArch:      noarch
 BuildRequires:  python-devel
 %endif
 
-Requires:       stomppy < 5.0.0, python-ldap < 3.4.0, python-setuptools, openssl
+Requires:       stomppy < 8.1.1, python-setuptools, openssl
 Requires(pre):  shadow-utils
 
 %define ssmconf %_sysconfdir/apel
@@ -100,6 +102,14 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Fri Jul 18 2025 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 4.0.0-1
+ - Removed LDAP as a dependency as broker information is now set locally.
+ - Replaced optparse with argparse for command line parsing.
+ - Removed Python 2 specific code.
+ - Fixed compatibility with newer versions of stomp.py.
+ - Updated sender config file to remove devel AMS as default.
+ - Fixed issue with dir conflict during package installation on EL8.
+
 * Fri Aug 30 2024 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.4.1-1
  - Improved error logging to store full traceback on unexpected exceptions.
  - Changed more code to use pyOpenSSL to improve compatibility with newer OpenSSL versions.
@@ -108,10 +118,10 @@ rm -rf $RPM_BUILD_ROOT
  - Various changes and improvements to build scripts and processes.
 
 * Wed Feb 21 2024 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.4.0-1
- - Fixed compatability with newer versions of OpenSSL that only provide comma separated DNs.
- - Fixed Python 3 compatability (indirectly fixing EL8+ compatability) by performing explicit
+ - Fixed compatibility with newer versions of OpenSSL that only provide comma separated DNs.
+ - Fixed Python 3 compatibility (indirectly fixing EL8+ compatibility) by performing explicit
    decoding. Note that this limits messages to ASCII as this is the current behaviour.
- - Added new build script that handles both RPM and DEB pacakging and later OSes.
+ - Added new build script that handles both RPM and DEB packaging and later OSes.
  - Changed default config file values to bring in line with AMS usage.
 
 * Mon Oct 09 2023 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.3.0-1

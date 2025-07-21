@@ -4,12 +4,12 @@ on: [push, pull_request]
 
 jobs:
   unit-test:
-    runs-on: ubuntu-20.04  # 20.04 to allow for Py 3.6
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        # Python versions on Rocky 8, Ubuntu 20.04, Rocky 9
-        python-version: ['3.6', '3.8', '3.9']
+        # Python versions on EL 9, Ubuntu 22.04, EL 10/Ubuntu 24.04
+        python-version: ['3.9', '3.10', '3.12']
     name: Python ${{ matrix.python-version }} test
     steps:
     - uses: actions/checkout@v4
@@ -19,9 +19,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
-
-    - name: Set up dependencies for python-ldap
-      run: sudo apt-get install libsasl2-dev libldap2-dev libssl-dev
 
     - name: Base requirements for SSM
       run: pip install -r requirements.txt
@@ -40,4 +37,4 @@ jobs:
       run: coverage run --branch --source=ssm,bin -m unittest discover --buffer
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
