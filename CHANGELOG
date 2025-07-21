@@ -2,7 +2,7 @@
  - Removed LDAP as a dependency as broker information is now set locally.
  - Replaced optparse with argparse for command line parsing.
  - Removed Python 2 specific code.
- - Fixed compatability with newer versions of stomp.py.
+ - Fixed compatibility with newer versions of stomp.py.
  - Updated sender config file to remove devel AMS as default.
  - Fixed issue with dir conflict during package installation on EL8.
 
@@ -14,10 +14,10 @@
  - Various changes and improvements to build scripts and processes.
 
 * Wed Feb 21 2024 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.4.0-1
- - Fixed compatability with newer versions of OpenSSL that only provide comma separated DNs.
- - Fixed Python 3 compatability (indirectly fixing EL8+ compatability) by performing explicit
+ - Fixed compatibility with newer versions of OpenSSL that only provide comma separated DNs.
+ - Fixed Python 3 compatibility (indirectly fixing EL8+ compatibility) by performing explicit
    decoding. Note that this limits messages to ASCII as this is the current behaviour.
- - Added new build script that handles both RPM and DEB pacakging and later OSes.
+ - Added new build script that handles both RPM and DEB packaging and later OSes.
  - Changed default config file values to bring in line with AMS usage.
 
 * Mon Oct 09 2023 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 3.3.0-1
