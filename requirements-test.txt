@@ -2,4 +2,5 @@
 
 coveralls<=3.3.1  # Last Python 3.6 version
 codecov
+testfixtures<7.0.0
 pre-commit
