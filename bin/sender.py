@@ -28,6 +28,8 @@ import sys
 
 import configparser
 
+from bin.preprocessor import create_queue_combined_msgs
+
 
 def main():
     """Set up connection, send all messages and quit."""
@@ -74,6 +76,12 @@ def main():
     log.info('Setting up SSM with protocol: %s', protocol)
 
     brokers, project, token = ssm.agents.get_ssm_args(protocol, cp, log)
+
+    # Creating queue of combined messages
+    combined_queue_path = create_queue_combined_msgs(cp, log)
+
+    # Updating path in cp so that it points to the 'combined_msgs' queue
+    cp.set('messaging', 'path', combined_queue_path)              
 
     ssm.agents.run_sender(protocol, brokers, project, token, cp, log)
 
