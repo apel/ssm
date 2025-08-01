@@ -382,7 +382,7 @@ class Ssm2(stomp.ConnectionListener):
         encrypted.
         """
         log.info('Sending message: %s', msgid)
-        if text is not None:
+        if text is not None and len(text) > 0:
             # First we sign the message
             to_send = crypto.sign(text, self._cert, self._key)
             # Possibly encrypt the message.
@@ -486,30 +486,16 @@ class Ssm2(stomp.ConnectionListener):
 
             if self._protocol == Ssm2.STOMP_MESSAGING:
                 # Then we are sending to a STOMP message broker.
-                self._send_msg(text, msgid)
-
-                log.info('Waiting for broker to accept message.')
-                while self._last_msg is None:
-                    if not self.connected:
-                        raise Ssm2Exception('Lost connection.')
-                    # Small sleep to avoid hammering the CPU
-                    time.sleep(0.01)
-
-                log_string = "Sent %s" % msgid
+                self._send_via_stomp(text, msgid)
 
             elif self._protocol == Ssm2.AMS_MESSAGING:
                 # Then we are sending to an Argo Messaging Service instance.
-                argo_id = self._send_msg_ams(text, msgid)
-
-                log_string = "Sent %s, Argo ID: %s" % (msgid, argo_id)
+                self._send_via_ams(text, msgid)
 
             else:
                 # The SSM has been improperly configured
                 raise Ssm2Exception('Unknown messaging protocol: %s' %
                                     self._protocol)
-
-            # log that the message was sent
-            log.info(log_string)
 
             self._last_msg = None
             self._outq.remove(msgid)
@@ -520,6 +506,33 @@ class Ssm2(stomp.ConnectionListener):
             self._outq.purge()
         except OSError as e:
             log.warning('OSError raised while purging message queue: %s', e)
+
+    def _send_via_stomp(self, text, msgid):
+        """
+        Sending message via STOMP message broker.
+        """
+        self._send_msg(text, msgid)
+
+        log.info('Waiting for broker to accept message.')
+        while self._last_msg is None:
+            if not self.connected:
+                raise Ssm2Exception('Lost connection.')
+            # Small sleep to avoid hammering the CPU
+            time.sleep(0.01)
+
+        log.info("Sent %s" % msgid)
+
+    def _send_via_ams(self, text, msgid):
+        """
+        Sending message via HTTPS (to Argo message broker.)
+        """
+        argo_id = self._send_msg_ams(text, msgid)
+
+        if argo_id is not None:
+            log.info("Sent %s, Argo ID: %s" % (msgid, argo_id))
+        else:
+            log.warning("Message %s is empty and "
+                        "returns a None type." % (msgid))
 
     ###########################################################################
     # Connection handling methods
