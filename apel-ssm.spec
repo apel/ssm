@@ -102,6 +102,10 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Wed Jul 15 2026 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 4.0.1-1
+ - Fixed issue with /var/run directory availability after reboot.
+ - Fixed forward compatibility by giving an alternative method to fetch AMS library info.
+
 * Fri Jul 18 2025 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 4.0.0-1
  - Removed LDAP as a dependency as broker information is now set locally.
  - Replaced optparse with argparse for command line parsing.
