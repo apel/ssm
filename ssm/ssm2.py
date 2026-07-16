@@ -15,7 +15,11 @@
 """
 from __future__ import print_function
 
-import pkg_resources
+try:
+    import pkg_resources
+except ImportError:
+    pkg_resources = None
+    from importlib import metadata
 
 from ssm import crypto
 from ssm.message_directory import MessageDirectory
@@ -556,8 +560,11 @@ class Ssm2(stomp.ConnectionListener):
         connect to each in turn until successful.
         """
         if self._protocol == Ssm2.AMS_MESSAGING:
-            log.info("Using AMS version %s",
-                        pkg_resources.get_distribution('argo_ams_library').version)
+            if pkg_resources is None:
+                version = metadata.version('argo_ams_library')
+            else:
+                version = pkg_resources.get_distribution('argo_ams_library').version
+            log.info("Using AMS version %s", version)
 
             log.info("Will connect to %s", self._brokers[0])
 

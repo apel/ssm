@@ -81,6 +81,7 @@ def main():
           scripts=['bin/ssmreceive', 'bin/ssmsend'],
           data_files=[(conf_dir, conf_files),
                       ('/etc/logrotate.d', ['conf/apel-ssm']),
+                      ('/usr/lib/tmpfiles.d', ['scripts/apel-ssm.conf']),
                       ('/usr/share/doc/apel-ssm', ['apel-ssm']),
                       # Create empty directories
                       ('/var/log/apel', []),

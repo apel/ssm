@@ -10,14 +10,13 @@ on:
     paths-ignore:
       - '**/*.md'
       - '**/*.txt'
-      - '**/*.ya?ml'
       - '**/*.sh'
   schedule:
     - cron: '39 11 * * 1'
 
 jobs:
   analyze:
-    name: Analyze
+    name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
     if: '!github.event.repository.fork'
 
@@ -29,16 +28,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'python' ]
+        language: [ actions, python ]
         # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@v4
       with:
         languages: ${{ matrix.language }}
         # If you wish to specify custom queries, you can do so here or in a config file.
@@ -49,4 +48,4 @@ jobs:
         queries: security-extended,security-and-quality
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      uses: github/codeql-action/analyze@v4
