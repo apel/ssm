@@ -4,31 +4,35 @@
 # Adapted from the Debian only build script, now with RPM!
 # @Author: Nicholas Whyatt (RedProkofiev@github.com)
 
-# Script runs well with FPM 1.14.2 on ruby 2.7.1, setuptools 51.3.3 on RHEL and Deb platforms
+# Tested with FPM 1.16.0 on Ruby 2.5.9 and 3.0.7 on EL
 
-# Download ruby (if you're locked to 2.5, use RVM, https://www.tecmint.com/install-ruby-on-centos-rhel-8/#installrubyrvm) and then run:
-# sudo gem install fpm -v 1.14.2
-# (may need to be run without the 'sudo')
+# Install Ruby
+# yum install ruby | apt-get install ruby
+# If you want to run an fpm version other than the one below you'll need a later version of Ruby,
+# so if you're locked to 2.5, use RVM, https://www.tecmint.com/install-ruby-on-centos-rhel-8/#installrubyrvm)
 
-# for RPM builds, you will also need:
-# sudo yum install rpm-build rpmlint | sudo apt-get install rpm lintian
+# Install fpm
+# gem install fpm -v 1.16.0
+
+# For RPM builds, you will also need:
+# yum install rpm-build rpmlint | apt-get install rpm lintian
+
+# Build package
 # ./ssm-build.sh (deb | rpm) <version> <iteration> <python_root_dir>
 # e.g.
 # ./ssm-build.sh deb 3.4.0 1 /usr/lib/python3.6
 # If you're struggling finding the right version of Python to use, consider opening interpreter and:
 # import site; site.getsitepackages()
-# For SSM 3.4.0 and up.  Versions before that would technically work, but the changelog
-# then was in a Debian format that doesn't parse and fails hard if you want to build RPM.
 
 set -e
 
 usage() {
     echo "Usage: $0 [options] (deb | rpm) <version> <iteration> <python_root_dir> "
     echo -e "Build script for Apel-SSM.\n"
-    echo "  -h                    Displays help."
-    echo "  -v                    Verbose FPM output."
-    echo "  -s <source_dir>       Directory of source files.  Defaults to /debbuild/source or SOME RPM DIR."
-    echo -e "  -b <build_dir>        Directory of build files.  Defaults to /debbuild/build or SOME RPM DIR.\n" 1>&2;
+    echo "  -h                Displays help."
+    echo "  -v                Verbose FPM output."
+    echo "  -s <source_dir>   Directory of source files. Defaults to ~/debbuild/source or ~/rpmbuild/SOURCES"
+    echo -e "  -b <build_dir>    Directory of build files. Defaults to ~/debbuild/build or ~/rpmbuild/BUILD\n" 1>&2;
     exit 1;
 }
 
@@ -142,8 +146,7 @@ if [[ ${PY_NUM:0:1} == "3" ]]; then
         --depends python3-pip \
         --depends python3-cryptography \
         --depends python3-pyOpenSSL \
-        --depends openssl \
-        --depends openssl-devel "
+        --depends openssl "
     fi
 fi
 
