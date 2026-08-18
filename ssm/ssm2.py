@@ -322,11 +322,24 @@ class Ssm2(stomp.ConnectionListener):
 
     def _save_msg_to_queue(self, body, empaid):
         """Extract message contents and add to the accept or reject queue."""
-        if isinstance(body, bytes):
-            body = body.decode('ascii')
-
-        extracted_msg, signer, err_msg = self._handle_msg(body)
         try:
+            if isinstance(body, bytes):
+                try:
+                    body = body.decode('ascii')
+                except UnicodeDecodeError:
+                    err_msg = "Non-ASCII or corrupted message"
+                    log.warning("Message rejected: %s", err_msg)
+                    # Extract the message body replacing malformed data with backslashed
+                    # escape sequence (hexadecimal form of byte value with format \xhh).
+                    body = body.decode('ascii', errors='backslashreplace')
+                    name = self._rejectq.add({'body': body,
+                                            'signer': 'Not available.',
+                                            'empaid': empaid,
+                                            'error': err_msg})
+                    log.info("Message saved to reject queue as %s", name)
+                    return  # Return early to skip the rest of the method.
+
+            extracted_msg, signer, err_msg = self._handle_msg(body)
             # If the message is empty or the error message is not empty
             # then reject the message.
             if extracted_msg is None or err_msg is not None:
