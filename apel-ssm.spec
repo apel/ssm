@@ -6,7 +6,7 @@
 %endif
 
 Name:           apel-ssm
-Version:        4.0.1
+Version:        4.0.2
 %define releasenumber 1
 Release:        %{releasenumber}%{?dist}
 Summary:        Secure stomp messenger
@@ -102,6 +102,10 @@ rm -rf $RPM_BUILD_ROOT
 %doc %_defaultdocdir/%{name}
 
 %changelog
+* Tue Aug 18 2026 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 4.0.2-1
+ - Fixed handling of corrupted messages to prevent receiver crash.
+ - Fixed documentation in build script to help avoid EL8 builds with path conflicts.
+
 * Wed Jul 15 2026 Adrian Coveney <adrian.coveney@stfc.ac.uk> - 4.0.1-1
  - Fixed issue with /var/run directory availability after reboot.
  - Fixed forward compatibility by giving an alternative method to fetch AMS library info.
