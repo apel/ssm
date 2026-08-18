@@ -92,6 +92,8 @@ class TestSsm(unittest.TestCase):
         test_ssm.on_message({'empa-id': 'ping'}, 'body')
         # Check that msg with ID and no real content doesn't raise exception.
         test_ssm.on_message({'empa-id': '012345'}, 'body')
+        # Check that non-ASCII messages don't crash the receiver.
+        test_ssm.on_message({'empa-id': '543210'}, '^LagelosÄü'.encode('utf-8'))
 
     def test_init_expired_cert(self):
         """Test right exception is thrown creating an SSM with expired cert."""
